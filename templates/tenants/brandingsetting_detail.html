@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}{{ obj.name }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'tenants:overview' %}">Tenant &amp; Subscription</a><i data-lucide="chevron-right" style="width:14px"></i>
+  <a href="{% url 'tenants:brandingsetting_list' %}">Branding</a><i data-lucide="chevron-right" style="width:14px"></i><span>{{ obj.name }}</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ obj.name }}</h1>
+    <p class="page-subtitle">White-label branding profile</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'tenants:brandingsetting_list' %}" class="btn btn-outline"><i data-lucide="arrow-left"></i> Back</a>
+    <a href="{% url 'tenants:brandingsetting_edit' obj.pk %}" class="btn btn-primary"><i data-lucide="pencil"></i> Edit</a>
+  </div>
+</div>
+
+<div style="display:grid;grid-template-columns:2fr 1fr;gap:18px">
+  <div class="card"><div class="card-body">
+    <h3 style="font-size:15px;margin-bottom:12px">Details</h3>
+    <div class="form-group"><div class="form-label">Name</div>
+      <div class="fw-600">{{ obj.name }}</div></div>
+    <div class="form-group"><div class="form-label">Default profile</div>
+      {% if obj.is_default %}<span class="badge badge-brand">Default</span>
+      {% else %}<span class="badge badge-muted">No</span>{% endif %}
+    </div>
+    <div class="form-group"><div class="form-label">Theme</div>
+      {% if obj.theme == 'light' %}<span class="badge badge-warning">Light</span>
+      {% elif obj.theme == 'dark' %}<span class="badge badge-info">Dark</span>
+      {% elif obj.theme == 'auto' %}<span class="badge badge-muted">Auto</span>
+      {% else %}<span class="badge badge-muted">{{ obj.get_theme_display }}</span>{% endif %}
+    </div>
+    <div class="form-group"><div class="form-label">Logo URL</div>
+      <div>{% if obj.logo_url %}<a href="{{ obj.logo_url }}" target="_blank" rel="noopener">{{ obj.logo_url }}</a>{% else %}—{% endif %}</div></div>
+    <div class="form-group"><div class="form-label">Primary color</div>
+      <div style="display:flex;align-items:center;gap:9px">
+        <span style="display:inline-block;width:18px;height:18px;border-radius:5px;border:1px solid var(--border);background:{{ obj.primary_color }}"></span>
+        <span class="code-pill">{{ obj.primary_color|default:"—" }}</span>
+      </div>
+    </div>
+    <div class="form-group"><div class="form-label">Accent color</div>
+      <div style="display:flex;align-items:center;gap:9px">
+        <span style="display:inline-block;width:18px;height:18px;border-radius:5px;border:1px solid var(--border);background:{{ obj.accent_color }}"></span>
+        <span class="code-pill">{{ obj.accent_color|default:"—" }}</span>
+      </div>
+    </div>
+    <div class="form-group"><div class="form-label">Login message</div>
+      <div>{{ obj.login_message|default:"—" }}</div></div>
+    <div class="form-group"><div class="form-label">Email from name</div>
+      <div>{% if obj.email_from_name %}{{ obj.email_from_name }}{% else %}—{% endif %}</div></div>
+    <div class="form-group" style="margin-bottom:0"><div class="form-label">Email signature</div>
+      <div>{{ obj.email_signature|default:"—"|linebreaksbr }}</div></div>
+  </div></div>
+
+  <div class="card"><div class="card-body">
+    <h3 style="font-size:15px;margin-bottom:12px">Actions</h3>
+    <a href="{% url 'tenants:brandingsetting_edit' obj.pk %}" class="btn btn-outline btn-block" style="margin-bottom:10px"><i data-lucide="pencil"></i> Edit profile</a>
+    <form method="post" action="{% url 'tenants:brandingsetting_delete' obj.pk %}" onsubmit="return confirm('Delete this branding profile?')">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger btn-block"><i data-lucide="trash-2"></i> Delete profile</button>
+    </form>
+    <hr class="divider">
+    <div class="list-meta">Created {{ obj.created_at|date:"d M Y" }}</div>
+  </div></div>
+</div>
+{% endblock %}
