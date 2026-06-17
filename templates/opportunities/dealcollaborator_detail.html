@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}{{ obj.member_name }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'opportunities:opportunity_list' %}">Opportunity &amp; Pipeline</a><i data-lucide="chevron-right" style="width:14px"></i>
+  <a href="{% url 'opportunities:dealcollaborator_list' %}">Deal Team</a><i data-lucide="chevron-right" style="width:14px"></i><span>{{ obj.member_name }}</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ obj.member_name }}</h1>
+    <p class="page-subtitle">{{ obj.get_team_role_display }} · {{ obj.get_status_display }}</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'opportunities:dealcollaborator_list' %}" class="btn btn-outline"><i data-lucide="arrow-left"></i> Back</a>
+    <a href="{% url 'opportunities:dealcollaborator_edit' obj.pk %}" class="btn btn-primary"><i data-lucide="pencil"></i> Edit</a>
+  </div>
+</div>
+
+<div class="detail-grid">
+  <div>
+    <div class="card"><div class="card-body">
+      <h3 style="font-size:15px;margin-bottom:12px">Details</h3>
+      <div class="form-group"><div class="form-label">Member</div>
+        <div class="fw-600">{{ obj.member_name }}</div></div>
+      <div class="form-group"><div class="form-label">Email</div>
+        <div>{{ obj.email|default:"—" }}</div></div>
+      <div class="form-group"><div class="form-label">Opportunity</div>
+        <div>{% if obj.opportunity %}<a href="{% url 'opportunities:opportunity_detail' obj.opportunity.pk %}" class="fw-600">{{ obj.opportunity.number }} · {{ obj.opportunity.name }}</a>{% else %}—{% endif %}</div></div>
+      <div class="form-group"><div class="form-label">Team role</div>
+        <div>{{ obj.get_team_role_display }}</div></div>
+      <div class="form-group"><div class="form-label">Status</div>
+        {% if obj.status == 'active' %}<span class="badge badge-success">Active</span>
+        {% elif obj.status == 'invited' %}<span class="badge badge-info">Invited</span>
+        {% elif obj.status == 'inactive' %}<span class="badge badge-muted">Inactive</span>
+        {% else %}<span class="badge badge-muted">{{ obj.get_status_display }}</span>{% endif %}
+      </div>
+      <div class="form-group"><div class="form-label">Contribution</div>
+        <div>{{ obj.contribution|default:"—"|linebreaksbr }}</div></div>
+    </div></div>
+  </div>
+
+  <div class="card"><div class="card-body">
+    <h3 style="font-size:15px;margin-bottom:12px">Actions</h3>
+    <a href="{% url 'opportunities:dealcollaborator_edit' obj.pk %}" class="btn btn-outline btn-block" style="margin-bottom:10px"><i data-lucide="pencil"></i> Edit collaborator</a>
+    <form method="post" action="{% url 'opportunities:dealcollaborator_delete' obj.pk %}" onsubmit="return confirm('Remove this collaborator?')">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger btn-block"><i data-lucide="trash-2"></i> Remove collaborator</button>
+    </form>
+    <hr class="divider">
+    <div class="list-meta">Created {{ obj.created_at|date:"d M Y" }}</div>
+  </div></div>
+</div>
+{% endblock %}
