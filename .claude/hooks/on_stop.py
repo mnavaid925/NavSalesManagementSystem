@@ -66,7 +66,7 @@ def main():
             # pytest.ini -> config.settings_test) — NOT the MySQL dev settings this hook set on
             # os.environ for the `check` above. Without this override the pytest subprocess
             # inherits DJANGO_SETTINGS_MODULE=config.settings and runs against the shared MySQL
-            # `test_nav_pms` DB: slow, MariaDB-10.4-fragile, and prone to collisions/half-migrated
+            # `test_nav_sms` DB: slow, MariaDB-10.4-fragile, and prone to collisions/half-migrated
             # state when another session's suite runs concurrently.
             test_env = dict(os.environ)
             test_env["DJANGO_SETTINGS_MODULE"] = "config.settings_test"
