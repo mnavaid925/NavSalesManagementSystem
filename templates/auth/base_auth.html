@@ -1,0 +1,67 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light" dir="ltr" data-preloader="disable">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Sign in{% endblock %} · {{ APP_NAME }}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config = { darkMode: "class" };</script>
+  <link rel="stylesheet" href="{% static 'css/theme.css' %}?v={{ ASSET_VERSION }}">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="{% static 'js/layout.js' %}?v={{ ASSET_VERSION }}"></script>
+  <style>
+    .auth-wrap { min-height:100vh; display:grid; grid-template-columns:1.05fr .95fr; }
+    .auth-aside {
+      position:relative; overflow:hidden; color:#fff; padding:54px;
+      background:linear-gradient(150deg,var(--brand-600),var(--brand-900));
+      display:flex; flex-direction:column; justify-content:space-between;
+    }
+    .auth-aside .blob { position:absolute; border-radius:50%; filter:blur(8px); opacity:.35; }
+    .auth-aside .b1 { width:340px; height:340px; background:#60a5fa; top:-90px; inset-inline-end:-80px; }
+    .auth-aside .b2 { width:260px; height:260px; background:#0ea5e9; bottom:-70px; inset-inline-start:-60px; opacity:.3; }
+    .auth-main { display:flex; align-items:center; justify-content:center; padding:40px 24px; background:var(--bg); }
+    .auth-card { width:100%; max-width:430px; }
+    .auth-feature { display:flex; gap:13px; align-items:flex-start; margin-bottom:18px; }
+    .auth-feature .fi { width:40px; height:40px; border-radius:11px; background:rgba(255,255,255,.16); display:grid; place-items:center; flex-shrink:0; }
+    @media (max-width:900px){ .auth-wrap { grid-template-columns:1fr; } .auth-aside { display:none; } }
+  </style>
+  {% block head_extra %}{% endblock %}
+</head>
+<body>
+  <div class="auth-wrap">
+    <div class="auth-aside">
+      <span class="blob b1"></span><span class="blob b2"></span>
+      <div style="position:relative;display:flex;align-items:center;gap:12px">
+        <span class="brand-logo"><i data-lucide="trending-up"></i></span>
+        <span style="font-weight:800;font-size:22px">{{ APP_NAME }}</span>
+      </div>
+      <div style="position:relative">
+        <h1 style="color:#fff;font-size:30px;font-weight:800;line-height:1.2;margin-bottom:14px">
+          Close more deals,<br>faster.
+        </h1>
+        <p style="color:rgba(255,255,255,.85);font-size:14.5px;margin-bottom:30px;max-width:380px">
+          The multi-tenant Sales Management System — pipeline, forecasting, quotes and customer success in one workspace.
+        </p>
+        <div class="auth-feature"><span class="fi"><i data-lucide="users"></i></span>
+          <div><div style="font-weight:600">Multi-tenant by design</div><div style="color:rgba(255,255,255,.75);font-size:13px">Isolated, secure workspaces per company.</div></div></div>
+        <div class="auth-feature"><span class="fi"><i data-lucide="bar-chart-3"></i></span>
+          <div><div style="font-weight:600">Insightful dashboards</div><div style="color:rgba(255,255,255,.75);font-size:13px">Revenue, forecasting and health at a glance.</div></div></div>
+        <div class="auth-feature"><span class="fi"><i data-lucide="shield-check"></i></span>
+          <div><div style="font-weight:600">Enterprise security</div><div style="color:rgba(255,255,255,.75);font-size:13px">Roles, audit trails and encryption keys.</div></div></div>
+      </div>
+      <div style="position:relative;color:rgba(255,255,255,.65);font-size:12.5px">© {{ APP_NAME }} · {{ APP_TAGLINE }}</div>
+    </div>
+
+    <div class="auth-main">
+      <div class="auth-card">
+        {% block auth_content %}{% endblock %}
+      </div>
+    </div>
+  </div>
+  {% include "partials/messages.html" %}
+  <script>lucide.createIcons();</script>
+</body>
+</html>
