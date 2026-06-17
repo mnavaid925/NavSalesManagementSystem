@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}Quote Versioning &amp; Comparison{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'quotes:quote_list' %}">Quote &amp; Proposal</a><i data-lucide="chevron-right" style="width:14px"></i><span>Versions</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Quote Versioning &amp; Comparison</h1>
+    <p class="page-subtitle">{{ total }} version{{ total|pluralize }} on record</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'quotes:quoteversion_create' %}" class="btn btn-primary"><i data-lucide="plus"></i> Add Version</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <form method="get" style="display:flex;gap:10px;flex-wrap:wrap;width:100%;align-items:center">
+      <input type="text" name="q" value="{{ request.GET.q }}" class="form-input" placeholder="Search summary, notes…" style="max-width:240px">
+      <span class="list-meta" style="margin-inline-end:auto"></span>
+      <select name="change_type" class="form-select" style="max-width:200px" onchange="this.form.submit()">
+        <option value="">All change types</option>
+        {% for value, label in change_choices %}
+          <option value="{{ value }}" {% if request.GET.change_type == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <select name="quote" class="form-select" style="max-width:180px" onchange="this.form.submit()">
+        <option value="">All quotes</option>
+        {% for quote in quotes %}
+          <option value="{{ quote.pk }}" {% if request.GET.quote == quote.pk|stringformat:"d" %}selected{% endif %}>{{ quote.number }}</option>
+        {% endfor %}
+      </select>
+      <button class="btn btn-outline" type="submit"><i data-lucide="filter"></i> Filter</button>
+    </form>
+  </div>
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr><th>Quote</th><th>Version</th><th>Change type</th><th>Current</th><th style="text-align:end">Total</th><th style="text-align:end">Actions</th></tr></thead>
+      <tbody>
+        {% for ver in versions %}
+          <tr>
+            <td><a href="{% url 'quotes:quote_detail' ver.quote.pk %}" class="fw-600">{{ ver.quote.number }}</a></td>
+            <td><a href="{% url 'quotes:quoteversion_detail' ver.pk %}">v{{ ver.version_number }}</a></td>
+            <td>
+              {% if ver.change_type == 'initial' %}<span class="badge badge-info">Initial</span>
+              {% elif ver.change_type == 'price_change' %}<span class="badge badge-warning">Price change</span>
+              {% elif ver.change_type == 'scope_change' %}<span class="badge badge-warning">Scope change</span>
+              {% elif ver.change_type == 'discount_change' %}<span class="badge badge-warning">Discount change</span>
+              {% elif ver.change_type == 'terms_change' %}<span class="badge badge-muted">Terms change</span>
+              {% else %}<span class="badge badge-muted">{{ ver.get_change_type_display }}</span>{% endif %}
+            </td>
+            <td>{% if ver.is_current %}<span class="badge badge-success">Current</span>{% else %}<span class="badge badge-muted">—</span>{% endif %}</td>
+            <td style="text-align:end" class="fw-600">{{ ver.total_amount|floatformat:2 }}</td>
+            <td>
+              <div class="table-actions">
+                <a href="{% url 'quotes:quoteversion_detail' ver.pk %}" class="btn-icon" title="View"><i data-lucide="eye"></i></a>
+                <a href="{% url 'quotes:quoteversion_edit' ver.pk %}" class="btn-icon" title="Edit"><i data-lucide="pencil"></i></a>
+                <form method="post" action="{% url 'quotes:quoteversion_delete' ver.pk %}" onsubmit="return confirm('Delete this version?')">
+                  {% csrf_token %}
+                  <button type="submit" class="btn-icon danger" title="Delete"><i data-lucide="trash-2"></i></button>
+                </form>
+              </div>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="6"><div class="empty-state"><div class="empty-icon"><i data-lucide="git-branch"></i></div><h3>No versions</h3><p>Record snapshots of a quote to compare revisions over time.</p><a href="{% url 'quotes:quoteversion_create' %}" class="btn btn-primary" style="margin-top:14px"><i data-lucide="plus"></i> Add Version</a></div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div style="padding:0 16px 12px">{% include "partials/pagination.html" %}</div>
+</div>
+{% endblock %}
