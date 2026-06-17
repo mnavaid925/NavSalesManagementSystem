@@ -102,13 +102,13 @@ git commit -m 'some example changes'.
 * **Never** combine multiple files into a single `git add` / `git commit` pair, **even if they're in the same folder, share a feature, or look like a "set"** (e.g. `list.html` + `form.html` + `detail.html` of the same module).
 * **Wrong** (this is what NOT to do):
   ```
-  git add 'templates/pps/routings/list.html' 'templates/pps/routings/form.html' 'templates/pps/routings/detail.html'; git commit -m 'feat(pps): routing templates'
+  git add 'templates/leads/list.html' 'templates/leads/form.html' 'templates/leads/detail.html'; git commit -m 'feat(leads): lead templates'
   ```
 * **Right** — one `git add` + one `git commit` per file, every time:
   ```
-  git add 'templates/pps/routings/list.html'; git commit -m 'feat(pps): routing list template'
-  git add 'templates/pps/routings/form.html'; git commit -m 'feat(pps): routing form template'
-  git add 'templates/pps/routings/detail.html'; git commit -m 'feat(pps): routing detail template with operation CRUD inline'
+  git add 'templates/leads/list.html'; git commit -m 'feat(leads): lead list template'
+  git add 'templates/leads/form.html'; git commit -m 'feat(leads): lead form template'
+  git add 'templates/leads/detail.html'; git commit -m 'feat(leads): lead detail template with activity CRUD inline'
   ```
 * Each commit message should be specific to that one file's content — don't reuse the same message across multiple commits.
 * If a change spans 30+ files, the snippet block IS 30+ commits. Length is fine — bundling is not.
@@ -232,7 +232,7 @@ Every new module MUST include all CRUD operations from the start. Never ship a m
 
 1. **Superuser has no tenant:**
    - The `admin` superuser has `tenant=None`
-   - All procurement/module views filter by `tenant=request.tenant`
+   - All tenant-scoped module views filter by `tenant=request.tenant`
    - When `request.tenant` is `None`, queries return empty results — this is BY DESIGN
    - Always instruct users to log in as a **tenant admin** (e.g., `admin_<slug>`) to see module data
 
