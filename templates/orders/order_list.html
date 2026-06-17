@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block title %}Order Capture &amp; Validation{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'orders:order_list' %}">Order Management</a><i data-lucide="chevron-right" style="width:14px"></i><span>Orders</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Order Capture &amp; Validation</h1>
+    <p class="page-subtitle">{{ total }} order{{ total|pluralize }} on record</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'orders:order_create' %}" class="btn btn-primary"><i data-lucide="plus"></i> Add Order</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <form method="get" style="display:flex;gap:10px;flex-wrap:wrap;width:100%;align-items:center">
+      <input type="text" name="q" value="{{ request.GET.q }}" placeholder="Search orders…" class="form-input" style="max-width:260px">
+      <span class="list-meta" style="margin-inline-end:auto"></span>
+      <select name="status" class="form-select" style="max-width:180px" onchange="this.form.submit()">
+        <option value="">All statuses</option>
+        {% for value, label in status_choices %}
+          <option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <select name="channel" class="form-select" style="max-width:180px" onchange="this.form.submit()">
+        <option value="">All channels</option>
+        {% for value, label in channel_choices %}
+          <option value="{{ value }}" {% if request.GET.channel == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <button class="btn btn-outline" type="submit"><i data-lucide="filter"></i> Filter</button>
+    </form>
+  </div>
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr><th>Order</th><th>Customer</th><th>Channel</th><th>Status</th><th>Total</th><th>Order date</th><th style="text-align:end">Actions</th></tr></thead>
+      <tbody>
+        {% for order in orders %}
+          <tr>
+            <td>
+              <a href="{% url 'orders:order_detail' order.pk %}" class="fw-600">{{ order.number }}</a>
+              {% if order.is_validated %}<div class="list-meta">Validated</div>{% else %}<div class="list-meta">Not validated</div>{% endif %}
+            </td>
+            <td>{{ order.customer_name }}</td>
+            <td class="list-meta">{{ order.get_channel_display }}</td>
+            <td>
+              {% if order.status == 'draft' %}<span class="badge badge-muted">Draft</span>
+              {% elif order.status == 'validated' %}<span class="badge badge-info">Validated</span>
+              {% elif order.status == 'confirmed' %}<span class="badge badge-success">Confirmed</span>
+              {% elif order.status == 'fulfilled' %}<span class="badge badge-success">Fulfilled</span>
+              {% elif order.status == 'cancelled' %}<span class="badge badge-danger">Cancelled</span>
+              {% else %}<span class="badge badge-muted">{{ order.get_status_display }}</span>{% endif %}
+            </td>
+            <td class="fw-600">{{ order.currency }} {{ order.total_amount|floatformat:2 }}</td>
+            <td class="list-meta">{% if order.order_date %}{{ order.order_date|date:"d M Y" }}{% else %}—{% endif %}</td>
+            <td>
+              <div class="table-actions">
+                <a href="{% url 'orders:order_detail' order.pk %}" class="btn-icon" title="View"><i data-lucide="eye"></i></a>
+                <a href="{% url 'orders:order_edit' order.pk %}" class="btn-icon" title="Edit"><i data-lucide="pencil"></i></a>
+                <form method="post" action="{% url 'orders:order_delete' order.pk %}" onsubmit="return confirm('Delete this order?')">
+                  {% csrf_token %}
+                  <button type="submit" class="btn-icon danger" title="Delete"><i data-lucide="trash-2"></i></button>
+                </form>
+              </div>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="7"><div class="empty-state"><div class="empty-icon"><i data-lucide="shopping-cart"></i></div><h3>No orders</h3><p>Capture your first order to get started.</p><a href="{% url 'orders:order_create' %}" class="btn btn-primary" style="margin-top:14px"><i data-lucide="plus"></i> Add Order</a></div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div style="padding:0 16px 12px">{% include "partials/pagination.html" %}</div>
+</div>
+{% endblock %}
