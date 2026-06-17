@@ -1,0 +1,19 @@
+{% extends "auth/base_auth.html" %}
+{% block title %}Invitation unavailable{% endblock %}
+
+{% block auth_content %}
+<div style="text-align:center">
+  <div class="empty-icon" style="margin:0 auto 16px"><i data-lucide="mail-x"></i></div>
+  <h2 style="font-size:25px;font-weight:800;margin-bottom:6px">Invitation unavailable</h2>
+  <p class="text-muted" style="margin-bottom:22px">This invitation is no longer valid.</p>
+</div>
+
+<div class="alert danger" style="position:static;margin-bottom:24px;box-shadow:none">
+  <i data-lucide="alert-circle"></i>
+  <span>The invitation{% if invite %} for <span class="fw-600">{{ invite.email }}</span>{% endif %} may have expired, already been accepted, or been revoked. Please ask your workspace administrator to send a new one.</span>
+</div>
+
+<p class="text-muted" style="text-align:center;margin-top:8px;font-size:13.5px">
+  <a href="{% url 'accounts:login' %}" class="fw-600">Back to sign in</a>
+</p>
+{% endblock %}
