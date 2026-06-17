@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}AI-Powered Predictive Forecasting{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'forecasting:forecast_list' %}">Sales Forecasting</a><i data-lucide="chevron-right" style="width:14px"></i><span>Forecasts</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">AI-Powered Predictive Forecasting</h1>
+    <p class="page-subtitle">{{ total }} forecast{{ total|pluralize }} on record</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'forecasting:forecast_create' %}" class="btn btn-primary"><i data-lucide="plus"></i> Add Forecast</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <form method="get" style="display:flex;gap:10px;flex-wrap:wrap;width:100%;align-items:center">
+      <input type="text" name="q" value="{{ request.GET.q }}" placeholder="Search forecasts…" class="form-input" style="max-width:220px">
+      <span class="list-meta" style="margin-inline-end:auto"></span>
+      <select name="category" class="form-select" style="max-width:170px" onchange="this.form.submit()">
+        <option value="">All categories</option>
+        {% for cat in categories %}
+          <option value="{{ cat.pk }}" {% if request.GET.category == cat.pk|stringformat:"d" %}selected{% endif %}>{{ cat.name }}</option>
+        {% endfor %}
+      </select>
+      <select name="period_type" class="form-select" style="max-width:150px" onchange="this.form.submit()">
+        <option value="">All periods</option>
+        {% for value, label in period_choices %}
+          <option value="{{ value }}" {% if request.GET.period_type == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <select name="status" class="form-select" style="max-width:160px" onchange="this.form.submit()">
+        <option value="">All statuses</option>
+        {% for value, label in status_choices %}
+          <option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <button class="btn btn-outline" type="submit"><i data-lucide="filter"></i> Filter</button>
+    </form>
+  </div>
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr><th>Number</th><th>Owner</th><th>Period</th><th>Commit</th><th>AI Predicted</th><th>Status</th><th style="text-align:end">Actions</th></tr></thead>
+      <tbody>
+        {% for f in forecasts %}
+          <tr>
+            <td>
+              <a href="{% url 'forecasting:forecast_detail' f.pk %}" class="fw-600">{{ f.number|default:"—" }}</a>
+              <div class="list-meta">{{ f.name }}</div>
+            </td>
+            <td>{{ f.owner_name|default:"—" }}</td>
+            <td class="list-meta">{{ f.period_label|default:f.get_period_type_display }}</td>
+            <td>${{ f.commit_amount|floatformat:0 }}</td>
+            <td class="fw-600">${{ f.ai_predicted_amount|floatformat:0 }}</td>
+            <td>
+              {% if f.status == 'draft' %}<span class="badge badge-muted">Draft</span>
+              {% elif f.status == 'submitted' %}<span class="badge badge-info">Submitted</span>
+              {% elif f.status == 'approved' %}<span class="badge badge-success">Approved</span>
+              {% elif f.status == 'closed' %}<span class="badge badge-success">Closed</span>
+              {% else %}<span class="badge badge-muted">{{ f.get_status_display }}</span>{% endif %}
+            </td>
+            <td>
+              <div class="table-actions">
+                <a href="{% url 'forecasting:forecast_detail' f.pk %}" class="btn-icon" title="View"><i data-lucide="eye"></i></a>
+                <a href="{% url 'forecasting:forecast_edit' f.pk %}" class="btn-icon" title="Edit"><i data-lucide="pencil"></i></a>
+                <form method="post" action="{% url 'forecasting:forecast_delete' f.pk %}" onsubmit="return confirm('Delete this forecast?')">
+                  {% csrf_token %}
+                  <button type="submit" class="btn-icon danger" title="Delete"><i data-lucide="trash-2"></i></button>
+                </form>
+              </div>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="7"><div class="empty-state"><div class="empty-icon"><i data-lucide="trending-up"></i></div><h3>No forecasts</h3><p>Create your first period forecast to start predicting.</p><a href="{% url 'forecasting:forecast_create' %}" class="btn btn-primary" style="margin-top:14px"><i data-lucide="plus"></i> Add Forecast</a></div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div style="padding:0 16px 12px">{% include "partials/pagination.html" %}</div>
+</div>
+{% endblock %}
