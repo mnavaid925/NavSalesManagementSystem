@@ -103,6 +103,66 @@ LIVE_LINKS = {
     (19, "User Roles & Profiles"): "accounts:role_list",
     (20, "User Management & SSO"): "accounts:user_list",
     (20, "Audit Trail & Compliance"): "core:audit_log",
+    # Module 1 — Lead Management
+    (1, "Lead Capture & Ingestion"): "leads:lead_list",
+    (1, "Lead Scoring & Grading"): "leads:leadscore_list",
+    (1, "Lead Qualification & Routing"): "leads:leadsource_list",
+    (1, "Lead Nurturing & Drip Campaigns"): "leads:nurturecampaign_list",
+    (1, "Lead Conversion & Handoff"): "leads:leadconversion_list",
+    # Module 2 — Opportunity & Pipeline Management
+    (2, "Opportunity Creation & Staging"): "opportunities:opportunity_list",
+    (2, "Pipeline Visibility & Forecasting"): "opportunities:pipelinestage_list",
+    (2, "Opportunity Tracking & Updates"): "opportunities:opportunityactivity_list",
+    (2, "Competitive Intelligence"): "opportunities:competitor_list",
+    (2, "Deal Collaboration & Team Selling"): "opportunities:dealcollaborator_list",
+    # Module 3 — Contact & Account Management
+    (3, "Account Hierarchy & Parent-Child"): "crm:account_list",
+    (3, "Contact Profiles & Enrichment"): "crm:contact_list",
+    (3, "Relationship Mapping"): "crm:relationshipmap_list",
+    (3, "Account Segmentation & Tiering"): "crm:accounttier_list",
+    (3, "Account Plans & Growth Strategies"): "crm:accountplan_list",
+    # Module 4 — Sales Forecasting
+    (4, "Forecast Categories & Commitments"): "forecasting:forecastcategory_list",
+    (4, "AI-Powered Predictive Forecasting"): "forecasting:forecast_list",
+    (4, "Quota Management & Attainment"): "forecasting:quota_list",
+    (4, "Forecast Rollups & Adjustments"): "forecasting:forecastadjustment_list",
+    (4, "Forecast Accuracy & Variance Analysis"): "forecasting:forecastaccuracy_list",
+    # Module 5 — Quote & Proposal Management
+    (5, "Quote Configuration (CPQ)"): "quotes:quote_list",
+    (5, "Pricing & Discount Approval"): "quotes:pricingrule_list",
+    (5, "Proposal Generation & Templating"): "quotes:proposal_list",
+    (5, "Quote Versioning & Comparison"): "quotes:quoteversion_list",
+    (5, "Quote-to-Order Conversion"): "quotes:quote_list",
+    # Module 6 — Order Management
+    (6, "Order Capture & Validation"): "orders:order_list",
+    (6, "Order Fulfillment Tracking"): "orders:fulfillment_list",
+    (6, "Order Amendments & Cancellations"): "orders:orderamendment_list",
+    (6, "Revenue Recognition & Scheduling"): "orders:revenueschedule_list",
+    (6, "Order History & Reorder"): "orders:orderline_list",
+    # Module 7 — Territory & Quota Management
+    (7, "Territory Design & Mapping"): "territories:territory_list",
+    (7, "Territory Assignment & Rebalancing"): "territories:territoryassignment_list",
+    (7, "Quota Planning & Allocation"): "territories:quotaplan_list",
+    (7, "Coverage Model Optimization"): "territories:coveragemodel_list",
+    (7, "Territory Performance Analytics"): "territories:territoryperformance_list",
+    # Module 8 — Sales Activity & Task Management
+    (8, "Activity Logging & Tracking"): "activities:activity_list",
+    (8, "Task & Follow-up Management"): "activities:salestask_list",
+    (8, "Calendar & Meeting Scheduling"): "activities:meeting_list",
+    (8, "Email Integration & Tracking"): "activities:emaillog_list",
+    (8, "Daily/Weekly Sales Planning"): "activities:salesplan_list",
+    # Module 9 — Sales Enablement
+    (9, "Content Repository & Search"): "enablement:contentasset_list",
+    (9, "Sales Playbooks & Guidance"): "enablement:playbook_list",
+    (9, "Training & Certification Tracking"): "enablement:trainingrecord_list",
+    (9, "Coaching & Call Recording"): "enablement:callrecording_list",
+    (9, "Competitive Intelligence Library"): "enablement:competitivecard_list",
+    # Module 10 — Incentive Compensation Management
+    (10, "Commission Plan Design"): "compensation:commissionplan_list",
+    (10, "Real-Time Earnings Tracking"): "compensation:earning_list",
+    (10, "Clawbacks & Adjustments"): "compensation:clawback_list",
+    (10, "Multi-Currency & Global Plans"): "compensation:globalplanvariation_list",
+    (10, "Payout Processing & Integration"): "compensation:payout_list",
 }
 
 _SIDEBAR_CACHE = None
