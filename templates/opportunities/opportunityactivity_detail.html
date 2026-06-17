@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}{{ obj.subject }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'opportunities:opportunity_list' %}">Opportunity &amp; Pipeline</a><i data-lucide="chevron-right" style="width:14px"></i>
+  <a href="{% url 'opportunities:opportunityactivity_list' %}">Activities</a><i data-lucide="chevron-right" style="width:14px"></i><span>{{ obj.subject }}</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ obj.subject }}</h1>
+    <p class="page-subtitle">{{ obj.get_activity_type_display }} · {{ obj.get_outcome_display }}</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'opportunities:opportunityactivity_list' %}" class="btn btn-outline"><i data-lucide="arrow-left"></i> Back</a>
+    <a href="{% url 'opportunities:opportunityactivity_edit' obj.pk %}" class="btn btn-primary"><i data-lucide="pencil"></i> Edit</a>
+  </div>
+</div>
+
+<div class="detail-grid">
+  <div>
+    <div class="card"><div class="card-body">
+      <h3 style="font-size:15px;margin-bottom:12px">Details</h3>
+      <div class="form-group"><div class="form-label">Subject</div>
+        <div class="fw-600">{{ obj.subject }}</div></div>
+      <div class="form-group"><div class="form-label">Opportunity</div>
+        <div>{% if obj.opportunity %}<a href="{% url 'opportunities:opportunity_detail' obj.opportunity.pk %}" class="fw-600">{{ obj.opportunity.number }} · {{ obj.opportunity.name }}</a>{% else %}—{% endif %}</div></div>
+      <div class="form-group"><div class="form-label">Type</div>
+        {% if obj.activity_type == 'call' %}<span class="badge badge-info">Call</span>
+        {% elif obj.activity_type == 'email' %}<span class="badge badge-info">Email</span>
+        {% elif obj.activity_type == 'meeting' %}<span class="badge badge-info">Meeting</span>
+        {% elif obj.activity_type == 'stage_change' %}<span class="badge badge-warning">Stage change</span>
+        {% elif obj.activity_type == 'note' %}<span class="badge badge-muted">Note</span>
+        {% else %}<span class="badge badge-muted">{{ obj.get_activity_type_display }}</span>{% endif %}
+      </div>
+      <div class="form-group"><div class="form-label">Outcome</div>
+        {% if obj.outcome == 'positive' %}<span class="badge badge-success">Positive</span>
+        {% elif obj.outcome == 'neutral' %}<span class="badge badge-muted">Neutral</span>
+        {% elif obj.outcome == 'negative' %}<span class="badge badge-danger">Negative</span>
+        {% elif obj.outcome == 'pending' %}<span class="badge badge-warning">Pending</span>
+        {% else %}<span class="badge badge-muted">{{ obj.get_outcome_display }}</span>{% endif %}
+      </div>
+      <div class="form-group"><div class="form-label">Performed by</div>
+        <div>{{ obj.performed_by|default:"—" }}</div></div>
+      <div class="form-group"><div class="form-label">Activity date</div>
+        <div>{% if obj.activity_date %}{{ obj.activity_date|date:"d M Y" }}{% else %}—{% endif %}</div></div>
+      <div class="form-group"><div class="form-label">Notes</div>
+        <div>{{ obj.notes|default:"—"|linebreaksbr }}</div></div>
+    </div></div>
+  </div>
+
+  <div class="card"><div class="card-body">
+    <h3 style="font-size:15px;margin-bottom:12px">Actions</h3>
+    <a href="{% url 'opportunities:opportunityactivity_edit' obj.pk %}" class="btn btn-outline btn-block" style="margin-bottom:10px"><i data-lucide="pencil"></i> Edit activity</a>
+    <form method="post" action="{% url 'opportunities:opportunityactivity_delete' obj.pk %}" onsubmit="return confirm('Delete this activity?')">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger btn-block"><i data-lucide="trash-2"></i> Delete activity</button>
+    </form>
+    <hr class="divider">
+    <div class="list-meta">Created {{ obj.created_at|date:"d M Y" }}</div>
+  </div></div>
+</div>
+{% endblock %}
