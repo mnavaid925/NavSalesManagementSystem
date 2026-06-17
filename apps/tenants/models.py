@@ -94,6 +94,10 @@ class Subscription(models.Model):
 
     class Meta:
         ordering = ["-started_on", "-id"]
+        indexes = [
+            models.Index(fields=["tenant", "status"], name="sub_tenant_status_idx"),
+            models.Index(fields=["tenant", "started_on"], name="sub_tenant_started_idx"),
+        ]
 
     def __str__(self):
         return f"{self.get_plan_display()} — {self.get_status_display()}"
@@ -133,6 +137,10 @@ class Invoice(models.Model):
     class Meta:
         ordering = ["-issued_on", "-id"]
         unique_together = ("tenant", "number")
+        indexes = [
+            models.Index(fields=["tenant", "status"], name="invoice_tenant_status_idx"),
+            models.Index(fields=["tenant", "issued_on"], name="invoice_tenant_issued_idx"),
+        ]
 
     def __str__(self):
         return self.number or f"Invoice #{self.pk}"
