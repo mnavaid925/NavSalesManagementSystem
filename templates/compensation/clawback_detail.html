@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}{{ obj }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'compensation:commissionplan_list' %}">Incentive Compensation</a><i data-lucide="chevron-right" style="width:14px"></i>
+  <a href="{% url 'compensation:clawback_list' %}">Clawbacks</a><i data-lucide="chevron-right" style="width:14px"></i><span>{{ obj.get_reason_display }}</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ obj.get_reason_display }}</h1>
+    <p class="page-subtitle">{{ obj.rep_name }} · ${{ obj.amount|floatformat:2 }} adjustment</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'compensation:clawback_list' %}" class="btn btn-outline"><i data-lucide="arrow-left"></i> Back</a>
+    <a href="{% url 'compensation:clawback_edit' obj.pk %}" class="btn btn-primary"><i data-lucide="pencil"></i> Edit</a>
+  </div>
+</div>
+
+<div class="detail-grid">
+  <div>
+    <div class="card"><div class="card-body">
+      <h3 style="font-size:15px;margin-bottom:12px">Details</h3>
+      <div class="detail-grid">
+        <div class="form-group"><div class="form-label">Rep</div>
+          <div class="fw-600">{{ obj.rep_name }}</div></div>
+        <div class="form-group"><div class="form-label">Linked earning</div>
+          <div>{% if obj.earning %}<a href="{% url 'compensation:earning_detail' obj.earning.pk %}">{{ obj.earning.number }}</a>{% else %}—{% endif %}</div></div>
+        <div class="form-group"><div class="form-label">Reason</div>
+          <div>{{ obj.get_reason_display }}</div></div>
+        <div class="form-group"><div class="form-label">Status</div>
+          {% if obj.status == 'applied' %}<span class="badge badge-success">Applied</span>
+          {% elif obj.status == 'open' %}<span class="badge badge-warning">Open</span>
+          {% elif obj.status == 'waived' %}<span class="badge badge-muted">Waived</span>
+          {% elif obj.status == 'disputed' %}<span class="badge badge-danger">Disputed</span>
+          {% else %}<span class="badge badge-muted">{{ obj.get_status_display }}</span>{% endif %}
+        </div>
+        <div class="form-group"><div class="form-label">Amount</div>
+          <div class="fw-600">${{ obj.amount|floatformat:2 }}</div></div>
+        <div class="form-group"><div class="form-label">Effective on</div>
+          <div>{% if obj.effective_on %}{{ obj.effective_on|date:"d M Y" }}{% else %}—{% endif %}</div></div>
+        <div class="form-group"><div class="form-label">Applied at</div>
+          <div>{% if obj.applied_at %}{{ obj.applied_at|date:"d M Y H:i" }}{% else %}—{% endif %}</div></div>
+      </div>
+      {% if obj.notes %}<div class="form-group"><div class="form-label">Notes</div>
+        <div>{{ obj.notes|linebreaksbr }}</div></div>{% endif %}
+    </div></div>
+  </div>
+
+  <div class="card"><div class="card-body">
+    <h3 style="font-size:15px;margin-bottom:12px">Actions</h3>
+    <a href="{% url 'compensation:clawback_edit' obj.pk %}" class="btn btn-outline btn-block" style="margin-bottom:10px"><i data-lucide="pencil"></i> Edit clawback</a>
+    <form method="post" action="{% url 'compensation:clawback_delete' obj.pk %}" onsubmit="return confirm('Delete this clawback?')">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger btn-block"><i data-lucide="trash-2"></i> Delete clawback</button>
+    </form>
+    <hr class="divider">
+    <div class="list-meta">Created {{ obj.created_at|date:"d M Y" }}</div>
+  </div></div>
+</div>
+{% endblock %}
