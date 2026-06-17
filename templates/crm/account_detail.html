@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% block title %}{{ obj.name }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'crm:account_list' %}">Contact &amp; Account Management</a><i data-lucide="chevron-right" style="width:14px"></i>
+  <a href="{% url 'crm:account_list' %}">Accounts</a><i data-lucide="chevron-right" style="width:14px"></i><span>{{ obj.name }}</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ obj.name }}</h1>
+    <p class="page-subtitle">{{ obj.number }} · {{ obj.get_account_type_display }}{% if obj.industry %} · {{ obj.industry }}{% endif %}</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'crm:account_list' %}" class="btn btn-outline"><i data-lucide="arrow-left"></i> Back</a>
+    <a href="{% url 'crm:account_edit' obj.pk %}" class="btn btn-primary"><i data-lucide="pencil"></i> Edit</a>
+  </div>
+</div>
+
+<div class="detail-grid">
+  <div>
+    <div class="card"><div class="card-body">
+      <h3 style="font-size:15px;margin-bottom:12px">Details</h3>
+      <div class="detail-grid">
+        <div class="form-group"><div class="form-label">Account number</div><div class="fw-600">{{ obj.number }}</div></div>
+        <div class="form-group"><div class="form-label">Type</div>
+          {% if obj.account_type == 'customer' %}<span class="badge badge-success">Customer</span>
+          {% elif obj.account_type == 'prospect' %}<span class="badge badge-info">Prospect</span>
+          {% elif obj.account_type == 'partner' %}<span class="badge badge-info">Partner</span>
+          {% elif obj.account_type == 'reseller' %}<span class="badge badge-muted">Reseller</span>
+          {% elif obj.account_type == 'competitor' %}<span class="badge badge-danger">Competitor</span>
+          {% else %}<span class="badge badge-muted">{{ obj.get_account_type_display }}</span>{% endif %}
+        </div>
+        <div class="form-group"><div class="form-label">Status</div>
+          {% if obj.status == 'active' %}<span class="badge badge-success">Active</span>
+          {% elif obj.status == 'inactive' %}<span class="badge badge-muted">Inactive</span>
+          {% elif obj.status == 'churned' %}<span class="badge badge-danger">Churned</span>
+          {% else %}<span class="badge badge-muted">{{ obj.get_status_display }}</span>{% endif %}
+        </div>
+        <div class="form-group"><div class="form-label">Tier</div><div>{% if obj.tier %}{{ obj.tier.name }}{% else %}—{% endif %}</div></div>
+        <div class="form-group"><div class="form-label">Parent account</div>
+          <div>{% if obj.parent %}<a href="{% url 'crm:account_detail' obj.parent.pk %}">{{ obj.parent.name }}</a>{% else %}—{% endif %}</div></div>
+        <div class="form-group"><div class="form-label">Website</div>
+          <div>{% if obj.website %}<a href="{{ obj.website }}" target="_blank" rel="noopener">{{ obj.website }}</a>{% else %}—{% endif %}</div></div>
+        <div class="form-group"><div class="form-label">Phone</div><div>{{ obj.phone|default:"—" }}</div></div>
+        <div class="form-group"><div class="form-label">Location</div><div>{{ obj.billing_city|default:"—" }}{% if obj.billing_country %}, {{ obj.billing_country }}{% endif %}</div></div>
+        <div class="form-group"><div class="form-label">Employees</div><div>{{ obj.employee_count|default:"—" }}</div></div>
+        <div class="form-group"><div class="form-label">Annual revenue</div><div>${{ obj.annual_revenue|floatformat:2 }}</div></div>
+      </div>
+      {% if obj.description %}<div class="form-group" style="margin-top:8px"><div class="form-label">Description</div><div>{{ obj.description|linebreaksbr }}</div></div>{% endif %}
+    </div></div>
+
+    <div class="card" style="margin-top:18px"><div class="card-header"><h3 class="card-title">Subsidiaries</h3></div>
+      <div class="table-wrap">
+        <table class="table">
+          <thead><tr><th>Name</th><th>Type</th><th style="text-align:end">Revenue</th></tr></thead>
+          <tbody>
+            {% for child in children %}
+              <tr>
+                <td><a href="{% url 'crm:account_detail' child.pk %}" class="fw-600">{{ child.name }}</a></td>
+                <td class="list-meta">{{ child.get_account_type_display }}</td>
+                <td style="text-align:end">${{ child.annual_revenue|floatformat:2 }}</td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="3"><div class="empty-state"><div class="empty-icon"><i data-lucide="git-branch"></i></div><h3>No subsidiaries</h3><p>Child accounts will appear here.</p></div></td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:18px"><div class="card-header"><h3 class="card-title">Contacts</h3></div>
+      <div class="table-wrap">
+        <table class="table">
+          <thead><tr><th>Name</th><th>Title</th><th>Email</th></tr></thead>
+          <tbody>
+            {% for c in contacts %}
+              <tr>
+                <td><a href="{% url 'crm:contact_detail' c.pk %}" class="fw-600">{{ c.full_name }}</a></td>
+                <td class="list-meta">{{ c.title|default:"—" }}</td>
+                <td class="list-meta">{{ c.email|default:"—" }}</td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="3"><div class="empty-state"><div class="empty-icon"><i data-lucide="users"></i></div><h3>No contacts</h3><p>Contacts linked to this account will appear here.</p></div></td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:18px"><div class="card-header"><h3 class="card-title">Account plans</h3></div>
+      <div class="table-wrap">
+        <table class="table">
+          <thead><tr><th>Plan</th><th>FY</th><th>Status</th></tr></thead>
+          <tbody>
+            {% for p in plans %}
+              <tr>
+                <td><a href="{% url 'crm:accountplan_detail' p.pk %}" class="fw-600">{{ p.title }}</a><div class="list-meta">{{ p.number }}</div></td>
+                <td class="list-meta">{{ p.fiscal_year }}</td>
+                <td class="list-meta">{{ p.get_status_display }}</td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="3"><div class="empty-state"><div class="empty-icon"><i data-lucide="target"></i></div><h3>No account plans</h3><p>Growth plans for this account will appear here.</p></div></td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="card"><div class="card-body">
+    <h3 style="font-size:15px;margin-bottom:12px">Actions</h3>
+    <a href="{% url 'crm:account_edit' obj.pk %}" class="btn btn-outline btn-block" style="margin-bottom:10px"><i data-lucide="pencil"></i> Edit account</a>
+    <form method="post" action="{% url 'crm:account_delete' obj.pk %}" onsubmit="return confirm('Delete this account?')">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger btn-block"><i data-lucide="trash-2"></i> Delete account</button>
+    </form>
+    <hr class="divider">
+    <div class="list-meta">Created {{ obj.created_at|date:"d M Y" }}</div>
+  </div></div>
+</div>
+{% endblock %}
