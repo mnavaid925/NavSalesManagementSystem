@@ -24,5 +24,5 @@ def site_context(request):
         "current_path": request.path,
         "current_tenant": getattr(request, "tenant", None),
         "layout_defaults": LAYOUT_DEFAULTS,
-        "ASSET_VERSION": "1",  # bump to bust the browser cache on css/js (lesson L15)
+        "ASSET_VERSION": "2",  # bump to bust the browser cache on css/js (lesson L15)
     }
