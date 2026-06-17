@@ -72,6 +72,9 @@ class AuditLog(models.Model):
         ordering = ["-created_at"]
         verbose_name = "Audit log entry"
         verbose_name_plural = "Audit log"
+        indexes = [
+            models.Index(fields=["tenant", "action"], name="auditlog_tenant_action_idx"),
+        ]
 
     def __str__(self):
         return f"{self.get_action_display()} {self.model_name}".strip()
