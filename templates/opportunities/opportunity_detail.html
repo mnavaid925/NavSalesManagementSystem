@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+{% block title %}{{ obj.name }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'opportunities:opportunity_list' %}">Opportunity &amp; Pipeline</a><i data-lucide="chevron-right" style="width:14px"></i>
+  <a href="{% url 'opportunities:opportunity_list' %}">Opportunities</a><i data-lucide="chevron-right" style="width:14px"></i><span>{{ obj.number }}</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ obj.name }}</h1>
+    <p class="page-subtitle">{{ obj.number }} · {{ obj.account_name|default:"No account" }} · ${{ obj.amount|floatformat:2 }}</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'opportunities:opportunity_list' %}" class="btn btn-outline"><i data-lucide="arrow-left"></i> Back</a>
+    <a href="{% url 'opportunities:opportunity_edit' obj.pk %}" class="btn btn-primary"><i data-lucide="pencil"></i> Edit</a>
+  </div>
+</div>
+
+<div class="detail-grid">
+  <div>
+    <div class="card"><div class="card-body">
+      <h3 style="font-size:15px;margin-bottom:12px">Details</h3>
+      <div class="form-group"><div class="form-label">Stage</div>
+        <div class="fw-600">{% if obj.stage %}{{ obj.stage.name }}{% else %}—{% endif %}</div></div>
+      <div class="form-group"><div class="form-label">Status</div>
+        {% if obj.status == 'won' %}<span class="badge badge-success">Won</span>
+        {% elif obj.status == 'lost' %}<span class="badge badge-danger">Lost</span>
+        {% elif obj.status == 'open' %}<span class="badge badge-info">Open</span>
+        {% else %}<span class="badge badge-muted">{{ obj.get_status_display }}</span>{% endif %}
+      </div>
+      <div class="form-group"><div class="form-label">Priority</div>
+        {% if obj.priority == 'critical' %}<span class="badge badge-danger">Critical</span>
+        {% elif obj.priority == 'high' %}<span class="badge badge-warning">High</span>
+        {% elif obj.priority == 'medium' %}<span class="badge badge-info">Medium</span>
+        {% elif obj.priority == 'low' %}<span class="badge badge-muted">Low</span>
+        {% else %}<span class="badge badge-muted">{{ obj.get_priority_display }}</span>{% endif %}
+      </div>
+      <div class="form-group"><div class="form-label">Forecast category</div>
+        {% if obj.forecast_category == 'commit' %}<span class="badge badge-success">Commit</span>
+        {% elif obj.forecast_category == 'best_case' %}<span class="badge badge-info">Best case</span>
+        {% elif obj.forecast_category == 'pipeline' %}<span class="badge badge-muted">Pipeline</span>
+        {% elif obj.forecast_category == 'omitted' %}<span class="badge badge-muted">Omitted</span>
+        {% else %}<span class="badge badge-muted">{{ obj.get_forecast_category_display }}</span>{% endif %}
+      </div>
+      <div class="form-group"><div class="form-label">Amount</div>
+        <div>${{ obj.amount|floatformat:2 }}</div></div>
+      <div class="form-group"><div class="form-label">Probability</div>
+        <div>{{ obj.probability }}%</div></div>
+      <div class="form-group"><div class="form-label">Weighted amount</div>
+        <div>${{ obj.weighted_amount|floatformat:2 }}</div></div>
+      <div class="form-group"><div class="form-label">Owner</div>
+        <div>{{ obj.owner_name|default:"—" }}</div></div>
+      <div class="form-group"><div class="form-label">Source</div>
+        <div>{{ obj.source|default:"—" }}</div></div>
+      <div class="form-group"><div class="form-label">Expected close date</div>
+        <div>{% if obj.expected_close_date %}{{ obj.expected_close_date|date:"d M Y" }}{% else %}—{% endif %}</div></div>
+      <div class="form-group"><div class="form-label">Description</div>
+        <div>{{ obj.description|default:"—"|linebreaksbr }}</div></div>
+    </div></div>
+
+    <div class="card" style="margin-top:18px"><div class="card-header"><h3 class="card-title">Activities</h3></div>
+      <div class="table-wrap">
+        <table class="table">
+          <thead><tr><th>Subject</th><th>Type</th><th>Outcome</th><th>Date</th></tr></thead>
+          <tbody>
+            {% for act in activities %}
+              <tr>
+                <td><a href="{% url 'opportunities:opportunityactivity_detail' act.pk %}" class="fw-600">{{ act.subject }}</a></td>
+                <td class="list-meta">{{ act.get_activity_type_display }}</td>
+                <td class="list-meta">{{ act.get_outcome_display }}</td>
+                <td class="list-meta">{% if act.activity_date %}{{ act.activity_date|date:"d M Y" }}{% else %}—{% endif %}</td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="4"><div class="empty-state"><div class="empty-icon"><i data-lucide="activity"></i></div><h3>No activities</h3><p>Logged touches on this deal will appear here.</p></div></td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:18px"><div class="card-header"><h3 class="card-title">Competitors</h3></div>
+      <div class="table-wrap">
+        <table class="table">
+          <thead><tr><th>Competitor</th><th>Threat</th><th>Status</th></tr></thead>
+          <tbody>
+            {% for comp in competitors %}
+              <tr>
+                <td><a href="{% url 'opportunities:competitor_detail' comp.pk %}" class="fw-600">{{ comp.name }}</a></td>
+                <td class="list-meta">{{ comp.get_threat_level_display }}</td>
+                <td class="list-meta">{{ comp.get_status_display }}</td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="3"><div class="empty-state"><div class="empty-icon"><i data-lucide="swords"></i></div><h3>No competitors</h3><p>Rivals tracked on this deal will appear here.</p></div></td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:18px"><div class="card-header"><h3 class="card-title">Deal team</h3></div>
+      <div class="table-wrap">
+        <table class="table">
+          <thead><tr><th>Member</th><th>Role</th><th>Status</th></tr></thead>
+          <tbody>
+            {% for col in collaborators %}
+              <tr>
+                <td><a href="{% url 'opportunities:dealcollaborator_detail' col.pk %}" class="fw-600">{{ col.member_name }}</a></td>
+                <td class="list-meta">{{ col.get_team_role_display }}</td>
+                <td class="list-meta">{{ col.get_status_display }}</td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="3"><div class="empty-state"><div class="empty-icon"><i data-lucide="users"></i></div><h3>No collaborators</h3><p>Team members on this deal will appear here.</p></div></td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="card"><div class="card-body">
+    <h3 style="font-size:15px;margin-bottom:12px">Actions</h3>
+    <a href="{% url 'opportunities:opportunity_edit' obj.pk %}" class="btn btn-outline btn-block" style="margin-bottom:10px"><i data-lucide="pencil"></i> Edit opportunity</a>
+    <form method="post" action="{% url 'opportunities:opportunity_delete' obj.pk %}" onsubmit="return confirm('Delete this opportunity?')">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger btn-block"><i data-lucide="trash-2"></i> Delete opportunity</button>
+    </form>
+    <hr class="divider">
+    <div class="list-meta">Created {{ obj.created_at|date:"d M Y" }}</div>
+    {% if obj.closed_at %}<div class="list-meta">Closed {{ obj.closed_at|date:"d M Y" }}</div>{% endif %}
+  </div></div>
+</div>
+{% endblock %}
