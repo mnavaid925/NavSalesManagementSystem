@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}{{ obj.number }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'activities:activity_list' %}">Sales Activity</a><i data-lucide="chevron-right" style="width:14px"></i>
+  <a href="{% url 'activities:salesplan_list' %}">Sales Plans</a><i data-lucide="chevron-right" style="width:14px"></i><span>{{ obj.number }}</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ obj.title }}</h1>
+    <p class="page-subtitle">{{ obj.number }} · {{ obj.get_period_type_display }}</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'activities:salesplan_list' %}" class="btn btn-outline"><i data-lucide="arrow-left"></i> Back</a>
+    <a href="{% url 'activities:salesplan_edit' obj.pk %}" class="btn btn-primary"><i data-lucide="pencil"></i> Edit</a>
+  </div>
+</div>
+
+<div class="detail-grid">
+  <div>
+    <div class="card"><div class="card-body">
+      <h3 style="font-size:15px;margin-bottom:12px">Details</h3>
+      <div class="form-group"><div class="form-label">Number</div>
+        <div class="fw-600">{{ obj.number|default:"—" }}</div></div>
+      <div class="form-group"><div class="form-label">Owner</div>
+        <div>{{ obj.owner_name|default:"—" }}</div></div>
+      <div class="form-group"><div class="form-label">Period</div>
+        <div>{{ obj.get_period_type_display }}</div></div>
+      <div class="form-group"><div class="form-label">Status</div>
+        {% if obj.status == 'active' %}<span class="badge badge-success">Active</span>
+        {% elif obj.status == 'completed' %}<span class="badge badge-info">Completed</span>
+        {% elif obj.status == 'draft' %}<span class="badge badge-warning">Draft</span>
+        {% elif obj.status == 'archived' %}<span class="badge badge-muted">Archived</span>
+        {% else %}<span class="badge badge-muted">{{ obj.get_status_display }}</span>{% endif %}
+      </div>
+      <div class="form-group"><div class="form-label">Start date</div>
+        <div>{% if obj.start_date %}{{ obj.start_date|date:"d M Y" }}{% else %}—{% endif %}</div></div>
+      <div class="form-group"><div class="form-label">End date</div>
+        <div>{% if obj.end_date %}{{ obj.end_date|date:"d M Y" }}{% else %}—{% endif %}</div></div>
+      <div class="form-group"><div class="form-label">Target calls</div>
+        <div>{{ obj.target_calls }}</div></div>
+      <div class="form-group"><div class="form-label">Target meetings</div>
+        <div>{{ obj.target_meetings }}</div></div>
+      <div class="form-group"><div class="form-label">Revenue goal</div>
+        <div>${{ obj.revenue_goal|floatformat:2 }}</div></div>
+      {% if obj.objectives %}
+      <div class="form-group"><div class="form-label">Objectives</div>
+        <div>{{ obj.objectives|linebreaksbr }}</div></div>
+      {% endif %}
+    </div></div>
+  </div>
+
+  <div class="card"><div class="card-body">
+    <h3 style="font-size:15px;margin-bottom:12px">Actions</h3>
+    <a href="{% url 'activities:salesplan_edit' obj.pk %}" class="btn btn-outline btn-block" style="margin-bottom:10px"><i data-lucide="pencil"></i> Edit plan</a>
+    <form method="post" action="{% url 'activities:salesplan_delete' obj.pk %}" onsubmit="return confirm('Delete this sales plan?')">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger btn-block"><i data-lucide="trash-2"></i> Delete plan</button>
+    </form>
+    <hr class="divider">
+    <div class="list-meta">Created {{ obj.created_at|date:"d M Y" }}</div>
+  </div></div>
+</div>
+{% endblock %}
