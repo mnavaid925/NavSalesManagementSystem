@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% block title %}{{ obj }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'quotes:quote_list' %}">Quote &amp; Proposal</a><i data-lucide="chevron-right" style="width:14px"></i>
+  <a href="{% url 'quotes:quote_list' %}">Quotes</a><i data-lucide="chevron-right" style="width:14px"></i><span>{{ obj.number }}</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ obj.number }} — {{ obj.title }}</h1>
+    <p class="page-subtitle">{{ obj.account_name|default:"No account" }} · {{ obj.currency }} {{ obj.total_amount|floatformat:2 }}</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'quotes:quote_list' %}" class="btn btn-outline"><i data-lucide="arrow-left"></i> Back</a>
+    <a href="{% url 'quotes:quote_edit' obj.pk %}" class="btn btn-primary"><i data-lucide="pencil"></i> Edit</a>
+  </div>
+</div>
+
+<div class="detail-grid">
+  <div>
+    <div class="card"><div class="card-body">
+      <h3 style="font-size:15px;margin-bottom:12px">Details</h3>
+      <div class="form-group"><div class="form-label">Title</div>
+        <div class="fw-600">{{ obj.title }}</div></div>
+      <div class="form-group"><div class="form-label">Status</div>
+        {% if obj.status == 'draft' %}<span class="badge badge-muted">Draft</span>
+        {% elif obj.status == 'pending_approval' %}<span class="badge badge-warning">Pending approval</span>
+        {% elif obj.status == 'approved' %}<span class="badge badge-info">Approved</span>
+        {% elif obj.status == 'sent' %}<span class="badge badge-info">Sent</span>
+        {% elif obj.status == 'accepted' %}<span class="badge badge-success">Accepted</span>
+        {% elif obj.status == 'rejected' %}<span class="badge badge-danger">Rejected</span>
+        {% elif obj.status == 'expired' %}<span class="badge badge-muted">Expired</span>
+        {% elif obj.status == 'converted' %}<span class="badge badge-success">Converted</span>
+        {% else %}<span class="badge badge-muted">{{ obj.get_status_display }}</span>{% endif %}
+      </div>
+      <div class="form-group"><div class="form-label">Account</div>
+        <div>{{ obj.account_name|default:"—" }}</div></div>
+      <div class="form-group"><div class="form-label">Contact</div>
+        <div>{{ obj.contact_name|default:"—" }}{% if obj.contact_email %} · {{ obj.contact_email }}{% endif %}</div></div>
+      <div class="form-group"><div class="form-label">Currency</div>
+        <div>{{ obj.get_currency_display }}</div></div>
+      <div class="form-group"><div class="form-label">Subtotal</div>
+        <div>{{ obj.currency }} {{ obj.subtotal|floatformat:2 }}</div></div>
+      <div class="form-group"><div class="form-label">Discount</div>
+        <div>{{ obj.currency }} {{ obj.discount_amount|floatformat:2 }}</div></div>
+      <div class="form-group"><div class="form-label">Tax</div>
+        <div>{{ obj.currency }} {{ obj.tax_amount|floatformat:2 }}</div></div>
+      <div class="form-group"><div class="form-label">Total</div>
+        <div class="fw-600">{{ obj.currency }} {{ obj.total_amount|floatformat:2 }}</div></div>
+      <div class="form-group"><div class="form-label">Valid until</div>
+        <div>{% if obj.valid_until %}{{ obj.valid_until|date:"d M Y" }}{% else %}—{% endif %}</div></div>
+      {% if obj.notes %}<div class="form-group"><div class="form-label">Notes</div>
+        <div>{{ obj.notes|linebreaksbr }}</div></div>{% endif %}
+    </div></div>
+
+    <div class="card" style="margin-top:18px"><div class="card-header"><h3 class="card-title">Line items</h3></div>
+      <div class="table-wrap">
+        <table class="table">
+          <thead><tr><th>Product</th><th>Unit</th><th style="text-align:end">Qty</th><th style="text-align:end">Unit price</th><th style="text-align:end">Line total</th></tr></thead>
+          <tbody>
+            {% for li in line_items %}
+              <tr>
+                <td><a href="{% url 'quotes:quotelineitem_detail' li.pk %}" class="fw-600">{{ li.product_name }}</a>{% if li.sku %}<div class="list-meta">{{ li.sku }}</div>{% endif %}</td>
+                <td class="list-meta">{{ li.get_unit_display }}</td>
+                <td style="text-align:end">{{ li.quantity|floatformat:2 }}</td>
+                <td style="text-align:end">{{ li.unit_price|floatformat:2 }}</td>
+                <td style="text-align:end" class="fw-600">{{ li.line_total|floatformat:2 }}</td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="5"><div class="empty-state"><div class="empty-icon"><i data-lucide="list"></i></div><h3>No line items</h3><p>Line items configured on this quote will appear here.</p></div></td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:18px"><div class="card-header"><h3 class="card-title">Versions</h3></div>
+      <div class="table-wrap">
+        <table class="table">
+          <thead><tr><th>Version</th><th>Change</th><th>Current</th><th style="text-align:end">Total</th></tr></thead>
+          <tbody>
+            {% for ver in versions %}
+              <tr>
+                <td><a href="{% url 'quotes:quoteversion_detail' ver.pk %}" class="fw-600">v{{ ver.version_number }}</a></td>
+                <td class="list-meta">{{ ver.get_change_type_display }}</td>
+                <td>{% if ver.is_current %}<span class="badge badge-success">Current</span>{% else %}<span class="badge badge-muted">—</span>{% endif %}</td>
+                <td style="text-align:end">{{ ver.total_amount|floatformat:2 }}</td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="4"><div class="empty-state"><div class="empty-icon"><i data-lucide="git-branch"></i></div><h3>No versions</h3><p>Snapshots of this quote will appear here.</p></div></td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="card"><div class="card-body">
+    <h3 style="font-size:15px;margin-bottom:12px">Actions</h3>
+    <a href="{% url 'quotes:quote_edit' obj.pk %}" class="btn btn-outline btn-block" style="margin-bottom:10px"><i data-lucide="pencil"></i> Edit quote</a>
+    <form method="post" action="{% url 'quotes:quote_delete' obj.pk %}" onsubmit="return confirm('Delete this quote?')">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger btn-block"><i data-lucide="trash-2"></i> Delete quote</button>
+    </form>
+    <hr class="divider">
+    <div class="list-meta">{{ proposals.count }} proposal{{ proposals.count|pluralize }} linked</div>
+    <div class="list-meta">Created {{ obj.created_at|date:"d M Y" }}</div>
+    {% if obj.sent_at %}<div class="list-meta">Sent {{ obj.sent_at|date:"d M Y" }}</div>{% endif %}
+    {% if obj.converted_at %}<div class="list-meta">Converted {{ obj.converted_at|date:"d M Y" }}</div>{% endif %}
+  </div></div>
+</div>
+{% endblock %}
