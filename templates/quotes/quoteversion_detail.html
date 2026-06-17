@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}{{ obj }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'quotes:quote_list' %}">Quote &amp; Proposal</a><i data-lucide="chevron-right" style="width:14px"></i>
+  <a href="{% url 'quotes:quoteversion_list' %}">Versions</a><i data-lucide="chevron-right" style="width:14px"></i><span>v{{ obj.version_number }}</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ obj.quote.number }} — v{{ obj.version_number }}</h1>
+    <p class="page-subtitle">{{ obj.get_change_type_display }}{% if obj.is_current %} · current{% endif %}</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'quotes:quoteversion_list' %}" class="btn btn-outline"><i data-lucide="arrow-left"></i> Back</a>
+    <a href="{% url 'quotes:quoteversion_edit' obj.pk %}" class="btn btn-primary"><i data-lucide="pencil"></i> Edit</a>
+  </div>
+</div>
+
+<div class="detail-grid">
+  <div>
+    <div class="card"><div class="card-body">
+      <h3 style="font-size:15px;margin-bottom:12px">Details</h3>
+      <div class="form-group"><div class="form-label">Quote</div>
+        <div class="fw-600"><a href="{% url 'quotes:quote_detail' obj.quote.pk %}">{{ obj.quote.number }}</a></div></div>
+      <div class="form-group"><div class="form-label">Version number</div>
+        <div>v{{ obj.version_number }}</div></div>
+      <div class="form-group"><div class="form-label">Change type</div>
+        {% if obj.change_type == 'initial' %}<span class="badge badge-info">Initial version</span>
+        {% elif obj.change_type == 'price_change' %}<span class="badge badge-warning">Price change</span>
+        {% elif obj.change_type == 'scope_change' %}<span class="badge badge-warning">Scope change</span>
+        {% elif obj.change_type == 'discount_change' %}<span class="badge badge-warning">Discount change</span>
+        {% elif obj.change_type == 'terms_change' %}<span class="badge badge-muted">Terms change</span>
+        {% else %}<span class="badge badge-muted">{{ obj.get_change_type_display }}</span>{% endif %}
+      </div>
+      <div class="form-group"><div class="form-label">Current</div>
+        {% if obj.is_current %}<span class="badge badge-success">Current</span>{% else %}<span class="badge badge-muted">Superseded</span>{% endif %}
+      </div>
+      <div class="form-group"><div class="form-label">Total amount</div>
+        <div class="fw-600">{{ obj.total_amount|floatformat:2 }}</div></div>
+      {% if obj.change_summary %}<div class="form-group"><div class="form-label">Change summary</div>
+        <div>{{ obj.change_summary }}</div></div>{% endif %}
+      {% if obj.snapshot_notes %}<div class="form-group"><div class="form-label">Snapshot notes</div>
+        <div>{{ obj.snapshot_notes|linebreaksbr }}</div></div>{% endif %}
+    </div></div>
+  </div>
+
+  <div class="card"><div class="card-body">
+    <h3 style="font-size:15px;margin-bottom:12px">Actions</h3>
+    <a href="{% url 'quotes:quoteversion_edit' obj.pk %}" class="btn btn-outline btn-block" style="margin-bottom:10px"><i data-lucide="pencil"></i> Edit version</a>
+    <form method="post" action="{% url 'quotes:quoteversion_delete' obj.pk %}" onsubmit="return confirm('Delete this version?')">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger btn-block"><i data-lucide="trash-2"></i> Delete version</button>
+    </form>
+    <hr class="divider">
+    <div class="list-meta">Created {{ obj.created_at|date:"d M Y" }}</div>
+  </div></div>
+</div>
+{% endblock %}
