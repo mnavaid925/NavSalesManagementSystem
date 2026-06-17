@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}{{ obj }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'enablement:contentasset_list' %}">Sales Enablement</a><i data-lucide="chevron-right" style="width:14px"></i>
+  <a href="{% url 'enablement:trainingrecord_list' %}">Training &amp; Certification</a><i data-lucide="chevron-right" style="width:14px"></i><span>{{ obj.course_name }}</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ obj.course_name }}</h1>
+    <p class="page-subtitle">{{ obj.rep_name }} · {{ obj.get_kind_display }}</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'enablement:trainingrecord_list' %}" class="btn btn-outline"><i data-lucide="arrow-left"></i> Back</a>
+    <a href="{% url 'enablement:trainingrecord_edit' obj.pk %}" class="btn btn-primary"><i data-lucide="pencil"></i> Edit</a>
+  </div>
+</div>
+
+<div class="detail-grid">
+  <div>
+    <div class="card"><div class="card-body">
+      <h3 style="font-size:15px;margin-bottom:12px">Details</h3>
+      <div class="form-group"><div class="form-label">Rep</div>
+        <div class="fw-600">{{ obj.rep_name }}</div></div>
+      <div class="form-group"><div class="form-label">Kind</div>
+        <div>{{ obj.get_kind_display }}</div></div>
+      <div class="form-group"><div class="form-label">Status</div>
+        {% if obj.status == 'completed' %}<span class="badge badge-success">Completed</span>
+        {% elif obj.status == 'in_progress' %}<span class="badge badge-info">In progress</span>
+        {% elif obj.status == 'not_started' %}<span class="badge badge-muted">Not started</span>
+        {% elif obj.status == 'expired' %}<span class="badge badge-danger">Expired</span>
+        {% else %}<span class="badge badge-muted">{{ obj.get_status_display }}</span>{% endif %}
+      </div>
+      <div class="form-group"><div class="form-label">Provider</div>
+        <div>{{ obj.provider|default:"—" }}</div></div>
+      <div class="form-group"><div class="form-label">Score</div>
+        <div>{% if obj.score is not None %}{{ obj.score|floatformat:0 }}{% else %}—{% endif %}</div></div>
+      <div class="form-group"><div class="form-label">Enrolled on</div>
+        <div>{% if obj.enrolled_on %}{{ obj.enrolled_on|date:"d M Y" }}{% else %}—{% endif %}</div></div>
+      <div class="form-group"><div class="form-label">Due on</div>
+        <div>{% if obj.due_on %}{{ obj.due_on|date:"d M Y" }}{% else %}—{% endif %}</div></div>
+      <div class="form-group"><div class="form-label">Expires on</div>
+        <div>{% if obj.expires_on %}{{ obj.expires_on|date:"d M Y" }}{% else %}—{% endif %}</div></div>
+      <div class="form-group"><div class="form-label">Completed at</div>
+        <div>{% if obj.completed_at %}{{ obj.completed_at|date:"d M Y H:i" }}{% else %}—{% endif %}</div></div>
+      <div class="form-group"><div class="form-label">Notes</div>
+        <div>{{ obj.notes|default:"—"|linebreaksbr }}</div></div>
+    </div></div>
+  </div>
+
+  <div class="card"><div class="card-body">
+    <h3 style="font-size:15px;margin-bottom:12px">Actions</h3>
+    <a href="{% url 'enablement:trainingrecord_edit' obj.pk %}" class="btn btn-outline btn-block" style="margin-bottom:10px"><i data-lucide="pencil"></i> Edit record</a>
+    <form method="post" action="{% url 'enablement:trainingrecord_delete' obj.pk %}" onsubmit="return confirm('Delete this training record?')">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger btn-block"><i data-lucide="trash-2"></i> Delete record</button>
+    </form>
+    <hr class="divider">
+    <div class="list-meta">Created {{ obj.created_at|date:"d M Y" }}</div>
+    <div class="list-meta">Updated {{ obj.updated_at|date:"d M Y" }}</div>
+  </div></div>
+</div>
+{% endblock %}
