@@ -124,6 +124,9 @@ MEDIA_ROOT = BASE_DIR / "media"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+# Forward-compatible with Django 6.0 (URLField scheme defaults to https).
+FORMS_URLFIELD_ASSUME_HTTPS = True
+
 # --- auth flow ---
 LOGIN_URL = "accounts:login"
 LOGIN_REDIRECT_URL = "dashboard:index"
