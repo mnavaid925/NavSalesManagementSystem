@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}Training &amp; Certification Tracking{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'enablement:contentasset_list' %}">Sales Enablement</a><i data-lucide="chevron-right" style="width:14px"></i><span>Training &amp; Certification</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Training &amp; Certification Tracking</h1>
+    <p class="page-subtitle">{{ total }} record{{ total|pluralize }} on record</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'enablement:trainingrecord_create' %}" class="btn btn-primary"><i data-lucide="plus"></i> Add Record</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <form method="get" style="display:flex;gap:10px;flex-wrap:wrap;width:100%;align-items:center">
+      <input type="search" name="q" value="{{ request.GET.q }}" placeholder="Search course, rep, provider…" class="form-input" style="max-width:260px">
+      <span class="list-meta" style="margin-inline-end:auto"></span>
+      <select name="kind" class="form-select" style="max-width:180px" onchange="this.form.submit()">
+        <option value="">All kinds</option>
+        {% for value, label in kind_choices %}
+          <option value="{{ value }}" {% if request.GET.kind == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <select name="status" class="form-select" style="max-width:180px" onchange="this.form.submit()">
+        <option value="">All statuses</option>
+        {% for value, label in status_choices %}
+          <option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <button class="btn btn-outline" type="submit"><i data-lucide="filter"></i> Filter</button>
+    </form>
+  </div>
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr><th>Course</th><th>Rep</th><th>Kind</th><th>Status</th><th>Score</th><th>Due on</th><th style="text-align:end">Actions</th></tr></thead>
+      <tbody>
+        {% for rec in records %}
+          <tr>
+            <td>
+              <a href="{% url 'enablement:trainingrecord_detail' rec.pk %}" class="fw-600">{{ rec.course_name }}</a>
+              {% if rec.provider %}<div class="list-meta">{{ rec.provider }}</div>{% endif %}
+            </td>
+            <td>{{ rec.rep_name }}</td>
+            <td>{{ rec.get_kind_display }}</td>
+            <td>
+              {% if rec.status == 'completed' %}<span class="badge badge-success">Completed</span>
+              {% elif rec.status == 'in_progress' %}<span class="badge badge-info">In progress</span>
+              {% elif rec.status == 'not_started' %}<span class="badge badge-muted">Not started</span>
+              {% elif rec.status == 'expired' %}<span class="badge badge-danger">Expired</span>
+              {% else %}<span class="badge badge-muted">{{ rec.get_status_display }}</span>{% endif %}
+            </td>
+            <td class="fw-600">{% if rec.score is not None %}{{ rec.score|floatformat:0 }}{% else %}—{% endif %}</td>
+            <td class="list-meta">{% if rec.due_on %}{{ rec.due_on|date:"d M Y" }}{% else %}—{% endif %}</td>
+            <td>
+              <div class="table-actions">
+                <a href="{% url 'enablement:trainingrecord_detail' rec.pk %}" class="btn-icon" title="View"><i data-lucide="eye"></i></a>
+                <a href="{% url 'enablement:trainingrecord_edit' rec.pk %}" class="btn-icon" title="Edit"><i data-lucide="pencil"></i></a>
+                <form method="post" action="{% url 'enablement:trainingrecord_delete' rec.pk %}" onsubmit="return confirm('Delete this training record?')">
+                  {% csrf_token %}
+                  <button type="submit" class="btn-icon danger" title="Delete"><i data-lucide="trash-2"></i></button>
+                </form>
+              </div>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="7"><div class="empty-state"><div class="empty-icon"><i data-lucide="graduation-cap"></i></div><h3>No training records</h3><p>Enroll a rep in a course or certification to start tracking.</p><a href="{% url 'enablement:trainingrecord_create' %}" class="btn btn-primary" style="margin-top:14px"><i data-lucide="plus"></i> Add Record</a></div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div style="padding:0 16px 12px">{% include "partials/pagination.html" %}</div>
+</div>
+{% endblock %}
