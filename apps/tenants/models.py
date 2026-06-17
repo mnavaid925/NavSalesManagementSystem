@@ -1,8 +1,16 @@
 import hashlib
 import secrets
 
+from django.core.validators import RegexValidator
 from django.db import models
 from django.utils import timezone
+
+# Branding colours are rendered into inline `style="background:..."`, so they must
+# be a strict hex value — never free text (prevents CSS/style injection). (L26)
+HEX_COLOR_VALIDATOR = RegexValidator(
+    r"^#(?:[0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$",
+    "Enter a valid hex colour, e.g. #2563eb.",
+)
 
 
 class OnboardingStep(models.Model):
@@ -233,8 +241,8 @@ class BrandingSetting(models.Model):
     name = models.CharField(max_length=120, default="Default")
     is_default = models.BooleanField(default=False)
     logo_url = models.URLField(blank=True)
-    primary_color = models.CharField(max_length=9, default="#2563eb")
-    accent_color = models.CharField(max_length=9, default="#0ea5e9")
+    primary_color = models.CharField(max_length=9, default="#2563eb", validators=[HEX_COLOR_VALIDATOR])
+    accent_color = models.CharField(max_length=9, default="#0ea5e9", validators=[HEX_COLOR_VALIDATOR])
     login_message = models.CharField(max_length=255, blank=True)
     email_from_name = models.CharField(max_length=120, blank=True)
     email_signature = models.TextField(blank=True)
