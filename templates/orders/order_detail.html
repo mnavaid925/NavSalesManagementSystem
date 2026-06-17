@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+{% block title %}{{ obj.number }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'orders:order_list' %}">Order Management</a><i data-lucide="chevron-right" style="width:14px"></i>
+  <a href="{% url 'orders:order_list' %}">Orders</a><i data-lucide="chevron-right" style="width:14px"></i><span>{{ obj.number }}</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ obj.number }}</h1>
+    <p class="page-subtitle">{{ obj.customer_name }} · {{ obj.currency }} {{ obj.total_amount|floatformat:2 }}</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'orders:order_list' %}" class="btn btn-outline"><i data-lucide="arrow-left"></i> Back</a>
+    <a href="{% url 'orders:order_edit' obj.pk %}" class="btn btn-primary"><i data-lucide="pencil"></i> Edit</a>
+  </div>
+</div>
+
+<div class="detail-grid">
+  <div>
+    <div class="card"><div class="card-body">
+      <h3 style="font-size:15px;margin-bottom:12px">Details</h3>
+      <div class="form-group"><div class="form-label">Order number</div>
+        <div class="fw-600">{{ obj.number }}</div></div>
+      <div class="form-group"><div class="form-label">Customer</div>
+        <div>{{ obj.customer_name }}{% if obj.customer_email %} · {{ obj.customer_email }}{% endif %}</div></div>
+      <div class="form-group"><div class="form-label">Channel</div>
+        <div>{{ obj.get_channel_display }}</div></div>
+      <div class="form-group"><div class="form-label">Status</div>
+        {% if obj.status == 'draft' %}<span class="badge badge-muted">Draft</span>
+        {% elif obj.status == 'validated' %}<span class="badge badge-info">Validated</span>
+        {% elif obj.status == 'confirmed' %}<span class="badge badge-success">Confirmed</span>
+        {% elif obj.status == 'fulfilled' %}<span class="badge badge-success">Fulfilled</span>
+        {% elif obj.status == 'cancelled' %}<span class="badge badge-danger">Cancelled</span>
+        {% else %}<span class="badge badge-muted">{{ obj.get_status_display }}</span>{% endif %}
+      </div>
+      <div class="form-group"><div class="form-label">Total amount</div>
+        <div>{{ obj.currency }} {{ obj.total_amount|floatformat:2 }}</div></div>
+      <div class="form-group"><div class="form-label">Validated</div>
+        {% if obj.is_validated %}<span class="badge badge-success">Yes</span>{% else %}<span class="badge badge-muted">No</span>{% endif %}
+      </div>
+      <div class="form-group"><div class="form-label">Order date</div>
+        <div>{% if obj.order_date %}{{ obj.order_date|date:"d M Y" }}{% else %}—{% endif %}</div></div>
+      <div class="form-group"><div class="form-label">Requested ship date</div>
+        <div>{% if obj.requested_ship_date %}{{ obj.requested_ship_date|date:"d M Y" }}{% else %}—{% endif %}</div></div>
+      <div class="form-group"><div class="form-label">Billing address</div>
+        <div>{{ obj.billing_address|default:"—" }}</div></div>
+      <div class="form-group"><div class="form-label">Shipping address</div>
+        <div>{{ obj.shipping_address|default:"—" }}</div></div>
+      <div class="form-group"><div class="form-label">Notes</div>
+        <div>{{ obj.notes|default:"—" }}</div></div>
+    </div></div>
+
+    <div class="card" style="margin-top:18px"><div class="card-header"><h3 class="card-title">Line items</h3></div>
+      <div class="table-wrap">
+        <table class="table">
+          <thead><tr><th>Product</th><th>SKU</th><th>Qty</th><th>Unit price</th><th style="text-align:end">Line total</th></tr></thead>
+          <tbody>
+            {% for line in lines %}
+              <tr>
+                <td><a href="{% url 'orders:orderline_detail' line.pk %}" class="fw-600">{{ line.product_name }}</a></td>
+                <td class="list-meta">{{ line.sku|default:"—" }}</td>
+                <td>{{ line.quantity }}</td>
+                <td>{{ line.unit_price|floatformat:2 }}</td>
+                <td style="text-align:end" class="fw-600">{{ line.line_total|floatformat:2 }}</td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="5"><div class="empty-state"><div class="empty-icon"><i data-lucide="package"></i></div><h3>No line items</h3><p>Line items for this order will appear here.</p></div></td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:18px"><div class="card-header"><h3 class="card-title">Fulfillments</h3></div>
+      <div class="table-wrap">
+        <table class="table">
+          <thead><tr><th>Carrier</th><th>Tracking</th><th>Status</th><th style="text-align:end">Shipped</th></tr></thead>
+          <tbody>
+            {% for f in fulfillments %}
+              <tr>
+                <td><a href="{% url 'orders:fulfillment_detail' f.pk %}" class="fw-600">{{ f.get_carrier_display }}</a></td>
+                <td class="list-meta">{{ f.tracking_number|default:"—" }}</td>
+                <td>
+                  {% if f.status == 'delivered' %}<span class="badge badge-success">Delivered</span>
+                  {% elif f.status == 'shipped' %}<span class="badge badge-info">Shipped</span>
+                  {% elif f.status == 'returned' %}<span class="badge badge-danger">Returned</span>
+                  {% elif f.status == 'pending' %}<span class="badge badge-muted">Pending</span>
+                  {% else %}<span class="badge badge-warning">{{ f.get_status_display }}</span>{% endif %}
+                </td>
+                <td style="text-align:end" class="list-meta">{% if f.shipped_on %}{{ f.shipped_on|date:"d M Y" }}{% else %}—{% endif %}</td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="4"><div class="empty-state"><div class="empty-icon"><i data-lucide="truck"></i></div><h3>No fulfillments</h3><p>Shipments for this order will appear here.</p></div></td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:18px"><div class="card-header"><h3 class="card-title">Amendments</h3></div>
+      <div class="table-wrap">
+        <table class="table">
+          <thead><tr><th>Type</th><th>Status</th><th style="text-align:end">Requested on</th></tr></thead>
+          <tbody>
+            {% for a in amendments %}
+              <tr>
+                <td><a href="{% url 'orders:orderamendment_detail' a.pk %}" class="fw-600">{{ a.get_amendment_type_display }}</a></td>
+                <td>
+                  {% if a.status == 'approved' %}<span class="badge badge-success">Approved</span>
+                  {% elif a.status == 'applied' %}<span class="badge badge-info">Applied</span>
+                  {% elif a.status == 'rejected' %}<span class="badge badge-danger">Rejected</span>
+                  {% elif a.status == 'requested' %}<span class="badge badge-warning">Requested</span>
+                  {% else %}<span class="badge badge-muted">{{ a.get_status_display }}</span>{% endif %}
+                </td>
+                <td style="text-align:end" class="list-meta">{% if a.requested_on %}{{ a.requested_on|date:"d M Y" }}{% else %}—{% endif %}</td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="3"><div class="empty-state"><div class="empty-icon"><i data-lucide="file-edit"></i></div><h3>No amendments</h3><p>Change requests for this order will appear here.</p></div></td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:18px"><div class="card-header"><h3 class="card-title">Revenue schedule</h3></div>
+      <div class="table-wrap">
+        <table class="table">
+          <thead><tr><th>Period</th><th>Method</th><th>Status</th><th style="text-align:end">Amount</th></tr></thead>
+          <tbody>
+            {% for r in schedules %}
+              <tr>
+                <td><a href="{% url 'orders:revenueschedule_detail' r.pk %}" class="fw-600">{{ r.period_label|default:r.recognition_date }}</a></td>
+                <td class="list-meta">{{ r.get_method_display }}</td>
+                <td>
+                  {% if r.status == 'recognized' %}<span class="badge badge-success">Recognized</span>
+                  {% elif r.status == 'scheduled' %}<span class="badge badge-info">Scheduled</span>
+                  {% elif r.status == 'deferred' %}<span class="badge badge-warning">Deferred</span>
+                  {% elif r.status == 'cancelled' %}<span class="badge badge-danger">Cancelled</span>
+                  {% else %}<span class="badge badge-muted">{{ r.get_status_display }}</span>{% endif %}
+                </td>
+                <td style="text-align:end" class="fw-600">{{ r.amount|floatformat:2 }}</td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="4"><div class="empty-state"><div class="empty-icon"><i data-lucide="calendar-clock"></i></div><h3>No revenue schedule</h3><p>Recognition installments will appear here.</p></div></td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="card"><div class="card-body">
+    <h3 style="font-size:15px;margin-bottom:12px">Actions</h3>
+    <a href="{% url 'orders:order_edit' obj.pk %}" class="btn btn-outline btn-block" style="margin-bottom:10px"><i data-lucide="pencil"></i> Edit order</a>
+    <form method="post" action="{% url 'orders:order_delete' obj.pk %}" onsubmit="return confirm('Delete this order?')">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger btn-block"><i data-lucide="trash-2"></i> Delete order</button>
+    </form>
+    <hr class="divider">
+    <div class="list-meta">Created {{ obj.created_at|date:"d M Y" }}</div>
+    {% if obj.confirmed_at %}<div class="list-meta">Confirmed {{ obj.confirmed_at|date:"d M Y" }}</div>{% endif %}
+  </div></div>
+</div>
+{% endblock %}
