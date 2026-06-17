@@ -1,4 +1,6 @@
 """Template context shared on every page (registered in settings.TEMPLATES)."""
+from django.conf import settings
+
 from .navigation import build_sidebar
 
 # Server-rendered default layout attributes. layout.js restores the user's saved
@@ -24,5 +26,6 @@ def site_context(request):
         "current_path": request.path,
         "current_tenant": getattr(request, "tenant", None),
         "layout_defaults": LAYOUT_DEFAULTS,
+        "DEBUG": settings.DEBUG,
         "ASSET_VERSION": "2",  # bump to bust the browser cache on css/js (lesson L15)
     }
