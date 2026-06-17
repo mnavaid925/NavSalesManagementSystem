@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}{{ obj }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'territories:territory_list' %}">Territory &amp; Quota</a><i data-lucide="chevron-right" style="width:14px"></i>
+  <a href="{% url 'territories:territoryperformance_list' %}">Performance</a><i data-lucide="chevron-right" style="width:14px"></i><span>{{ obj.territory.name }}</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ obj.territory.name }}</h1>
+    <p class="page-subtitle">{{ obj.period_label|default:obj.get_period_type_display }} · {{ obj.attainment_percent|floatformat:1 }}% attainment</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'territories:territoryperformance_list' %}" class="btn btn-outline"><i data-lucide="arrow-left"></i> Back</a>
+    <a href="{% url 'territories:territoryperformance_edit' obj.pk %}" class="btn btn-primary"><i data-lucide="pencil"></i> Edit</a>
+  </div>
+</div>
+
+<div class="detail-grid">
+  <div>
+    <div class="card"><div class="card-body">
+      <h3 style="font-size:15px;margin-bottom:12px">Details</h3>
+      <div class="form-group"><div class="form-label">Territory</div>
+        <div><a href="{% url 'territories:territory_detail' obj.territory.pk %}" class="fw-600">{{ obj.territory.name }}</a></div></div>
+      <div class="form-group"><div class="form-label">Period</div>
+        <div>{{ obj.get_period_type_display }}{% if obj.period_label %} · {{ obj.period_label }}{% endif %}</div></div>
+      <div class="form-group"><div class="form-label">Rating</div>
+        {% if obj.rating == 'exceeding' %}<span class="badge badge-success">Exceeding</span>
+        {% elif obj.rating == 'on_track' %}<span class="badge badge-info">On track</span>
+        {% elif obj.rating == 'at_risk' %}<span class="badge badge-warning">At risk</span>
+        {% elif obj.rating == 'underperforming' %}<span class="badge badge-danger">Underperforming</span>
+        {% else %}<span class="badge badge-muted">{{ obj.get_rating_display }}</span>{% endif %}
+      </div>
+      <div class="form-group"><div class="form-label">Quota amount</div>
+        <div>${{ obj.quota_amount|floatformat:2 }}</div></div>
+      <div class="form-group"><div class="form-label">Actual amount</div>
+        <div>${{ obj.actual_amount|floatformat:2 }}</div></div>
+      <div class="form-group"><div class="form-label">Attainment</div>
+        <div class="fw-600">{{ obj.attainment_percent|floatformat:2 }}%</div></div>
+      <div class="form-group"><div class="form-label">Pipeline amount</div>
+        <div>${{ obj.pipeline_amount|floatformat:2 }}</div></div>
+      <div class="form-group"><div class="form-label">Deals won</div>
+        <div>{{ obj.deals_won }}</div></div>
+      <div class="form-group"><div class="form-label">Period end</div>
+        <div>{% if obj.period_end %}{{ obj.period_end|date:"d M Y" }}{% else %}—{% endif %}</div></div>
+    </div></div>
+  </div>
+
+  <div class="card"><div class="card-body">
+    <h3 style="font-size:15px;margin-bottom:12px">Actions</h3>
+    <a href="{% url 'territories:territoryperformance_edit' obj.pk %}" class="btn btn-outline btn-block" style="margin-bottom:10px"><i data-lucide="pencil"></i> Edit snapshot</a>
+    <form method="post" action="{% url 'territories:territoryperformance_delete' obj.pk %}" onsubmit="return confirm('Delete this snapshot?')">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger btn-block"><i data-lucide="trash-2"></i> Delete snapshot</button>
+    </form>
+    <hr class="divider">
+    <div class="list-meta">Created {{ obj.created_at|date:"d M Y" }}</div>
+  </div></div>
+</div>
+{% endblock %}
