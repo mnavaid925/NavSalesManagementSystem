@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block title %}Account Plans &amp; Growth Strategies{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'crm:account_list' %}">Contact &amp; Account Management</a><i data-lucide="chevron-right" style="width:14px"></i><span>Account Plans</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Account Plans &amp; Growth Strategies</h1>
+    <p class="page-subtitle">{{ total }} plan{{ total|pluralize }} on record</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'crm:accountplan_create' %}" class="btn btn-primary"><i data-lucide="plus"></i> Add Account Plan</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <form method="get" style="display:flex;gap:10px;flex-wrap:wrap;width:100%;align-items:center">
+      <input type="search" name="q" value="{{ request.GET.q }}" class="form-input" placeholder="Search plans…" style="max-width:220px">
+      <span class="list-meta" style="margin-inline-end:auto"></span>
+      <select name="status" class="form-select" style="max-width:160px" onchange="this.form.submit()">
+        <option value="">All statuses</option>
+        {% for value, label in status_choices %}
+          <option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <select name="priority" class="form-select" style="max-width:150px" onchange="this.form.submit()">
+        <option value="">All priorities</option>
+        {% for value, label in priority_choices %}
+          <option value="{{ value }}" {% if request.GET.priority == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <select name="account" class="form-select" style="max-width:200px" onchange="this.form.submit()">
+        <option value="">All accounts</option>
+        {% for a in accounts %}
+          <option value="{{ a.pk }}" {% if request.GET.account == a.pk|stringformat:"d" %}selected{% endif %}>{{ a.name }}</option>
+        {% endfor %}
+      </select>
+      <button class="btn btn-outline" type="submit"><i data-lucide="filter"></i> Filter</button>
+    </form>
+  </div>
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr><th>Plan</th><th>Account</th><th>FY</th><th>Status</th><th>Priority</th><th style="text-align:end">Actions</th></tr></thead>
+      <tbody>
+        {% for p in plans %}
+          <tr>
+            <td>
+              <a href="{% url 'crm:accountplan_detail' p.pk %}" class="fw-600">{{ p.title }}</a>
+              <div class="list-meta">{{ p.number }}</div>
+            </td>
+            <td class="list-meta">{% if p.account %}{{ p.account.name }}{% else %}—{% endif %}</td>
+            <td class="fw-600">{{ p.fiscal_year }}</td>
+            <td>
+              {% if p.status == 'draft' %}<span class="badge badge-muted">Draft</span>
+              {% elif p.status == 'active' %}<span class="badge badge-info">Active</span>
+              {% elif p.status == 'on_track' %}<span class="badge badge-success">On track</span>
+              {% elif p.status == 'at_risk' %}<span class="badge badge-danger">At risk</span>
+              {% elif p.status == 'completed' %}<span class="badge badge-success">Completed</span>
+              {% else %}<span class="badge badge-muted">{{ p.get_status_display }}</span>{% endif %}
+            </td>
+            <td>
+              {% if p.priority == 'high' %}<span class="badge badge-danger">High</span>
+              {% elif p.priority == 'medium' %}<span class="badge badge-warning">Medium</span>
+              {% elif p.priority == 'low' %}<span class="badge badge-muted">Low</span>
+              {% else %}<span class="badge badge-muted">{{ p.get_priority_display }}</span>{% endif %}
+            </td>
+            <td>
+              <div class="table-actions">
+                <a href="{% url 'crm:accountplan_detail' p.pk %}" class="btn-icon" title="View"><i data-lucide="eye"></i></a>
+                <a href="{% url 'crm:accountplan_edit' p.pk %}" class="btn-icon" title="Edit"><i data-lucide="pencil"></i></a>
+                <form method="post" action="{% url 'crm:accountplan_delete' p.pk %}" onsubmit="return confirm('Delete this plan?')">
+                  {% csrf_token %}
+                  <button type="submit" class="btn-icon danger" title="Delete"><i data-lucide="trash-2"></i></button>
+                </form>
+              </div>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="6"><div class="empty-state"><div class="empty-icon"><i data-lucide="target"></i></div><h3>No account plans</h3><p>Create your first growth plan.</p><a href="{% url 'crm:accountplan_create' %}" class="btn btn-primary" style="margin-top:14px"><i data-lucide="plus"></i> Add Account Plan</a></div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div style="padding:0 16px 12px">{% include "partials/pagination.html" %}</div>
+</div>
+{% endblock %}
