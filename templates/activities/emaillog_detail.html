@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}{{ obj.subject }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'activities:activity_list' %}">Sales Activity</a><i data-lucide="chevron-right" style="width:14px"></i>
+  <a href="{% url 'activities:emaillog_list' %}">Emails</a><i data-lucide="chevron-right" style="width:14px"></i><span>{{ obj.subject }}</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ obj.subject }}</h1>
+    <p class="page-subtitle">{{ obj.get_direction_display }} · {{ obj.get_status_display }}</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'activities:emaillog_list' %}" class="btn btn-outline"><i data-lucide="arrow-left"></i> Back</a>
+    <a href="{% url 'activities:emaillog_edit' obj.pk %}" class="btn btn-primary"><i data-lucide="pencil"></i> Edit</a>
+  </div>
+</div>
+
+<div class="detail-grid">
+  <div>
+    <div class="card"><div class="card-body">
+      <h3 style="font-size:15px;margin-bottom:12px">Details</h3>
+      <div class="form-group"><div class="form-label">Direction</div>
+        {% if obj.direction == 'outbound' %}<span class="badge badge-info">Outbound</span>
+        {% elif obj.direction == 'inbound' %}<span class="badge badge-muted">Inbound</span>
+        {% else %}<span class="badge badge-muted">{{ obj.get_direction_display }}</span>{% endif %}
+      </div>
+      <div class="form-group"><div class="form-label">Status</div>
+        {% if obj.status == 'replied' %}<span class="badge badge-success">Replied</span>
+        {% elif obj.status == 'clicked' %}<span class="badge badge-success">Clicked</span>
+        {% elif obj.status == 'opened' %}<span class="badge badge-info">Opened</span>
+        {% elif obj.status == 'delivered' %}<span class="badge badge-info">Delivered</span>
+        {% elif obj.status == 'sent' %}<span class="badge badge-warning">Sent</span>
+        {% elif obj.status == 'draft' %}<span class="badge badge-muted">Draft</span>
+        {% elif obj.status == 'bounced' %}<span class="badge badge-danger">Bounced</span>
+        {% else %}<span class="badge badge-muted">{{ obj.get_status_display }}</span>{% endif %}
+      </div>
+      <div class="form-group"><div class="form-label">From</div>
+        <div>{{ obj.from_email|default:"—" }}</div></div>
+      <div class="form-group"><div class="form-label">To</div>
+        <div>{{ obj.to_email|default:"—" }}</div></div>
+      <div class="form-group"><div class="form-label">Linked activity</div>
+        <div>{% if obj.activity %}<a href="{% url 'activities:activity_detail' obj.activity.pk %}" class="fw-600">{{ obj.activity.subject }}</a>{% else %}—{% endif %}</div></div>
+      <div class="form-group"><div class="form-label">Opens</div>
+        <div>{{ obj.open_count }}</div></div>
+      <div class="form-group"><div class="form-label">Clicks</div>
+        <div>{{ obj.click_count }}</div></div>
+      <div class="form-group"><div class="form-label">Sent at</div>
+        <div>{% if obj.sent_at %}{{ obj.sent_at|date:"d M Y H:i" }}{% else %}—{% endif %}</div></div>
+      <div class="form-group"><div class="form-label">Opened at</div>
+        <div>{% if obj.opened_at %}{{ obj.opened_at|date:"d M Y H:i" }}{% else %}—{% endif %}</div></div>
+      {% if obj.body %}
+      <div class="form-group"><div class="form-label">Body</div>
+        <div>{{ obj.body|linebreaksbr }}</div></div>
+      {% endif %}
+    </div></div>
+  </div>
+
+  <div class="card"><div class="card-body">
+    <h3 style="font-size:15px;margin-bottom:12px">Actions</h3>
+    <a href="{% url 'activities:emaillog_edit' obj.pk %}" class="btn btn-outline btn-block" style="margin-bottom:10px"><i data-lucide="pencil"></i> Edit email</a>
+    <form method="post" action="{% url 'activities:emaillog_delete' obj.pk %}" onsubmit="return confirm('Delete this email log?')">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger btn-block"><i data-lucide="trash-2"></i> Delete email</button>
+    </form>
+    <hr class="divider">
+    <div class="list-meta">Created {{ obj.created_at|date:"d M Y" }}</div>
+  </div></div>
+</div>
+{% endblock %}
