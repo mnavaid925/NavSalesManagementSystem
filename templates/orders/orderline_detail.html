@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}{{ obj.product_name }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'orders:order_list' %}">Order Management</a><i data-lucide="chevron-right" style="width:14px"></i>
+  <a href="{% url 'orders:orderline_list' %}">Line Items</a><i data-lucide="chevron-right" style="width:14px"></i><span>{{ obj.product_name }}</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ obj.product_name }}</h1>
+    <p class="page-subtitle">Order {{ obj.order.number }} · qty {{ obj.quantity }}</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'orders:orderline_list' %}" class="btn btn-outline"><i data-lucide="arrow-left"></i> Back</a>
+    <a href="{% url 'orders:orderline_edit' obj.pk %}" class="btn btn-primary"><i data-lucide="pencil"></i> Edit</a>
+  </div>
+</div>
+
+<div class="detail-grid">
+  <div>
+    <div class="card"><div class="card-body">
+      <h3 style="font-size:15px;margin-bottom:12px">Details</h3>
+      <div class="form-group"><div class="form-label">Product</div>
+        <div class="fw-600">{{ obj.product_name }}</div></div>
+      <div class="form-group"><div class="form-label">Order</div>
+        <div><a href="{% url 'orders:order_detail' obj.order.pk %}" class="fw-600">{{ obj.order.number }}</a></div></div>
+      <div class="form-group"><div class="form-label">SKU</div>
+        <div>{{ obj.sku|default:"—" }}</div></div>
+      <div class="form-group"><div class="form-label">Quantity</div>
+        <div>{{ obj.quantity }}</div></div>
+      <div class="form-group"><div class="form-label">Unit price</div>
+        <div>{{ obj.unit_price|floatformat:2 }}</div></div>
+      <div class="form-group"><div class="form-label">Discount</div>
+        <div>{{ obj.discount_percent|floatformat:2 }}%</div></div>
+      <div class="form-group"><div class="form-label">Line total</div>
+        <div class="fw-600">{{ obj.line_total|floatformat:2 }}</div></div>
+    </div></div>
+  </div>
+
+  <div class="card"><div class="card-body">
+    <h3 style="font-size:15px;margin-bottom:12px">Actions</h3>
+    <a href="{% url 'orders:orderline_edit' obj.pk %}" class="btn btn-outline btn-block" style="margin-bottom:10px"><i data-lucide="pencil"></i> Edit line item</a>
+    <form method="post" action="{% url 'orders:orderline_delete' obj.pk %}" onsubmit="return confirm('Delete this line item?')">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger btn-block"><i data-lucide="trash-2"></i> Delete line item</button>
+    </form>
+    <hr class="divider">
+    <div class="list-meta">Created {{ obj.created_at|date:"d M Y" }}</div>
+  </div></div>
+</div>
+{% endblock %}
