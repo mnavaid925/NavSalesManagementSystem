@@ -17,7 +17,7 @@
     <p>Sign in as a tenant admin (e.g. <span class="code-pill">admin_acme</span> / <span class="code-pill">password123</span>) to manage Module 0.</p>
   </div></div></div>
 {% else %}
-<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:18px">
+<div class="grid-kpi">
   <a href="{% url 'tenants:onboardingstep_list' %}" class="stat-card" style="display:block">
     <div class="stat-head"><div class="stat-label">Onboarding</div><span class="stat-icon"><i data-lucide="list-checks"></i></span></div>
     <div class="stat-value">{{ onboarding_done }}/{{ onboarding_total }}</div>
