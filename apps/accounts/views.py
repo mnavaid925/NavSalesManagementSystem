@@ -1,5 +1,4 @@
 from datetime import timedelta
-from functools import wraps
 
 from django.contrib import messages
 from django.contrib.auth import login, logout, update_session_auth_hash
@@ -13,6 +12,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django.utils.http import url_has_allowed_host_and_scheme
 
+from apps.core.decorators import tenant_admin_required
 from apps.core.utils import log_action
 
 from .forms import (
@@ -22,20 +22,6 @@ from .forms import (
 from .models import Role, User, UserInvite
 
 BACKEND = "apps.accounts.backends.EmailOrUsernameModelBackend"
-
-
-def tenant_admin_required(view):
-    """Allow only tenant admins (or superusers) to manage users/roles/invites."""
-
-    @wraps(view)
-    @login_required
-    def _wrapped(request, *args, **kwargs):
-        if not (request.user.is_superuser or getattr(request.user, "is_tenant_admin", False)):
-            messages.error(request, "You don't have permission to manage your workspace.")
-            return redirect("dashboard:index")
-        return view(request, *args, **kwargs)
-
-    return _wrapped
 
 
 # --------------------------------------------------------------------------- auth
