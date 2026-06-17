@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block title %}{{ obj.number }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'compensation:commissionplan_list' %}">Incentive Compensation</a><i data-lucide="chevron-right" style="width:14px"></i>
+  <a href="{% url 'compensation:earning_list' %}">Earnings</a><i data-lucide="chevron-right" style="width:14px"></i><span>{{ obj.number }}</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ obj.number }}</h1>
+    <p class="page-subtitle">{{ obj.rep_name }} · ${{ obj.commission_amount|floatformat:2 }} commission</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'compensation:earning_list' %}" class="btn btn-outline"><i data-lucide="arrow-left"></i> Back</a>
+    <a href="{% url 'compensation:earning_edit' obj.pk %}" class="btn btn-primary"><i data-lucide="pencil"></i> Edit</a>
+  </div>
+</div>
+
+<div class="detail-grid">
+  <div>
+    <div class="card"><div class="card-body">
+      <h3 style="font-size:15px;margin-bottom:12px">Details</h3>
+      <div class="detail-grid">
+        <div class="form-group"><div class="form-label">Number</div>
+          <div class="fw-600">{{ obj.number }}</div></div>
+        <div class="form-group"><div class="form-label">Rep</div>
+          <div>{{ obj.rep_name }}</div></div>
+        <div class="form-group"><div class="form-label">Plan</div>
+          <div>{% if obj.plan %}<a href="{% url 'compensation:commissionplan_detail' obj.plan.pk %}">{{ obj.plan.name }}</a>{% else %}—{% endif %}</div></div>
+        <div class="form-group"><div class="form-label">Status</div>
+          {% if obj.status == 'paid' %}<span class="badge badge-success">Paid</span>
+          {% elif obj.status == 'approved' %}<span class="badge badge-info">Approved</span>
+          {% elif obj.status == 'pending' %}<span class="badge badge-warning">Pending</span>
+          {% elif obj.status == 'disputed' %}<span class="badge badge-danger">Disputed</span>
+          {% else %}<span class="badge badge-muted">{{ obj.get_status_display }}</span>{% endif %}
+        </div>
+        <div class="form-group"><div class="form-label">Deal reference</div>
+          <div>{{ obj.deal_reference|default:"—" }}</div></div>
+        <div class="form-group"><div class="form-label">Deal amount</div>
+          <div>${{ obj.deal_amount|floatformat:2 }}</div></div>
+        <div class="form-group"><div class="form-label">Commission amount</div>
+          <div class="fw-600">${{ obj.commission_amount|floatformat:2 }}</div></div>
+        <div class="form-group"><div class="form-label">Earned on</div>
+          <div>{% if obj.earned_on %}{{ obj.earned_on|date:"d M Y" }}{% else %}—{% endif %}</div></div>
+        <div class="form-group"><div class="form-label">Approved at</div>
+          <div>{% if obj.approved_at %}{{ obj.approved_at|date:"d M Y H:i" }}{% else %}—{% endif %}</div></div>
+      </div>
+      {% if obj.notes %}<div class="form-group"><div class="form-label">Notes</div>
+        <div>{{ obj.notes|linebreaksbr }}</div></div>{% endif %}
+    </div></div>
+
+    <div class="card" style="margin-top:18px"><div class="card-header"><h3 class="card-title">Clawbacks &amp; adjustments</h3></div>
+      <div class="table-wrap">
+        <table class="table">
+          <thead><tr><th>Reason</th><th>Status</th><th>Effective on</th><th style="text-align:end">Amount</th></tr></thead>
+          <tbody>
+            {% for c in clawbacks %}
+              <tr>
+                <td><a href="{% url 'compensation:clawback_detail' c.pk %}" class="fw-600">{{ c.get_reason_display }}</a></td>
+                <td>
+                  {% if c.status == 'applied' %}<span class="badge badge-success">Applied</span>
+                  {% elif c.status == 'open' %}<span class="badge badge-warning">Open</span>
+                  {% elif c.status == 'waived' %}<span class="badge badge-muted">Waived</span>
+                  {% elif c.status == 'disputed' %}<span class="badge badge-danger">Disputed</span>
+                  {% else %}<span class="badge badge-muted">{{ c.get_status_display }}</span>{% endif %}
+                </td>
+                <td class="list-meta">{% if c.effective_on %}{{ c.effective_on|date:"d M Y" }}{% else %}—{% endif %}</td>
+                <td style="text-align:end">${{ c.amount|floatformat:2 }}</td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="4"><div class="empty-state"><div class="empty-icon"><i data-lucide="undo-2"></i></div><h3>No clawbacks</h3><p>Adjustments against this earning will appear here.</p></div></td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="card"><div class="card-body">
+    <h3 style="font-size:15px;margin-bottom:12px">Actions</h3>
+    <a href="{% url 'compensation:earning_edit' obj.pk %}" class="btn btn-outline btn-block" style="margin-bottom:10px"><i data-lucide="pencil"></i> Edit earning</a>
+    <form method="post" action="{% url 'compensation:earning_delete' obj.pk %}" onsubmit="return confirm('Delete this earning?')">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger btn-block"><i data-lucide="trash-2"></i> Delete earning</button>
+    </form>
+    <hr class="divider">
+    <div class="list-meta">Created {{ obj.created_at|date:"d M Y" }}</div>
+  </div></div>
+</div>
+{% endblock %}
