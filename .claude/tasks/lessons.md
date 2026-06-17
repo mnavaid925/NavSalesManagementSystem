@@ -199,3 +199,27 @@ write every app file (models/views/urls/forms/admin) freely with the hook no-opp
 **last** — that single write is the first real `manage.py check`, validating the whole backend (INSTALLED_APPS +
 URLConf import) in one pass. Custom `AUTH_USER_MODEL` only needs to exist before the first *migrate*, not *check*.
 (Generalises L12: wire-up after files exist.)
+
+## L25 — A one-time secret must NOT be surfaced via the messages framework (it persists in the session store)
+The EncryptionKey create/rotate views first flashed the plaintext with `messages.success(f"...{plaintext}")`. The
+messages framework serialises to the session backend (DB sessions here), so the secret lingered in `django_session`
+until the next render consumed it — readable from a DB dump/backup or a hijacked session, and it can land in logs.
+**Rule:** reveal a generated secret exactly once via a **pop-once session key** rendered on the redirect target:
+`request.session["_key_reveal"] = {"pk":obj.pk,"secret":plaintext}` in the create/rotate view, then in the detail
+view `reveal = request.session.pop("_key_reveal", None)` and pass `plaintext_once` to the template (a copy box shown
+only when set). Verified: reveal box present on the post-create view, absent on refresh; hash never rendered. Extends
+L20 (store prefix+hash, exclude secret from the form) — masking the read view is not enough; don't flash the secret.
+
+## L26 — Validate any user value rendered into an inline `style=` attribute (CSS/style injection)
+BrandingSetting `primary_color`/`accent_color` were free `CharField`s rendered as `style="background:{{ color }}"`.
+Django's attribute auto-escaping blocks closing the attribute, but a value like `red;...` is still valid CSS
+injection, and a future `<style>`/`|safe` use would become stored XSS. **Rule:** constrain such fields with a
+`RegexValidator(r"^#(?:[0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$")` on the model so only `#RGB`/`#RRGGBB` can be saved.
+
+## L27 — Gate Module-0 (tenant administration) writes behind tenant-admin, not just @login_required
+Billing, encryption-key rotation, branding and health writes were initially `@login_required`, so any Sales Rep in
+the tenant could mutate them. **Rule:** privileged/workspace-config writes use `@tenant_admin_required` (shared in
+`apps/core/decorators.py`); keep list/detail as `@login_required` if read access is fine for all roles. Also: the
+`{{ debug }}` built-in context var needs `INTERNAL_IPS`; to gate template content on DEBUG, expose `settings.DEBUG`
+explicitly via a context processor. Deferred (production hardening, not built): login rate-limiting/lockout
+(django-axes) — note it in the README rather than ship it in the foundation.
