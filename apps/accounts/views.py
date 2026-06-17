@@ -7,7 +7,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm
 from django.core.mail import send_mail
 from django.core.paginator import Paginator
-from django.db.models import Q
+from django.db.models import Count, Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
@@ -267,7 +267,7 @@ def invite_revoke(request, pk):
 # ------------------------------------------------------------------------- roles
 @tenant_admin_required
 def role_list(request):
-    qs = Role.objects.filter(tenant=request.tenant)
+    qs = Role.objects.filter(tenant=request.tenant).annotate(user_count=Count("users"))
     q = request.GET.get("q", "").strip()
     if q:
         qs = qs.filter(name__icontains=q)
@@ -303,8 +303,10 @@ def role_create(request):
 def role_detail(request, pk):
     role = get_object_or_404(Role, pk=pk, tenant=request.tenant)
     members = role.users.all()[:50]
+    member_count = role.users.count()
     return render(request, "accounts/role_detail.html",
-                  {"obj": role, "members": members, "page_title": role.name})
+                  {"obj": role, "members": members, "member_count": member_count,
+                   "page_title": role.name})
 
 
 @tenant_admin_required
