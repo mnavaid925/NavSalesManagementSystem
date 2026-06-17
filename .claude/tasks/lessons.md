@@ -1,11 +1,11 @@
 # Lessons
 
 ## L1 — Verify a database is actually ours (and empty) before migrating
-`CREATE DATABASE IF NOT EXISTS x` is a **silent no-op** when `x` already exists. On this XAMPP instance,
-`NavSalesManagementSystem` was already owned by a different Nav app (~170 procurement tables, live data). **Rule:** before
-pointing `.env` at a DB and running migrate, check `SELECT COUNT(*) FROM information_schema.tables WHERE
-table_schema='<db>'` and confirm it's empty or ours. Never flush/fake-migrate a non-empty unknown DB.
-NavSalesManagementSystem uses its own DB **`nav_pms`**.
+`CREATE DATABASE IF NOT EXISTS x` is a **silent no-op** when `x` already exists. This XAMPP instance hosts many other
+Nav* databases (e.g. `navpms`, `navaccounting`, `navcrm`) owned by live apps. **Rule:** before pointing `.env` at a DB
+and running migrate, check `SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='<db>'` and confirm it's
+empty or ours. Never flush/fake-migrate a non-empty unknown DB. This project uses its own DB **`nav_sms`** (verified
+empty before the first migrate).
 
 ## L2 — Django `{# … #}` comments are single-line only
 Multi-line `{# … #}` comments **leak as visible text**. Use `{% comment %} … {% endcomment %}` for any
@@ -39,9 +39,9 @@ solo; parallelize disjoint file sets (per-app templates).
 
 ## L7 — When backend & template agents are split, PIN the detail/edit context-var name
 Separate agents wrote views (`models.py`/`views.py`) and templates from a shared spec. The spec pinned the
-**list** context var (`requests`, `charters`, …) but NOT the **detail/edit object** var. Result: 4/16 models
-drifted — view passed `request_obj`/`business_case`/`kickoff_task`/`time_entry`, template used
-`obj`/`businesscase`/`kickoff`/`timeentry` → `{% url … X.pk %}` got an empty pk → **NoReverseMatch (500)**.
+**list** context var (the plural, e.g. `subscriptions`, `invoices`, …) but NOT the **detail/edit object** var.
+Result: some models drifted — the view passed e.g. `subscription_obj` while the template used `obj` → `{% url … X.pk %}`
+got an empty pk → **NoReverseMatch (500)**.
 **Rule:** the contract handed to parallel agents must pin EVERY context key a template consumes (detail object,
 edit-mode object, every `*_choices`, every FK queryset), not just the list var. 12/16 matched only by luck
 (agents independently chose the model name). The fix here was to align the view's key to the template's var.
@@ -115,11 +115,11 @@ blocks the turn. These are **pre-existing flakes**, invisible most of the day, s
 model/view-set date. (Two such assertions existed in `apps/tenants/tests`; fixed both.)
 
 ## L17 — A stale/half-created `test_<db>` blocks the whole suite (drop it, don't reuse)
-An interrupted pytest run left `test_nav_pms` existing but without its `django_migrations` table; the next run
-(reuse-db) reused the broken DB → `ProgrammingError: Table 'test_nav_pms.django_migrations' doesn't exist` /
-`(1007, Can't create database 'test_nav_pms'; database exists')` in setUp, failing every test before it ran.
+An interrupted pytest run left `test_nav_sms` existing but without its `django_migrations` table; the next run
+(reuse-db) reused the broken DB → `ProgrammingError: Table 'test_nav_sms.django_migrations' doesn't exist` /
+`(1007, Can't create database 'test_nav_sms'; database exists')` in setUp, failing every test before it ran.
 **Rule:** when pytest errors on the test DB itself (not an assertion), drop it and let pytest recreate clean:
-`& "C:\xampp\mysql\bin\mysql.exe" -u root -h 127.0.0.1 -P 3306 -e "DROP DATABASE IF EXISTS test_nav_pms;"`
+`& "C:\xampp\mysql\bin\mysql.exe" -u root -h 127.0.0.1 -P 3306 -e "DROP DATABASE IF EXISTS test_nav_sms;"`
 (root / no password on this XAMPP). Unrelated to app code — it's an environment reset.
 
 ## L18 — Close every module build with the specialist review agents, not just self-checks
@@ -127,22 +127,22 @@ On Modules 8-11 I verified with my own smoke test + pytest + IDOR but did NOT ru
 agents — the user had to ask "did you run the agents?". A parallel 5-agent review (code-reviewer, security-reviewer,
 performance-reviewer, frontend-reviewer, qa-smoke-tester) + adversarial verification of each finding then caught real
 issues a GET-200 + content sweep CANNOT, by design: chained N+1s (a parent `__str__` resolving a 2nd FK not in
-`select_related` — e.g. `Timesheet.__str__` hits `owner`, so a child list firing it per row needs
-`select_related('timesheet__owner')`), a counter field (`views_count`) left writable in a ModelForm, redundant
+`select_related` — e.g. a child list whose row `__str__` hits an owner FK needs the chained
+`select_related('parent__owner')`), a counter field left writable in a ModelForm, redundant
 all-one-color badge branches, and missing `<label for=>`/`id=`. None of those 500 or leak. **Rule:** the module-build
 quality bar INCLUDES a closing multi-agent adversarial review as the LAST phase, run by default — not on request.
 Separate the wheat from the chaff: fix defects specific to the new module; for findings that are faithful copies of
 the app-wide reference pattern (non-atomic auto-numbering, global-unique numbers, missing `db_index`, filter-label
 `for=`), flag an app-wide pass instead of forking one module out of step with the other ~12.
 
-## L19 — The on_stop hook ran pytest against MySQL (shared test_nav_pms), not the SQLite test settings
-This was the ROOT CAUSE of the recurring "Table 'test_nav_pms.X' doesn't exist" Stop-hook failures (the [L17]
+## L19 — The on_stop hook ran pytest against MySQL (shared test_nav_sms), not the SQLite test settings
+This was the ROOT CAUSE of the recurring "Table 'test_nav_sms.X' doesn't exist" Stop-hook failures (the [L17]
 drop-the-DB step was only a band-aid). `.claude/hooks/on_stop.py` does
 `os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")` for its step-1 `manage.py check`, then spawned
 `pytest` as a subprocess that INHERITED that env var. pytest-django honours the env var over `pytest.ini`, so the
-hook ran the suite under `config.settings` (MySQL `nav_pms` → `test_nav_pms`) instead of the project's
+hook ran the suite under `config.settings` (MySQL `nav_sms` → `test_nav_sms`) instead of the project's
 `pytest.ini` default `config.settings_test` (SQLite `:memory:`). Effects: slow, MariaDB-10.4-fragile, and — when a
-second session ran its suite at the same time — collisions on the shared `test_nav_pms` (half-migrated → missing
+second session ran its suite at the same time — collisions on the shared `test_nav_sms` (half-migrated → missing
 tables). My OWN `venv\Scripts\python.exe -m pytest` runs used `pytest.ini` (SQLite) and always passed, which masked
 it. **Root-cause fix:** pass an explicit `env` to the pytest subprocess with
 `DJANGO_SETTINGS_MODULE=config.settings_test`. Verified end-to-end: `'{}' | python .claude/hooks/on_stop.py` →
@@ -171,13 +171,14 @@ modules were complete. A naive "workflow done → migrate + smoke test" would ha
 complete backend while the missing templates are regenerated in parallel. Blocking on the workflow task
 (`TaskOutput block=true`) also keeps a short follow-up run alive through turn boundaries.
 
-## L22 — System-set timestamps (`*_at`) don't belong on manual edit forms (mirror finance: zero DateTimeFields on forms)
+## L22 — System-set timestamps (`*_at`) don't belong on manual edit forms (mirror apps/tenants: zero editable DateTimeFields on forms)
 The template agents put nullable `DateTimeField` columns (`last_run_at`, `last_sync_at`, `started_at`, `recorded_at`,
 `completed_at`, `last_triggered_at`) onto ModelForms with a `DateInput(type=date)` widget. That date-only widget
 silently truncates the time component on every edit-save (and `datetime-local` would need matching widget+field
-`input_formats` to round-trip correctly — fiddly). The finance reference puts ZERO editable DateTimeFields on its
-forms — its only DateTimeFields are `auto_now`/`auto_now_add` audit columns, never in `Meta.fields`; its date widgets
-sit only on real `DateField`s (issue_date/due_date/etc.). **Rule:** treat observed/system timestamps as read-only —
+`input_formats` to round-trip correctly — fiddly). The `apps/tenants` (Module 0) reference puts ZERO editable
+DateTimeFields on its forms — its only DateTimeFields are `auto_now`/`auto_now_add` audit columns or system-set
+fields (`paid_at`, `completed_at`, `recorded_at`, `last_rotated_at`), never in `Meta.fields`; its date widgets sit
+only on real user-set `DateField`s (issued_on/due_on/started_on/renews_on). **Rule:** treat observed/system timestamps as read-only —
 keep them on the model + detail page but OUT of the form. Reserve `DateInput(type=date)` for genuine user-set
 `DateField`s. This is the root-cause fix, not swapping in a `datetime-local` widget.
 
