@@ -3,6 +3,7 @@ from django.contrib.auth import password_validation
 from django.contrib.auth.forms import (
     AuthenticationForm, PasswordResetForm, SetPasswordForm,
 )
+from django.db import transaction
 from django.utils.text import slugify
 
 from apps.core.forms import StyledFormMixin
@@ -63,8 +64,13 @@ class RegisterForm(StyledFormMixin, forms.Form):
             password_validation.validate_password(p1)
         return cleaned
 
+    @transaction.atomic
     def save(self):
-        """Create the tenant, its default roles and the first admin user."""
+        """Create the tenant, its default roles and the first admin user.
+
+        Atomic so a failure (e.g. a slug/username race) never leaves an orphaned
+        tenant with no admin behind.
+        """
         data = self.cleaned_data
         tenant = Tenant.objects.create(
             name=data["company_name"],
