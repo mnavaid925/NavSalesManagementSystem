@@ -2,7 +2,7 @@ import calendar
 from decimal import Decimal
 
 from django.contrib.auth.decorators import login_required
-from django.db.models import Count, Sum
+from django.db.models import Count, Q, Sum
 from django.db.models.functions import TruncMonth
 from django.shortcuts import render
 from django.utils import timezone
@@ -46,17 +46,25 @@ def index(request):
     rev_this = paid.filter(issued_on__gte=this_month).aggregate(t=Sum("amount"))["t"] or 0
     rev_last = paid.filter(issued_on__gte=last_month, issued_on__lt=this_month).aggregate(t=Sum("amount"))["t"] or 0
 
-    active_subs = Subscription.objects.filter(
-        tenant=tenant, status__in=[Subscription.STATUS_ACTIVE, Subscription.STATUS_TRIALING]
-    ).count()
-    subs_this = Subscription.objects.filter(tenant=tenant, started_on__gte=this_month).count()
-    subs_last = Subscription.objects.filter(
-        tenant=tenant, started_on__gte=last_month, started_on__lt=this_month).count()
+    # One round-trip each for subscriptions and users (conditional aggregates).
+    sub_agg = Subscription.objects.filter(tenant=tenant).aggregate(
+        active=Count("id", filter=Q(status__in=[Subscription.STATUS_ACTIVE, Subscription.STATUS_TRIALING])),
+        this_month=Count("id", filter=Q(started_on__gte=this_month)),
+        last_month=Count("id", filter=Q(started_on__gte=last_month, started_on__lt=this_month)),
+        monthly_sum=Sum("monthly_amount"),
+    )
+    active_subs = sub_agg["active"]
+    subs_this = sub_agg["this_month"]
+    subs_last = sub_agg["last_month"]
 
-    team = User.objects.filter(tenant=tenant)
-    users_total = team.count()
-    users_this = team.filter(date_joined__date__gte=this_month).count()
-    users_last = team.filter(date_joined__date__gte=last_month, date_joined__date__lt=this_month).count()
+    user_agg = User.objects.filter(tenant=tenant).aggregate(
+        total=Count("id"),
+        this_month=Count("id", filter=Q(date_joined__date__gte=this_month)),
+        last_month=Count("id", filter=Q(date_joined__date__gte=last_month, date_joined__date__lt=this_month)),
+    )
+    users_total = user_agg["total"]
+    users_this = user_agg["this_month"]
+    users_last = user_agg["last_month"]
 
     open_invoices = invoices.filter(
         status__in=[Invoice.STATUS_SENT, Invoice.STATUS_OVERDUE, Invoice.STATUS_DRAFT])
@@ -73,8 +81,7 @@ def index(request):
     peak_month = chart_labels[chart_values.index(max(chart_values))] if any(chart_values) else "—"
 
     # ---- sales overview gauge: revenue vs annual target ----
-    annual_target = (Subscription.objects.filter(tenant=tenant).aggregate(
-        t=Sum("monthly_amount"))["t"] or Decimal("0")) * 12
+    annual_target = (sub_agg["monthly_sum"] or Decimal("0")) * 12
     attainment = float(min(100, (total_revenue / annual_target * 100))) if annual_target else 0.0
 
     context.update({
