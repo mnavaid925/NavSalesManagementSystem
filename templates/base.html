@@ -1,0 +1,51 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en"
+      data-sidebar="{{ layout_defaults.sidebar }}"
+      data-bs-theme="{{ layout_defaults.theme }}"
+      data-layout-width="{{ layout_defaults.width }}"
+      data-layout-position="{{ layout_defaults.position }}"
+      data-topbar="{{ layout_defaults.topbar }}"
+      data-sidebar-size="{{ layout_defaults.sidebar_size }}"
+      data-sidebar-color="{{ layout_defaults.sidebar_color }}"
+      data-preloader="{{ layout_defaults.preloader }}"
+      dir="{{ layout_defaults.direction }}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{{ page_title|default:"Dashboard" }}{% endblock %} · {{ APP_NAME }}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { darkMode: "class", theme: { extend: { fontFamily: { sans: ["Inter", "sans-serif"] } } } };
+  </script>
+  <link rel="stylesheet" href="{% static 'css/theme.css' %}?v={{ ASSET_VERSION }}">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://unpkg.com/htmx.org@1.9.12"></script>
+  <script src="{% static 'js/layout.js' %}?v={{ ASSET_VERSION }}"></script>
+  {% block head_extra %}{% endblock %}
+</head>
+<body>
+  <div id="preloader"><div class="spinner"></div></div>
+
+  <div class="app-shell">
+    {% include "partials/sidebar.html" %}
+    <div class="sidebar-backdrop"></div>
+
+    <div class="main-wrap">
+      {% include "partials/topbar.html" %}
+      <main class="page">
+        {% block content %}{% endblock %}
+      </main>
+    </div>
+  </div>
+
+  {% include "partials/customizer.html" %}
+  {% include "partials/messages.html" %}
+
+  <script>lucide.createIcons();</script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>
