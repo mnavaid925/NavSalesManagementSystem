@@ -47,6 +47,28 @@ Here is the text extracted from the image:
 
 ---
 
+### **Module Creation Sequence (MANDATORY)**
+
+Whenever you create a **new module or sub-module**, follow this exact sequence. Each step ends with `git add` + `git commit` (one file per commit, PowerShell-safe). **Never run `git push` at any step** — the user pushes manually.
+
+1. **Write the module code** — implement the module, then `git add` + `git commit`. Do NOT `git push`.
+2. **Run the `code-reviewer` agent** — apply its findings, then `git add` + `git commit`. Do NOT `git push`.
+3. **Run the `explorer` agent** — apply its findings, then `git add` + `git commit`. Do NOT `git push`.
+4. **Run the `frontend-reviewer` agent** — apply its findings, then `git add` + `git commit`. Do NOT `git push`.
+5. **Run the `performance-reviewer` agent** — apply its findings, then `git add` + `git commit`. Do NOT `git push`.
+6. **Run the `qa-smoke-tester` agent** — apply its findings, then `git add` + `git commit`. Do NOT `git push`.
+7. **Run the `security-reviewer` agent** — apply its findings, then `git add` + `git commit`. Do NOT `git push`.
+8. **Run the `test-writer` agent** — apply its output, then `git add` + `git commit`. Do NOT `git push`.
+
+**Rules for this sequence:**
+
+* Run the agents **in this order, one at a time** — do not skip a step and do not reorder.
+* After each agent step, commit the resulting changes before moving to the next agent (still one file per commit).
+* `git push` is **never** part of this sequence — stop at `git commit` every time.
+* If an agent reports no changes are needed, note that and proceed to the next step (no empty commit required).
+
+---
+
 ### **Task Management**
 
 1. **Plan First**: Write plan to `.claude/tasks/todo.md` with checkable items
