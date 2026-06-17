@@ -151,3 +151,16 @@ venv\Scripts\python.exe -m pytest        # uses config.settings_test (in-memory 
 - Every tenant-scoped view filters `Model.objects.filter(tenant=request.tenant)`.
 - New modules are scaffolded with the `/next-module` workflow, mirroring `apps/tenants`.
 - Commits are one file per commit; pushes are manual.
+
+## Security & production checklist
+
+Built in: tenant isolation (cross-tenant access → 404), `@tenant_admin_required` on workspace writes, CSRF on all POST
+forms, hashed passwords + `AUTH_PASSWORD_VALIDATORS`, encryption-key secrets stored as prefix+hash and revealed once,
+hex-validated branding colours, open-redirect-safe `next`, fail-closed `SECRET_KEY`, and (when `DEBUG=False`) secure
+cookies + SSL redirect + HSTS. Demo credentials only render when `DEBUG=True`.
+
+Before deploying to production:
+- Set a strong `SECRET_KEY` and `DEBUG=False` in the environment.
+- Add **login rate-limiting / lockout** (e.g. `django-axes`) — intentionally not bundled in this foundation.
+- Use a real MariaDB ≥ 10.5 / MySQL 8 so the `config/__init__.py` 10.4 compatibility shim is unnecessary.
+- Serve over HTTPS and run `collectstatic`.
