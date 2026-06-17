@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}{{ obj.period_label }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'forecasting:forecast_list' %}">Sales Forecasting</a><i data-lucide="chevron-right" style="width:14px"></i>
+  <a href="{% url 'forecasting:forecastaccuracy_list' %}">Accuracy</a><i data-lucide="chevron-right" style="width:14px"></i><span>{{ obj.period_label|default:"Record" }}</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ obj.period_label|default:"Accuracy record" }}</h1>
+    <p class="page-subtitle">{{ obj.accuracy_pct|floatformat:1 }}% accuracy · {{ obj.get_grade_display }}</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'forecasting:forecastaccuracy_list' %}" class="btn btn-outline"><i data-lucide="arrow-left"></i> Back</a>
+    <a href="{% url 'forecasting:forecastaccuracy_edit' obj.pk %}" class="btn btn-primary"><i data-lucide="pencil"></i> Edit</a>
+  </div>
+</div>
+
+<div class="detail-grid">
+  <div>
+    <div class="card"><div class="card-body">
+      <h3 style="font-size:15px;margin-bottom:12px">Details</h3>
+      <div class="form-group"><div class="form-label">Period</div>
+        <div class="fw-600">{{ obj.period_label|default:"—" }}</div></div>
+      <div class="form-group"><div class="form-label">Linked forecast</div>
+        <div>{% if obj.forecast %}<a href="{% url 'forecasting:forecast_detail' obj.forecast.pk %}">{{ obj.forecast.number|default:obj.forecast.name }}</a>{% else %}—{% endif %}</div></div>
+      <div class="form-group"><div class="form-label">Forecasted amount</div>
+        <div>${{ obj.forecasted_amount|floatformat:2 }}</div></div>
+      <div class="form-group"><div class="form-label">Actual amount</div>
+        <div>${{ obj.actual_amount|floatformat:2 }}</div></div>
+      <div class="form-group"><div class="form-label">Variance</div>
+        <div class="fw-600">${{ obj.variance_amount|floatformat:2 }}</div></div>
+      <div class="form-group"><div class="form-label">Accuracy</div>
+        <div class="fw-600">{{ obj.accuracy_pct|floatformat:1 }}%</div></div>
+      <div class="form-group"><div class="form-label">Grade</div>
+        {% if obj.grade == 'excellent' %}<span class="badge badge-success">Excellent</span>
+        {% elif obj.grade == 'good' %}<span class="badge badge-info">Good</span>
+        {% elif obj.grade == 'fair' %}<span class="badge badge-warning">Fair</span>
+        {% elif obj.grade == 'poor' %}<span class="badge badge-danger">Poor</span>
+        {% else %}<span class="badge badge-muted">{{ obj.get_grade_display }}</span>{% endif %}
+      </div>
+      <div class="form-group"><div class="form-label">Analyzed on</div>
+        <div>{% if obj.analyzed_on %}{{ obj.analyzed_on|date:"d M Y" }}{% else %}—{% endif %}</div></div>
+      {% if obj.notes %}
+      <div class="form-group"><div class="form-label">Notes</div>
+        <div>{{ obj.notes|linebreaksbr }}</div></div>
+      {% endif %}
+    </div></div>
+  </div>
+
+  <div class="card"><div class="card-body">
+    <h3 style="font-size:15px;margin-bottom:12px">Actions</h3>
+    <a href="{% url 'forecasting:forecastaccuracy_edit' obj.pk %}" class="btn btn-outline btn-block" style="margin-bottom:10px"><i data-lucide="pencil"></i> Edit record</a>
+    <form method="post" action="{% url 'forecasting:forecastaccuracy_delete' obj.pk %}" onsubmit="return confirm('Delete this record?')">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger btn-block"><i data-lucide="trash-2"></i> Delete record</button>
+    </form>
+    <hr class="divider">
+    <div class="list-meta">Created {{ obj.created_at|date:"d M Y" }}</div>
+  </div></div>
+</div>
+{% endblock %}
