@@ -36,8 +36,11 @@ class InvoiceForm(StyledFormMixin, forms.ModelForm):
 
     def __init__(self, *args, tenant=None, **kwargs):
         super().__init__(*args, **kwargs)
-        if tenant is not None and "subscription" in self.fields:
-            self.fields["subscription"].queryset = Subscription.objects.filter(tenant=tenant)
+        # Always scope to the tenant; never fall back to .all() (no cross-tenant leak).
+        self.fields["subscription"].queryset = (
+            Subscription.objects.filter(tenant=tenant) if tenant is not None
+            else Subscription.objects.none()
+        )
         self.fields["subscription"].required = False
 
 
