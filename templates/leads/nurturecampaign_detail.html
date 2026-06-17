@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block title %}{{ obj.name }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'leads:lead_list' %}">Lead Management</a><i data-lucide="chevron-right" style="width:14px"></i>
+  <a href="{% url 'leads:nurturecampaign_list' %}">Campaigns</a><i data-lucide="chevron-right" style="width:14px"></i><span>{{ obj.name }}</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ obj.name }}</h1>
+    <p class="page-subtitle">{{ obj.get_channel_display }} · {{ obj.step_count }} step{{ obj.step_count|pluralize }} · every {{ obj.cadence_days }} day{{ obj.cadence_days|pluralize }}</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'leads:nurturecampaign_list' %}" class="btn btn-outline"><i data-lucide="arrow-left"></i> Back</a>
+    <a href="{% url 'leads:nurturecampaign_edit' obj.pk %}" class="btn btn-primary"><i data-lucide="pencil"></i> Edit</a>
+  </div>
+</div>
+
+<div class="detail-grid">
+  <div>
+    <div class="card"><div class="card-body">
+      <h3 style="font-size:15px;margin-bottom:12px">Details</h3>
+      <div class="form-group"><div class="form-label">Name</div>
+        <div class="fw-600">{{ obj.name }}</div></div>
+      <div class="form-group"><div class="form-label">Channel</div>
+        <div>{{ obj.get_channel_display }}</div></div>
+      <div class="form-group"><div class="form-label">Status</div>
+        {% if obj.status == 'draft' %}<span class="badge badge-muted">Draft</span>
+        {% elif obj.status == 'scheduled' %}<span class="badge badge-info">Scheduled</span>
+        {% elif obj.status == 'running' %}<span class="badge badge-success">Running</span>
+        {% elif obj.status == 'paused' %}<span class="badge badge-warning">Paused</span>
+        {% elif obj.status == 'completed' %}<span class="badge badge-info">Completed</span>
+        {% else %}<span class="badge badge-muted">{{ obj.get_status_display }}</span>{% endif %}
+      </div>
+      <div class="form-group"><div class="form-label">Steps</div>
+        <div>{{ obj.step_count }}</div></div>
+      <div class="form-group"><div class="form-label">Cadence (days)</div>
+        <div>{{ obj.cadence_days }}</div></div>
+      <div class="form-group"><div class="form-label">Enrolled</div>
+        <div>{{ obj.enrolled_count }}</div></div>
+      <div class="form-group"><div class="form-label">Start on</div>
+        <div>{% if obj.start_on %}{{ obj.start_on|date:"d M Y" }}{% else %}—{% endif %}</div></div>
+      <div class="form-group"><div class="form-label">End on</div>
+        <div>{% if obj.end_on %}{{ obj.end_on|date:"d M Y" }}{% else %}—{% endif %}</div></div>
+      {% if obj.goal %}
+      <div class="form-group"><div class="form-label">Goal</div>
+        <div>{{ obj.goal }}</div></div>
+      {% endif %}
+    </div></div>
+
+    <div class="card" style="margin-top:18px"><div class="card-header"><h3 class="card-title">Enrolled leads</h3></div>
+      <div class="table-wrap">
+        <table class="table">
+          <thead><tr><th>Lead</th><th>Status</th><th style="text-align:end">Captured on</th></tr></thead>
+          <tbody>
+            {% for lead in leads %}
+              <tr>
+                <td><a href="{% url 'leads:lead_detail' lead.pk %}" class="fw-600">{{ lead.full_name }}</a><div class="list-meta">{{ lead.number }}</div></td>
+                <td>
+                  {% if lead.status == 'qualified' %}<span class="badge badge-success">Qualified</span>
+                  {% elif lead.status == 'converted' %}<span class="badge badge-success">Converted</span>
+                  {% elif lead.status == 'unqualified' %}<span class="badge badge-danger">Unqualified</span>
+                  {% else %}<span class="badge badge-info">{{ lead.get_status_display }}</span>{% endif %}
+                </td>
+                <td class="list-meta" style="text-align:end">{{ lead.captured_on|date:"d M Y" }}</td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="3"><div class="empty-state"><div class="empty-icon"><i data-lucide="users"></i></div><h3>No leads enrolled</h3><p>Leads attached to this campaign will appear here.</p></div></td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="card"><div class="card-body">
+    <h3 style="font-size:15px;margin-bottom:12px">Actions</h3>
+    <a href="{% url 'leads:nurturecampaign_edit' obj.pk %}" class="btn btn-outline btn-block" style="margin-bottom:10px"><i data-lucide="pencil"></i> Edit campaign</a>
+    <form method="post" action="{% url 'leads:nurturecampaign_delete' obj.pk %}" onsubmit="return confirm('Delete this campaign?')">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger btn-block"><i data-lucide="trash-2"></i> Delete campaign</button>
+    </form>
+    <hr class="divider">
+    <div class="list-meta">Created {{ obj.created_at|date:"d M Y" }}</div>
+  </div></div>
+</div>
+{% endblock %}
