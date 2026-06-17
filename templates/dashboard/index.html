@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+{% load static humanize %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Welcome back, {{ request.user.first_name|default:request.user.username }}!</h1>
+    <p class="page-subtitle">{{ today|date:"l, d F Y" }}{% if current_tenant %} · {{ current_tenant.name }}{% endif %}</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'tenants:invoice_create' %}" class="btn btn-outline"><i data-lucide="plus"></i> New Invoice</a>
+    <a href="{% url 'tenants:overview' %}" class="btn btn-primary"><i data-lucide="layers"></i> Workspace</a>
+  </div>
+</div>
+
+{% if not has_tenant %}
+  <div class="card"><div class="card-body">
+    <div class="empty-state">
+      <div class="empty-icon"><i data-lucide="building-2"></i></div>
+      <h3>No workspace selected</h3>
+      <p>You're signed in as a platform superuser, which has no tenant — dashboard data is tenant-scoped.<br>
+         Sign in as a tenant admin (e.g. <span class="code-pill">admin_acme</span> / <span class="code-pill">password123</span>) to see live data.</p>
+    </div>
+  </div></div>
+{% else %}
+
+{% comment %} KPI cards {% endcomment %}
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:18px">
+  <div class="stat-card">
+    <div class="stat-head">
+      <div><div class="stat-label">Total Revenue</div></div>
+      <span class="stat-icon"><i data-lucide="dollar-sign"></i></span>
+    </div>
+    <div class="stat-value">${{ total_revenue|floatformat:0|intcomma }}</div>
+    <div style="margin-top:10px">
+      <span class="delta {% if revenue_delta >= 0 %}delta-up{% else %}delta-down{% endif %}">
+        <i data-lucide="{% if revenue_delta >= 0 %}arrow-up-right{% else %}arrow-down-right{% endif %}" style="width:13px"></i>{{ revenue_delta }}%
+      </span>
+      <span class="list-meta">vs last month</span>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-head"><div class="stat-label">Active Subscriptions</div><span class="stat-icon"><i data-lucide="refresh-cw"></i></span></div>
+    <div class="stat-value">{{ active_subs|intcomma }}</div>
+    <div style="margin-top:10px">
+      <span class="delta {% if subs_delta >= 0 %}delta-up{% else %}delta-down{% endif %}">
+        <i data-lucide="{% if subs_delta >= 0 %}arrow-up-right{% else %}arrow-down-right{% endif %}" style="width:13px"></i>{{ subs_delta }}%
+      </span><span class="list-meta">vs last month</span>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-head"><div class="stat-label">Team Members</div><span class="stat-icon"><i data-lucide="users"></i></span></div>
+    <div class="stat-value">{{ users_total|intcomma }}</div>
+    <div style="margin-top:10px">
+      <span class="delta {% if users_delta >= 0 %}delta-up{% else %}delta-down{% endif %}">
+        <i data-lucide="{% if users_delta >= 0 %}arrow-up-right{% else %}arrow-down-right{% endif %}" style="width:13px"></i>{{ users_delta }}%
+      </span><span class="list-meta">vs last month</span>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-head"><div class="stat-label">Open Invoices</div><span class="stat-icon"><i data-lucide="file-text"></i></span></div>
+    <div class="stat-value">{{ open_count|intcomma }}</div>
+    <div style="margin-top:10px"><span class="list-meta">${{ open_amount|floatformat:0|intcomma }} outstanding</span></div>
+  </div>
+</div>
+
+{% comment %} Revenue chart + gauge {% endcomment %}
+<div style="display:grid;grid-template-columns:1.7fr 1fr;gap:18px;margin-top:18px">
+  <div class="card">
+    <div class="card-header">
+      <div>
+        <div class="card-title">Revenue Insights</div>
+        <div class="stat-value" style="font-size:24px;margin-top:6px">${{ total_revenue|floatformat:0|intcomma }}</div>
+      </div>
+      <span class="badge badge-brand">Peak: {{ peak_month }}</span>
+    </div>
+    <div class="card-body"><canvas id="revenueChart" height="120"></canvas></div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><div class="card-title">Sales Overview</div><i data-lucide="more-horizontal" class="text-muted"></i></div>
+    <div class="card-body" style="text-align:center">
+      <div style="position:relative;max-width:240px;margin:0 auto"><canvas id="gaugeChart"></canvas>
+        <div style="position:absolute;top:58%;left:0;right:0;transform:translateY(-50%)">
+          <div class="stat-value" style="font-size:30px">{{ attainment }}%</div>
+          <div class="list-meta">Target attainment</div>
+        </div>
+      </div>
+      <hr class="divider">
+      <div style="display:flex;justify-content:space-between;font-size:13px">
+        <div><div class="list-meta">Collected</div><div class="fw-700">${{ total_revenue|floatformat:0|intcomma }}</div></div>
+        <div style="text-align:end"><div class="list-meta">Annual Target</div><div class="fw-700">${{ annual_target|floatformat:0|intcomma }}</div></div>
+      </div>
+      <div class="progress" style="margin-top:12px"><div class="progress-bar" style="width:{{ attainment }}%"></div></div>
+    </div>
+  </div>
+</div>
+
+{% comment %} Recent invoices {% endcomment %}
+<div class="card" style="margin-top:18px">
+  <div class="card-header">
+    <div class="card-title">Recent Sales</div>
+    <a href="{% url 'tenants:invoice_list' %}" class="btn btn-outline btn-sm">View all <i data-lucide="arrow-right"></i></a>
+  </div>
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr><th>Invoice</th><th>Date</th><th>Plan</th><th>Status</th><th style="text-align:end">Amount</th></tr></thead>
+      <tbody>
+        {% for inv in recent_invoices %}
+          <tr>
+            <td><a href="{% url 'tenants:invoice_detail' inv.pk %}" class="fw-600">{{ inv.number }}</a></td>
+            <td>{{ inv.issued_on|date:"d M Y" }}</td>
+            <td>{% if inv.subscription %}{{ inv.subscription.get_plan_display }}{% else %}—{% endif %}</td>
+            <td>
+              {% if inv.status == 'paid' %}<span class="badge badge-success">Paid</span>
+              {% elif inv.status == 'overdue' %}<span class="badge badge-danger">Overdue</span>
+              {% elif inv.status == 'sent' %}<span class="badge badge-info">Sent</span>
+              {% else %}<span class="badge badge-muted">{{ inv.get_status_display }}</span>{% endif %}
+            </td>
+            <td style="text-align:end" class="fw-700">${{ inv.amount|floatformat:2|intcomma }}</td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="5"><div class="empty-state" style="padding:30px"><div class="empty-icon"><i data-lucide="receipt"></i></div><h3>No invoices yet</h3><p>Create your first invoice to see it here.</p></div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{{ chart_labels|json_script:"chartLabels" }}
+{{ chart_values|json_script:"chartValues" }}
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+{% if has_tenant %}
+<script>
+  (function () {
+    var css = getComputedStyle(document.documentElement);
+    var brand = css.getPropertyValue('--brand-600').trim() || '#2563eb';
+    var grid = css.getPropertyValue('--border').trim() || '#e6eaf0';
+    var muted = css.getPropertyValue('--text-muted').trim() || '#64748b';
+    var labels = JSON.parse(document.getElementById('chartLabels').textContent);
+    var values = JSON.parse(document.getElementById('chartValues').textContent);
+
+    var rc = document.getElementById('revenueChart');
+    if (rc) {
+      var g = rc.getContext('2d').createLinearGradient(0, 0, 0, 240);
+      g.addColorStop(0, brand); g.addColorStop(1, 'rgba(37,99,235,.15)');
+      new Chart(rc, {
+        type: 'bar',
+        data: { labels: labels, datasets: [{ label: 'Revenue', data: values, backgroundColor: g, borderRadius: 8, maxBarThickness: 30 }] },
+        options: {
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { beginAtZero: true, grid: { color: grid }, ticks: { color: muted, callback: function (v) { return '$' + (v / 1000) + 'k'; } } },
+            x: { grid: { display: false }, ticks: { color: muted } }
+          }
+        }
+      });
+    }
+    var gc = document.getElementById('gaugeChart');
+    if (gc) {
+      var att = {{ attainment|default:0 }};
+      new Chart(gc, {
+        type: 'doughnut',
+        data: { datasets: [{ data: [att, 100 - att], backgroundColor: [brand, grid], borderWidth: 0 }] },
+        options: { rotation: -90, circumference: 180, cutout: '74%', plugins: { legend: { display: false }, tooltip: { enabled: false } } }
+      });
+    }
+  })();
+</script>
+{% endif %}
+{% endblock %}
