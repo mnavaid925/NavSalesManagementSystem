@@ -1,0 +1,10 @@
+# Sales Management System — Python dependencies
+# Install:  venv\Scripts\python.exe -m pip install -r requirements.txt
+Django>=5.1,<5.2
+PyMySQL>=1.1          # pure-python MySQL driver (install_as_MySQLdb) — no compiler needed on Windows
+python-dotenv>=1.0    # load .env into os.environ
+Faker>=25             # fake data for seeders
+
+# Dev / test
+pytest>=8
+pytest-django>=4.8
