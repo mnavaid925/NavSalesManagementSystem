@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}Proposal Generation &amp; Templating{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'quotes:quote_list' %}">Quote &amp; Proposal</a><i data-lucide="chevron-right" style="width:14px"></i><span>Proposals</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Proposal Generation &amp; Templating</h1>
+    <p class="page-subtitle">{{ total }} proposal{{ total|pluralize }} on record</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'quotes:proposal_create' %}" class="btn btn-primary"><i data-lucide="plus"></i> Add Proposal</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <form method="get" style="display:flex;gap:10px;flex-wrap:wrap;width:100%;align-items:center">
+      <input type="text" name="q" value="{{ request.GET.q }}" class="form-input" placeholder="Search title, author…" style="max-width:240px">
+      <span class="list-meta" style="margin-inline-end:auto"></span>
+      <select name="template" class="form-select" style="max-width:180px" onchange="this.form.submit()">
+        <option value="">All templates</option>
+        {% for value, label in template_choices %}
+          <option value="{{ value }}" {% if request.GET.template == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <select name="status" class="form-select" style="max-width:160px" onchange="this.form.submit()">
+        <option value="">All statuses</option>
+        {% for value, label in status_choices %}
+          <option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <select name="quote" class="form-select" style="max-width:180px" onchange="this.form.submit()">
+        <option value="">All quotes</option>
+        {% for quote in quotes %}
+          <option value="{{ quote.pk }}" {% if request.GET.quote == quote.pk|stringformat:"d" %}selected{% endif %}>{{ quote.number }}</option>
+        {% endfor %}
+      </select>
+      <button class="btn btn-outline" type="submit"><i data-lucide="filter"></i> Filter</button>
+    </form>
+  </div>
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr><th>Title</th><th>Quote</th><th>Template</th><th>Status</th><th>Prepared by</th><th style="text-align:end">Actions</th></tr></thead>
+      <tbody>
+        {% for proposal in proposals %}
+          <tr>
+            <td><a href="{% url 'quotes:proposal_detail' proposal.pk %}" class="fw-600">{{ proposal.title }}</a></td>
+            <td>{% if proposal.quote %}<a href="{% url 'quotes:quote_detail' proposal.quote.pk %}" class="list-meta">{{ proposal.quote.number }}</a>{% else %}<span class="list-meta">—</span>{% endif %}</td>
+            <td>
+              {% if proposal.template == 'standard' %}<span class="badge badge-info">Standard</span>
+              {% elif proposal.template == 'executive' %}<span class="badge badge-info">Executive</span>
+              {% elif proposal.template == 'technical' %}<span class="badge badge-info">Technical</span>
+              {% elif proposal.template == 'minimal' %}<span class="badge badge-muted">Minimal</span>
+              {% else %}<span class="badge badge-muted">{{ proposal.get_template_display }}</span>{% endif %}
+            </td>
+            <td>
+              {% if proposal.status == 'draft' %}<span class="badge badge-muted">Draft</span>
+              {% elif proposal.status == 'in_review' %}<span class="badge badge-warning">In review</span>
+              {% elif proposal.status == 'final' %}<span class="badge badge-success">Final</span>
+              {% elif proposal.status == 'sent' %}<span class="badge badge-info">Sent</span>
+              {% else %}<span class="badge badge-muted">{{ proposal.get_status_display }}</span>{% endif %}
+            </td>
+            <td class="list-meta">{{ proposal.prepared_by|default:"—" }}</td>
+            <td>
+              <div class="table-actions">
+                <a href="{% url 'quotes:proposal_detail' proposal.pk %}" class="btn-icon" title="View"><i data-lucide="eye"></i></a>
+                <a href="{% url 'quotes:proposal_edit' proposal.pk %}" class="btn-icon" title="Edit"><i data-lucide="pencil"></i></a>
+                <form method="post" action="{% url 'quotes:proposal_delete' proposal.pk %}" onsubmit="return confirm('Delete this proposal?')">
+                  {% csrf_token %}
+                  <button type="submit" class="btn-icon danger" title="Delete"><i data-lucide="trash-2"></i></button>
+                </form>
+              </div>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="6"><div class="empty-state"><div class="empty-icon"><i data-lucide="file-signature"></i></div><h3>No proposals</h3><p>Generate a proposal document from a quote and a template.</p><a href="{% url 'quotes:proposal_create' %}" class="btn btn-primary" style="margin-top:14px"><i data-lucide="plus"></i> Add Proposal</a></div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div style="padding:0 16px 12px">{% include "partials/pagination.html" %}</div>
+</div>
+{% endblock %}
