@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% load humanize %}
+{% block title %}Tenant & Subscription{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Tenant &amp; Subscription Management</h1>
+    <p class="page-subtitle">Onboarding, billing, security, branding &amp; health for {% if current_tenant %}{{ current_tenant.name }}{% else %}your workspace{% endif %}</p>
+  </div>
+</div>
+
+{% if not has_tenant %}
+  <div class="card"><div class="card-body"><div class="empty-state">
+    <div class="empty-icon"><i data-lucide="building-2"></i></div>
+    <h3>No workspace selected</h3>
+    <p>Sign in as a tenant admin (e.g. <span class="code-pill">admin_acme</span> / <span class="code-pill">password123</span>) to manage Module 0.</p>
+  </div></div></div>
+{% else %}
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:18px">
+  <a href="{% url 'tenants:onboardingstep_list' %}" class="stat-card" style="display:block">
+    <div class="stat-head"><div class="stat-label">Onboarding</div><span class="stat-icon"><i data-lucide="list-checks"></i></span></div>
+    <div class="stat-value">{{ onboarding_done }}/{{ onboarding_total }}</div>
+    <div class="list-meta" style="margin-top:8px">steps complete</div>
+  </a>
+  <a href="{% url 'tenants:subscription_list' %}" class="stat-card" style="display:block">
+    <div class="stat-head"><div class="stat-label">Active Subscriptions</div><span class="stat-icon"><i data-lucide="refresh-cw"></i></span></div>
+    <div class="stat-value">{{ active_subs }}</div>
+    <div class="list-meta" style="margin-top:8px">${{ paid_revenue|floatformat:0|intcomma }} collected</div>
+  </a>
+  <a href="{% url 'tenants:encryptionkey_list' %}" class="stat-card" style="display:block">
+    <div class="stat-head"><div class="stat-label">Active Keys</div><span class="stat-icon"><i data-lucide="key-round"></i></span></div>
+    <div class="stat-value">{{ keys_active }}</div>
+    <div class="list-meta" style="margin-top:8px">isolation &amp; security</div>
+  </a>
+  <a href="{% url 'tenants:healthmetric_list' %}" class="stat-card" style="display:block">
+    <div class="stat-head"><div class="stat-label">Health Alerts</div><span class="stat-icon"><i data-lucide="activity"></i></span></div>
+    <div class="stat-value">{{ metrics_alerting }}</div>
+    <div class="list-meta" style="margin-top:8px">warning / critical</div>
+  </a>
+</div>
+
+<div class="card" style="margin-top:18px">
+  <div class="card-header"><div class="card-title">Sub-modules</div></div>
+  <div class="card-body" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px">
+    <a href="{% url 'tenants:onboardingstep_list' %}" class="muted-box" style="padding:16px;display:flex;gap:12px;align-items:center">
+      <span class="stat-icon"><i data-lucide="list-checks"></i></span><div><div class="fw-600">Tenant Onboarding</div><div class="list-meta">Setup checklist</div></div></a>
+    <a href="{% url 'tenants:subscription_list' %}" class="muted-box" style="padding:16px;display:flex;gap:12px;align-items:center">
+      <span class="stat-icon"><i data-lucide="credit-card"></i></span><div><div class="fw-600">Subscription &amp; Billing</div><div class="list-meta">Plans &amp; invoices</div></div></a>
+    <a href="{% url 'tenants:encryptionkey_list' %}" class="muted-box" style="padding:16px;display:flex;gap:12px;align-items:center">
+      <span class="stat-icon"><i data-lucide="shield-check"></i></span><div><div class="fw-600">Isolation &amp; Security</div><div class="list-meta">Encryption keys</div></div></a>
+    <a href="{% url 'tenants:brandingsetting_list' %}" class="muted-box" style="padding:16px;display:flex;gap:12px;align-items:center">
+      <span class="stat-icon"><i data-lucide="palette"></i></span><div><div class="fw-600">Custom Branding</div><div class="list-meta">White-label profiles</div></div></a>
+    <a href="{% url 'tenants:healthmetric_list' %}" class="muted-box" style="padding:16px;display:flex;gap:12px;align-items:center">
+      <span class="stat-icon"><i data-lucide="activity"></i></span><div><div class="fw-600">Health Monitoring</div><div class="list-meta">Resource metrics</div></div></a>
+  </div>
+</div>
+{% endif %}
+{% endblock %}
