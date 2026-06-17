@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}Roles{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'dashboard:index' %}">Workspace</a><i data-lucide="chevron-right" style="width:14px"></i><span>Roles</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Roles</h1>
+    <p class="page-subtitle">{{ total }} role{{ total|pluralize }} defined for this workspace</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'accounts:role_create' %}" class="btn btn-primary"><i data-lucide="plus"></i> Add Role</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <form method="get" style="display:flex;gap:10px;flex-wrap:wrap;width:100%">
+      <div class="searchbar" style="max-width:320px;flex:1">
+        <i data-lucide="search" style="width:17px"></i>
+        <input type="text" name="q" value="{{ request.GET.q }}" placeholder="Search roles…">
+      </div>
+      <select name="level" class="form-select" style="max-width:200px" onchange="this.form.submit()">
+        <option value="">All levels</option>
+        {% for value, label in level_choices %}
+          <option value="{{ value }}" {% if request.GET.level == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <button class="btn btn-outline" type="submit"><i data-lucide="filter"></i> Filter</button>
+    </form>
+  </div>
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr><th>Name</th><th>Level</th><th>Members</th><th>Status</th><th style="text-align:end">Actions</th></tr></thead>
+      <tbody>
+        {% for r in roles %}
+          <tr>
+            <td>
+              <a href="{% url 'accounts:role_detail' r.pk %}" class="fw-600">{{ r.name }}</a>
+              {% if r.description %}<div class="list-meta">{{ r.description|truncatechars:60 }}</div>{% endif %}
+            </td>
+            <td><span class="badge badge-brand">{{ r.get_level_display }}</span></td>
+            <td class="fw-700">{{ r.users.count }}</td>
+            <td>
+              {% if r.is_active %}<span class="badge badge-success">Active</span>
+              {% else %}<span class="badge badge-muted">Inactive</span>{% endif %}
+            </td>
+            <td>
+              <div class="table-actions">
+                <a href="{% url 'accounts:role_detail' r.pk %}" class="btn-icon" title="View"><i data-lucide="eye"></i></a>
+                <a href="{% url 'accounts:role_edit' r.pk %}" class="btn-icon" title="Edit"><i data-lucide="pencil"></i></a>
+                <form method="post" action="{% url 'accounts:role_delete' r.pk %}" onsubmit="return confirm('Delete this role?')">
+                  {% csrf_token %}
+                  <button type="submit" class="btn-icon danger" title="Delete"><i data-lucide="trash-2"></i></button>
+                </form>
+              </div>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="5"><div class="empty-state"><div class="empty-icon"><i data-lucide="shield"></i></div><h3>No roles yet</h3><p>Create your first role to organize team permissions.</p><a href="{% url 'accounts:role_create' %}" class="btn btn-primary" style="margin-top:14px"><i data-lucide="plus"></i> Add Role</a></div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div style="padding:0 16px 12px">{% include "partials/pagination.html" %}</div>
+</div>
+{% endblock %}
