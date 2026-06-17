@@ -1,0 +1,95 @@
+{% comment %}
+  Layout customizer — every option writes a data-* attribute on <html> via layout.js
+  and persists to localStorage. Covers all requested layout features.
+{% endcomment %}
+<div id="customizer-overlay" class="overlay"></div>
+<aside id="customizer" class="customizer" aria-label="Theme customizer">
+  <div class="customizer-head">
+    <div>
+      <div class="fw-700" style="font-size:15px">Customize</div>
+      <div class="list-meta">Personalize your workspace</div>
+    </div>
+    <button class="icon-btn" data-customizer-close aria-label="Close"><i data-lucide="x"></i></button>
+  </div>
+
+  <div class="customizer-body">
+    <div class="customizer-section">
+      <h4>Color Scheme</h4>
+      <div class="opt-row">
+        <button class="opt" data-key="bsTheme" data-value="light">Light</button>
+        <button class="opt" data-key="bsTheme" data-value="dark">Dark</button>
+      </div>
+    </div>
+
+    <div class="customizer-section">
+      <h4>Sidebar Layout</h4>
+      <div class="opt-row" style="grid-template-columns:repeat(3,1fr)">
+        <button class="opt" data-key="sidebar" data-value="vertical">Vertical</button>
+        <button class="opt" data-key="sidebar" data-value="horizontal">Horizontal</button>
+        <button class="opt" data-key="sidebar" data-value="detached">Detached</button>
+      </div>
+    </div>
+
+    <div class="customizer-section">
+      <h4>Layout Width</h4>
+      <div class="opt-row">
+        <button class="opt" data-key="layoutWidth" data-value="fluid">Fluid</button>
+        <button class="opt" data-key="layoutWidth" data-value="boxed">Boxed</button>
+      </div>
+    </div>
+
+    <div class="customizer-section">
+      <h4>Layout Position</h4>
+      <div class="opt-row">
+        <button class="opt" data-key="layoutPosition" data-value="fixed">Fixed</button>
+        <button class="opt" data-key="layoutPosition" data-value="scrollable">Scrollable</button>
+      </div>
+    </div>
+
+    <div class="customizer-section">
+      <h4>Topbar Color</h4>
+      <div class="opt-row">
+        <button class="opt" data-key="topbar" data-value="light">Light</button>
+        <button class="opt" data-key="topbar" data-value="dark">Dark</button>
+      </div>
+    </div>
+
+    <div class="customizer-section">
+      <h4>Sidebar Size</h4>
+      <div class="opt-row">
+        <button class="opt" data-key="sidebarSize" data-value="default">Default</button>
+        <button class="opt" data-key="sidebarSize" data-value="compact">Compact</button>
+        <button class="opt" data-key="sidebarSize" data-value="small-icon">Small Icon</button>
+        <button class="opt" data-key="sidebarSize" data-value="icon-hover">Icon Hover</button>
+      </div>
+    </div>
+
+    <div class="customizer-section">
+      <h4>Sidebar Color</h4>
+      <div class="opt-row">
+        <button class="opt" data-key="sidebarColor" data-value="light">Light</button>
+        <button class="opt" data-key="sidebarColor" data-value="colored">Colored</button>
+      </div>
+    </div>
+
+    <div class="customizer-section">
+      <h4>Direction</h4>
+      <div class="opt-row">
+        <button class="opt" data-key="dir" data-value="ltr">LTR</button>
+        <button class="opt" data-key="dir" data-value="rtl">RTL</button>
+      </div>
+    </div>
+
+    <div class="customizer-section">
+      <h4>Preloader</h4>
+      <div class="opt-row">
+        <button class="opt" data-key="preloader" data-value="enable">Enable</button>
+        <button class="opt" data-key="preloader" data-value="disable">Disable</button>
+      </div>
+    </div>
+
+    <button class="btn btn-outline btn-block" data-customizer-reset>
+      <i data-lucide="rotate-ccw"></i> Reset to default
+    </button>
+  </div>
+</aside>
