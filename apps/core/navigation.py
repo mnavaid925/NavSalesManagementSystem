@@ -123,10 +123,21 @@ def _href(module_number, sub_name):
             return "#", False
 
 
-def build_sidebar():
-    """Return the resolved sidebar tree (cached after first build)."""
+def reset_sidebar_cache():
+    """Drop the cached sidebar (used by tests / after wiring new LIVE_LINKS)."""
     global _SIDEBAR_CACHE
-    if _SIDEBAR_CACHE is not None:
+    _SIDEBAR_CACHE = None
+
+
+def build_sidebar():
+    """Return the resolved sidebar tree (cached after first build).
+
+    In DEBUG we skip the cache so newly-wired LIVE_LINKS appear without a restart.
+    """
+    from django.conf import settings
+
+    global _SIDEBAR_CACHE
+    if _SIDEBAR_CACHE is not None and not settings.DEBUG:
         return _SIDEBAR_CACHE
     modules = []
     for mod in MODULE_CATALOG:
