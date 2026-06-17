@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}{{ obj.title }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'tenants:overview' %}">Tenant &amp; Subscription</a><i data-lucide="chevron-right" style="width:14px"></i>
+  <a href="{% url 'tenants:onboardingstep_list' %}">Onboarding</a><i data-lucide="chevron-right" style="width:14px"></i><span>{{ obj.title }}</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ obj.title }}</h1>
+    <p class="page-subtitle">Step {{ obj.order }} in the onboarding checklist</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'tenants:onboardingstep_list' %}" class="btn btn-outline"><i data-lucide="arrow-left"></i> Back</a>
+    <a href="{% url 'tenants:onboardingstep_edit' obj.pk %}" class="btn btn-primary"><i data-lucide="pencil"></i> Edit</a>
+  </div>
+</div>
+
+<div style="display:grid;grid-template-columns:2fr 1fr;gap:18px">
+  <div class="card"><div class="card-body">
+    <h3 style="font-size:15px;margin-bottom:12px">Details</h3>
+    <div class="form-group"><div class="form-label">Status</div>
+      {% if obj.status == 'done' %}<span class="badge badge-success">Done</span>
+      {% elif obj.status == 'in_progress' %}<span class="badge badge-warning">In progress</span>
+      {% else %}<span class="badge badge-muted">{{ obj.get_status_display }}</span>{% endif %}
+    </div>
+    <div class="form-group"><div class="form-label">Description</div>
+      <div>{{ obj.description|default:"—"|linebreaksbr }}</div></div>
+    <div class="form-group"><div class="form-label">Completed</div>
+      <div>{% if obj.completed_at %}{{ obj.completed_at|date:"d M Y, H:i" }}{% else %}— not yet completed{% endif %}</div></div>
+  </div></div>
+
+  <div class="card"><div class="card-body">
+    <h3 style="font-size:15px;margin-bottom:12px">Actions</h3>
+    <a href="{% url 'tenants:onboardingstep_edit' obj.pk %}" class="btn btn-outline btn-block" style="margin-bottom:10px"><i data-lucide="pencil"></i> Edit step</a>
+    <form method="post" action="{% url 'tenants:onboardingstep_delete' obj.pk %}" onsubmit="return confirm('Delete this onboarding step?')">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger btn-block"><i data-lucide="trash-2"></i> Delete step</button>
+    </form>
+    <hr class="divider">
+    <div class="list-meta">Created {{ obj.created_at|date:"d M Y" }}</div>
+  </div></div>
+</div>
+{% endblock %}
