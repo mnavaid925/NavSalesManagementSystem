@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block title %}Account Hierarchy &amp; Parent-Child{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'crm:account_list' %}">Contact &amp; Account Management</a><i data-lucide="chevron-right" style="width:14px"></i><span>Accounts</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Account Hierarchy &amp; Parent-Child</h1>
+    <p class="page-subtitle">{{ total }} account{{ total|pluralize }} on record</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'crm:account_create' %}" class="btn btn-primary"><i data-lucide="plus"></i> Add Account</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <form method="get" style="display:flex;gap:10px;flex-wrap:wrap;width:100%;align-items:center">
+      <input type="search" name="q" value="{{ request.GET.q }}" class="form-input" placeholder="Search accounts…" style="max-width:240px">
+      <span class="list-meta" style="margin-inline-end:auto"></span>
+      <select name="account_type" class="form-select" style="max-width:170px" onchange="this.form.submit()">
+        <option value="">All types</option>
+        {% for value, label in type_choices %}
+          <option value="{{ value }}" {% if request.GET.account_type == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <select name="status" class="form-select" style="max-width:160px" onchange="this.form.submit()">
+        <option value="">All statuses</option>
+        {% for value, label in status_choices %}
+          <option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <select name="tier" class="form-select" style="max-width:170px" onchange="this.form.submit()">
+        <option value="">All tiers</option>
+        {% for t in tiers %}
+          <option value="{{ t.pk }}" {% if request.GET.tier == t.pk|stringformat:"d" %}selected{% endif %}>{{ t.name }}</option>
+        {% endfor %}
+      </select>
+      <button class="btn btn-outline" type="submit"><i data-lucide="filter"></i> Filter</button>
+    </form>
+  </div>
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr><th>Account</th><th>Type</th><th>Status</th><th>Tier</th><th>Parent</th><th style="text-align:end">Actions</th></tr></thead>
+      <tbody>
+        {% for acct in accounts %}
+          <tr>
+            <td>
+              <a href="{% url 'crm:account_detail' acct.pk %}" class="fw-600">{{ acct.name }}</a>
+              <div class="list-meta">{{ acct.number }}{% if acct.industry %} · {{ acct.industry }}{% endif %}</div>
+            </td>
+            <td>
+              {% if acct.account_type == 'customer' %}<span class="badge badge-success">Customer</span>
+              {% elif acct.account_type == 'prospect' %}<span class="badge badge-info">Prospect</span>
+              {% elif acct.account_type == 'partner' %}<span class="badge badge-info">Partner</span>
+              {% elif acct.account_type == 'reseller' %}<span class="badge badge-muted">Reseller</span>
+              {% elif acct.account_type == 'competitor' %}<span class="badge badge-danger">Competitor</span>
+              {% else %}<span class="badge badge-muted">{{ acct.get_account_type_display }}</span>{% endif %}
+            </td>
+            <td>
+              {% if acct.status == 'active' %}<span class="badge badge-success">Active</span>
+              {% elif acct.status == 'inactive' %}<span class="badge badge-muted">Inactive</span>
+              {% elif acct.status == 'churned' %}<span class="badge badge-danger">Churned</span>
+              {% else %}<span class="badge badge-muted">{{ acct.get_status_display }}</span>{% endif %}
+            </td>
+            <td class="list-meta">{% if acct.tier %}{{ acct.tier.name }}{% else %}—{% endif %}</td>
+            <td class="list-meta">{% if acct.parent %}{{ acct.parent.name }}{% else %}—{% endif %}</td>
+            <td>
+              <div class="table-actions">
+                <a href="{% url 'crm:account_detail' acct.pk %}" class="btn-icon" title="View"><i data-lucide="eye"></i></a>
+                <a href="{% url 'crm:account_edit' acct.pk %}" class="btn-icon" title="Edit"><i data-lucide="pencil"></i></a>
+                <form method="post" action="{% url 'crm:account_delete' acct.pk %}" onsubmit="return confirm('Delete this account?')">
+                  {% csrf_token %}
+                  <button type="submit" class="btn-icon danger" title="Delete"><i data-lucide="trash-2"></i></button>
+                </form>
+              </div>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="6"><div class="empty-state"><div class="empty-icon"><i data-lucide="building-2"></i></div><h3>No accounts</h3><p>Create your first account to start mapping the org.</p><a href="{% url 'crm:account_create' %}" class="btn btn-primary" style="margin-top:14px"><i data-lucide="plus"></i> Add Account</a></div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div style="padding:0 16px 12px">{% include "partials/pagination.html" %}</div>
+</div>
+{% endblock %}
