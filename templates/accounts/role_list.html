@@ -42,7 +42,7 @@
               {% if r.description %}<div class="list-meta">{{ r.description|truncatechars:60 }}</div>{% endif %}
             </td>
             <td><span class="badge badge-brand">{{ r.get_level_display }}</span></td>
-            <td class="fw-700">{{ r.users.count }}</td>
+            <td class="fw-700">{{ r.user_count }}</td>
             <td>
               {% if r.is_active %}<span class="badge badge-success">Active</span>
               {% else %}<span class="badge badge-muted">Inactive</span>{% endif %}
