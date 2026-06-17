@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}Pipeline Visibility &amp; Forecasting{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'opportunities:opportunity_list' %}">Opportunity &amp; Pipeline</a><i data-lucide="chevron-right" style="width:14px"></i><span>Pipeline Stages</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Pipeline Visibility &amp; Forecasting</h1>
+    <p class="page-subtitle">{{ total }} stage{{ total|pluralize }} on record</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'opportunities:pipelinestage_create' %}" class="btn btn-primary"><i data-lucide="plus"></i> Add Stage</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <form method="get" style="display:flex;gap:10px;flex-wrap:wrap;width:100%;align-items:center">
+      <input type="text" name="q" value="{{ request.GET.q }}" placeholder="Search stages…" class="form-input" style="max-width:240px">
+      <span class="list-meta" style="margin-inline-end:auto"></span>
+      <select name="stage_type" class="form-select" style="max-width:180px" onchange="this.form.submit()">
+        <option value="">All types</option>
+        {% for value, label in type_choices %}
+          <option value="{{ value }}" {% if request.GET.stage_type == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <button class="btn btn-outline" type="submit"><i data-lucide="filter"></i> Filter</button>
+    </form>
+  </div>
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr><th>Stage</th><th>Type</th><th>Order</th><th>Probability</th><th>Active</th><th style="text-align:end">Actions</th></tr></thead>
+      <tbody>
+        {% for stage in stages %}
+          <tr>
+            <td><a href="{% url 'opportunities:pipelinestage_detail' stage.pk %}" class="fw-600">{{ stage.name }}</a></td>
+            <td>
+              {% if stage.stage_type == 'open' %}<span class="badge badge-info">Open</span>
+              {% elif stage.stage_type == 'won' %}<span class="badge badge-success">Won</span>
+              {% elif stage.stage_type == 'lost' %}<span class="badge badge-danger">Lost</span>
+              {% else %}<span class="badge badge-muted">{{ stage.get_stage_type_display }}</span>{% endif %}
+            </td>
+            <td class="fw-600">{{ stage.order }}</td>
+            <td>{{ stage.probability }}%</td>
+            <td>
+              {% if stage.is_active %}<span class="badge badge-success">Active</span>{% else %}<span class="badge badge-muted">Inactive</span>{% endif %}
+            </td>
+            <td>
+              <div class="table-actions">
+                <a href="{% url 'opportunities:pipelinestage_detail' stage.pk %}" class="btn-icon" title="View"><i data-lucide="eye"></i></a>
+                <a href="{% url 'opportunities:pipelinestage_edit' stage.pk %}" class="btn-icon" title="Edit"><i data-lucide="pencil"></i></a>
+                <form method="post" action="{% url 'opportunities:pipelinestage_delete' stage.pk %}" onsubmit="return confirm('Delete this stage?')">
+                  {% csrf_token %}
+                  <button type="submit" class="btn-icon danger" title="Delete"><i data-lucide="trash-2"></i></button>
+                </form>
+              </div>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="6"><div class="empty-state"><div class="empty-icon"><i data-lucide="filter"></i></div><h3>No pipeline stages</h3><p>Create stages to structure your sales pipeline.</p><a href="{% url 'opportunities:pipelinestage_create' %}" class="btn btn-primary" style="margin-top:14px"><i data-lucide="plus"></i> Add Stage</a></div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div style="padding:0 16px 12px">{% include "partials/pagination.html" %}</div>
+</div>
+{% endblock %}
