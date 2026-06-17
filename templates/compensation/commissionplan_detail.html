@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% block title %}{{ obj.name }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'compensation:commissionplan_list' %}">Incentive Compensation</a><i data-lucide="chevron-right" style="width:14px"></i>
+  <a href="{% url 'compensation:commissionplan_list' %}">Commission Plans</a><i data-lucide="chevron-right" style="width:14px"></i><span>{{ obj.name }}</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ obj.name }}</h1>
+    <p class="page-subtitle">{{ obj.get_plan_type_display }} · {{ obj.base_rate|floatformat:2 }}% base rate</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'compensation:commissionplan_list' %}" class="btn btn-outline"><i data-lucide="arrow-left"></i> Back</a>
+    <a href="{% url 'compensation:commissionplan_edit' obj.pk %}" class="btn btn-primary"><i data-lucide="pencil"></i> Edit</a>
+  </div>
+</div>
+
+<div class="detail-grid">
+  <div>
+    <div class="card"><div class="card-body">
+      <h3 style="font-size:15px;margin-bottom:12px">Details</h3>
+      <div class="detail-grid">
+        <div class="form-group"><div class="form-label">Plan name</div>
+          <div class="fw-600">{{ obj.name }}</div></div>
+        <div class="form-group"><div class="form-label">Code</div>
+          <div>{{ obj.code|default:"—" }}</div></div>
+        <div class="form-group"><div class="form-label">Type</div>
+          {% if obj.plan_type == 'flat' %}<span class="badge badge-info">Flat rate</span>
+          {% elif obj.plan_type == 'tiered' %}<span class="badge badge-info">Tiered</span>
+          {% elif obj.plan_type == 'accelerator' %}<span class="badge badge-success">Accelerator</span>
+          {% elif obj.plan_type == 'bonus' %}<span class="badge badge-warning">Bonus / SPIFF</span>
+          {% else %}<span class="badge badge-muted">{{ obj.get_plan_type_display }}</span>{% endif %}
+        </div>
+        <div class="form-group"><div class="form-label">Status</div>
+          {% if obj.status == 'active' %}<span class="badge badge-success">Active</span>
+          {% elif obj.status == 'draft' %}<span class="badge badge-muted">Draft</span>
+          {% elif obj.status == 'paused' %}<span class="badge badge-warning">Paused</span>
+          {% elif obj.status == 'archived' %}<span class="badge badge-muted">Archived</span>
+          {% else %}<span class="badge badge-muted">{{ obj.get_status_display }}</span>{% endif %}
+        </div>
+        <div class="form-group"><div class="form-label">Base rate</div>
+          <div>{{ obj.base_rate|floatformat:2 }}%</div></div>
+        <div class="form-group"><div class="form-label">Target quota</div>
+          <div>${{ obj.target_quota|floatformat:2 }}</div></div>
+        <div class="form-group"><div class="form-label">Effective from</div>
+          <div>{% if obj.effective_from %}{{ obj.effective_from|date:"d M Y" }}{% else %}—{% endif %}</div></div>
+        <div class="form-group"><div class="form-label">Effective to</div>
+          <div>{% if obj.effective_to %}{{ obj.effective_to|date:"d M Y" }}{% else %}—{% endif %}</div></div>
+      </div>
+      {% if obj.description %}<div class="form-group"><div class="form-label">Description</div>
+        <div>{{ obj.description|linebreaksbr }}</div></div>{% endif %}
+    </div></div>
+
+    <div class="card" style="margin-top:18px"><div class="card-header"><h3 class="card-title">Earnings</h3></div>
+      <div class="table-wrap">
+        <table class="table">
+          <thead><tr><th>Number</th><th>Rep</th><th>Status</th><th style="text-align:end">Commission</th></tr></thead>
+          <tbody>
+            {% for e in earnings %}
+              <tr>
+                <td><a href="{% url 'compensation:earning_detail' e.pk %}" class="fw-600">{{ e.number }}</a></td>
+                <td class="list-meta">{{ e.rep_name }}</td>
+                <td>
+                  {% if e.status == 'paid' %}<span class="badge badge-success">Paid</span>
+                  {% elif e.status == 'approved' %}<span class="badge badge-info">Approved</span>
+                  {% elif e.status == 'pending' %}<span class="badge badge-warning">Pending</span>
+                  {% elif e.status == 'disputed' %}<span class="badge badge-danger">Disputed</span>
+                  {% else %}<span class="badge badge-muted">{{ e.get_status_display }}</span>{% endif %}
+                </td>
+                <td style="text-align:end">${{ e.commission_amount|floatformat:2 }}</td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="4"><div class="empty-state"><div class="empty-icon"><i data-lucide="banknote"></i></div><h3>No earnings</h3><p>Earnings tracked against this plan will appear here.</p></div></td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:18px"><div class="card-header"><h3 class="card-title">Global variations</h3></div>
+      <div class="table-wrap">
+        <table class="table">
+          <thead><tr><th>Region</th><th>Currency</th><th>Status</th><th style="text-align:end">FX rate</th></tr></thead>
+          <tbody>
+            {% for v in variations %}
+              <tr>
+                <td><a href="{% url 'compensation:globalplanvariation_detail' v.pk %}" class="fw-600">{{ v.region }}</a></td>
+                <td class="list-meta">{{ v.currency }}</td>
+                <td>
+                  {% if v.status == 'active' %}<span class="badge badge-success">Active</span>
+                  {% elif v.status == 'pending' %}<span class="badge badge-warning">Pending</span>
+                  {% elif v.status == 'retired' %}<span class="badge badge-muted">Retired</span>
+                  {% else %}<span class="badge badge-muted">{{ v.get_status_display }}</span>{% endif %}
+                </td>
+                <td style="text-align:end">{{ v.fx_rate|floatformat:6 }}</td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="4"><div class="empty-state"><div class="empty-icon"><i data-lucide="globe"></i></div><h3>No variations</h3><p>Regional plan variations will appear here.</p></div></td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="card"><div class="card-body">
+    <h3 style="font-size:15px;margin-bottom:12px">Actions</h3>
+    <a href="{% url 'compensation:commissionplan_edit' obj.pk %}" class="btn btn-outline btn-block" style="margin-bottom:10px"><i data-lucide="pencil"></i> Edit plan</a>
+    <form method="post" action="{% url 'compensation:commissionplan_delete' obj.pk %}" onsubmit="return confirm('Delete this commission plan?')">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger btn-block"><i data-lucide="trash-2"></i> Delete plan</button>
+    </form>
+    <hr class="divider">
+    <div class="list-meta">Created {{ obj.created_at|date:"d M Y" }}</div>
+  </div></div>
+</div>
+{% endblock %}
