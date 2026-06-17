@@ -17,6 +17,25 @@
   </div>
 </div>
 
+{% if plaintext_once %}
+<div class="card" style="margin-bottom:18px;border-color:var(--brand-300)">
+  <div class="card-body">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+      <i data-lucide="key-round" class="text-brand"></i>
+      <span class="fw-700">Your new secret — copy it now</span>
+    </div>
+    <p class="list-meta" style="margin-bottom:10px">This is the only time the full secret is shown. Store it securely; it cannot be retrieved later.</p>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <code class="code-pill" id="reveal-secret" style="font-size:13px;word-break:break-all">{{ plaintext_once }}</code>
+      <button type="button" class="btn btn-outline btn-sm"
+              onclick="navigator.clipboard.writeText(document.getElementById('reveal-secret').textContent);this.innerHTML='Copied!'">
+        <i data-lucide="copy"></i> Copy
+      </button>
+    </div>
+  </div>
+</div>
+{% endif %}
+
 <div class="detail-grid">
   <div class="card"><div class="card-body">
     <h3 style="font-size:15px;margin-bottom:12px">Details</h3>
