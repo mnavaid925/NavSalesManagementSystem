@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}{{ obj }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'crm:account_list' %}">Contact &amp; Account Management</a><i data-lucide="chevron-right" style="width:14px"></i>
+  <a href="{% url 'crm:relationshipmap_list' %}">Relationships</a><i data-lucide="chevron-right" style="width:14px"></i><span>Relationship</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ obj.from_contact.full_name }} → {{ obj.to_contact.full_name }}</h1>
+    <p class="page-subtitle">{{ obj.get_relationship_type_display }} · {{ obj.get_strength_display }} strength</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'crm:relationshipmap_list' %}" class="btn btn-outline"><i data-lucide="arrow-left"></i> Back</a>
+    <a href="{% url 'crm:relationshipmap_edit' obj.pk %}" class="btn btn-primary"><i data-lucide="pencil"></i> Edit</a>
+  </div>
+</div>
+
+<div class="detail-grid">
+  <div>
+    <div class="card"><div class="card-body">
+      <h3 style="font-size:15px;margin-bottom:12px">Details</h3>
+      <div class="detail-grid">
+        <div class="form-group"><div class="form-label">From contact</div>
+          <div><a href="{% url 'crm:contact_detail' obj.from_contact.pk %}" class="fw-600">{{ obj.from_contact.full_name }}</a></div></div>
+        <div class="form-group"><div class="form-label">To contact</div>
+          <div><a href="{% url 'crm:contact_detail' obj.to_contact.pk %}" class="fw-600">{{ obj.to_contact.full_name }}</a></div></div>
+        <div class="form-group"><div class="form-label">Account</div>
+          <div>{% if obj.account %}<a href="{% url 'crm:account_detail' obj.account.pk %}">{{ obj.account.name }}</a>{% else %}—{% endif %}</div></div>
+        <div class="form-group"><div class="form-label">Type</div>
+          {% if obj.relationship_type == 'reports_to' %}<span class="badge badge-info">Reports to</span>
+          {% elif obj.relationship_type == 'influences' %}<span class="badge badge-info">Influences</span>
+          {% elif obj.relationship_type == 'sponsor' %}<span class="badge badge-success">Sponsor</span>
+          {% elif obj.relationship_type == 'blocker' %}<span class="badge badge-danger">Blocker</span>
+          {% elif obj.relationship_type == 'peer' %}<span class="badge badge-muted">Peer</span>
+          {% else %}<span class="badge badge-muted">{{ obj.get_relationship_type_display }}</span>{% endif %}
+        </div>
+        <div class="form-group"><div class="form-label">Strength</div>
+          {% if obj.strength == 'strong' %}<span class="badge badge-success">Strong</span>
+          {% elif obj.strength == 'moderate' %}<span class="badge badge-warning">Moderate</span>
+          {% elif obj.strength == 'weak' %}<span class="badge badge-muted">Weak</span>
+          {% else %}<span class="badge badge-muted">{{ obj.get_strength_display }}</span>{% endif %}
+        </div>
+      </div>
+      {% if obj.notes %}<div class="form-group" style="margin-top:8px"><div class="form-label">Notes</div><div>{{ obj.notes|linebreaksbr }}</div></div>{% endif %}
+    </div></div>
+  </div>
+
+  <div class="card"><div class="card-body">
+    <h3 style="font-size:15px;margin-bottom:12px">Actions</h3>
+    <a href="{% url 'crm:relationshipmap_edit' obj.pk %}" class="btn btn-outline btn-block" style="margin-bottom:10px"><i data-lucide="pencil"></i> Edit relationship</a>
+    <form method="post" action="{% url 'crm:relationshipmap_delete' obj.pk %}" onsubmit="return confirm('Delete this relationship?')">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger btn-block"><i data-lucide="trash-2"></i> Delete relationship</button>
+    </form>
+    <hr class="divider">
+    <div class="list-meta">Created {{ obj.created_at|date:"d M Y" }}</div>
+  </div></div>
+</div>
+{% endblock %}
