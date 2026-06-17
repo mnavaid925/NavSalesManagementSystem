@@ -49,6 +49,16 @@ INSTALLED_APPS = [
     "apps.accounts",
     "apps.dashboard",
     "apps.tenants",
+    "apps.leads",
+    "apps.opportunities",
+    "apps.crm",
+    "apps.forecasting",
+    "apps.quotes",
+    "apps.orders",
+    "apps.territories",
+    "apps.activities",
+    "apps.enablement",
+    "apps.compensation",
 ]
 
 MIDDLEWARE = [
