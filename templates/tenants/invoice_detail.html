@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}{{ obj.number }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'tenants:overview' %}">Tenant &amp; Subscription</a><i data-lucide="chevron-right" style="width:14px"></i>
+  <a href="{% url 'tenants:invoice_list' %}">Invoices</a><i data-lucide="chevron-right" style="width:14px"></i><span>{{ obj.number|default:"Invoice" }}</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ obj.number|default:"Invoice" }}</h1>
+    <p class="page-subtitle">${{ obj.amount|floatformat:2 }} ·
+      {% if obj.status == 'paid' %}Paid
+      {% elif obj.status == 'overdue' %}Overdue
+      {% elif obj.status == 'sent' %}Sent
+      {% elif obj.status == 'draft' %}Draft
+      {% else %}{{ obj.get_status_display }}{% endif %}
+    </p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'tenants:invoice_list' %}" class="btn btn-outline"><i data-lucide="arrow-left"></i> Back</a>
+    <a href="{% url 'tenants:invoice_edit' obj.pk %}" class="btn btn-primary"><i data-lucide="pencil"></i> Edit</a>
+  </div>
+</div>
+
+<div style="display:grid;grid-template-columns:2fr 1fr;gap:18px">
+  <div class="card"><div class="card-body">
+    <h3 style="font-size:15px;margin-bottom:12px">Details</h3>
+    <div class="form-group"><div class="form-label">Invoice number</div>
+      <div class="fw-600">{{ obj.number|default:"—" }}</div></div>
+    <div class="form-group"><div class="form-label">Subscription / Plan</div>
+      <div>{% if obj.subscription %}{{ obj.subscription.get_plan_display }}{% else %}—{% endif %}</div></div>
+    <div class="form-group"><div class="form-label">Amount</div>
+      <div class="fw-600">${{ obj.amount|floatformat:2 }}</div></div>
+    <div class="form-group"><div class="form-label">Status</div>
+      {% if obj.status == 'paid' %}<span class="badge badge-success">Paid</span>
+      {% elif obj.status == 'overdue' %}<span class="badge badge-danger">Overdue</span>
+      {% elif obj.status == 'sent' %}<span class="badge badge-info">Sent</span>
+      {% elif obj.status == 'draft' %}<span class="badge badge-muted">Draft</span>
+      {% else %}<span class="badge badge-muted">{{ obj.get_status_display }}</span>{% endif %}
+    </div>
+    <div class="form-group"><div class="form-label">Billing period</div>
+      <div>{% if obj.period_start %}{{ obj.period_start|date:"d M Y" }}{% else %}—{% endif %} &rarr; {% if obj.period_end %}{{ obj.period_end|date:"d M Y" }}{% else %}—{% endif %}</div></div>
+    <div class="form-group"><div class="form-label">Issued on</div>
+      <div>{% if obj.issued_on %}{{ obj.issued_on|date:"d M Y" }}{% else %}—{% endif %}</div></div>
+    <div class="form-group"><div class="form-label">Due on</div>
+      <div>{% if obj.due_on %}{{ obj.due_on|date:"d M Y" }}{% else %}—{% endif %}</div></div>
+    <div class="form-group"><div class="form-label">Paid at</div>
+      <div>{% if obj.paid_at %}{{ obj.paid_at|date:"d M Y, H:i" }}{% else %}—{% endif %}</div></div>
+    <div class="form-group"><div class="form-label">Notes</div>
+      <div>{{ obj.notes|default:"—"|linebreaksbr }}</div></div>
+  </div></div>
+
+  <div class="card"><div class="card-body">
+    <h3 style="font-size:15px;margin-bottom:12px">Actions</h3>
+    <a href="{% url 'tenants:invoice_edit' obj.pk %}" class="btn btn-outline btn-block" style="margin-bottom:10px"><i data-lucide="pencil"></i> Edit invoice</a>
+    <form method="post" action="{% url 'tenants:invoice_delete' obj.pk %}" onsubmit="return confirm('Delete this invoice?')">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger btn-block"><i data-lucide="trash-2"></i> Delete invoice</button>
+    </form>
+    <hr class="divider">
+    <div class="list-meta">Created {{ obj.created_at|date:"d M Y" }}</div>
+  </div></div>
+</div>
+{% endblock %}
