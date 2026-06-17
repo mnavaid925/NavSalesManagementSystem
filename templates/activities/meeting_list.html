@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}Calendar &amp; Meeting Scheduling{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'activities:activity_list' %}">Sales Activity</a><i data-lucide="chevron-right" style="width:14px"></i><span>Meetings</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Calendar &amp; Meeting Scheduling</h1>
+    <p class="page-subtitle">{{ total }} meeting{{ total|pluralize }} scheduled</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'activities:meeting_create' %}" class="btn btn-primary"><i data-lucide="plus"></i> Schedule Meeting</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <form method="get" style="display:flex;gap:10px;flex-wrap:wrap;width:100%;align-items:center">
+      <input type="text" name="q" value="{{ request.GET.q }}" placeholder="Search title, attendees, location…" class="form-input" style="max-width:280px">
+      <select name="meeting_type" class="form-select" style="max-width:180px" onchange="this.form.submit()">
+        <option value="">All types</option>
+        {% for value, label in type_choices %}
+          <option value="{{ value }}" {% if request.GET.meeting_type == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <select name="status" class="form-select" style="max-width:180px" onchange="this.form.submit()">
+        <option value="">All statuses</option>
+        {% for value, label in status_choices %}
+          <option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <button class="btn btn-outline" type="submit"><i data-lucide="filter"></i> Filter</button>
+    </form>
+  </div>
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr><th>Title</th><th>Type</th><th>Status</th><th>Date</th><th>Time</th><th style="text-align:end">Actions</th></tr></thead>
+      <tbody>
+        {% for meeting in meetings %}
+          <tr>
+            <td>
+              <a href="{% url 'activities:meeting_detail' meeting.pk %}" class="fw-600">{{ meeting.title }}</a>
+              {% if meeting.attendees %}<div class="list-meta">{{ meeting.attendees|truncatechars:40 }}</div>{% endif %}
+            </td>
+            <td>{{ meeting.get_meeting_type_display }}</td>
+            <td>
+              {% if meeting.status == 'completed' %}<span class="badge badge-success">Completed</span>
+              {% elif meeting.status == 'confirmed' %}<span class="badge badge-info">Confirmed</span>
+              {% elif meeting.status == 'scheduled' %}<span class="badge badge-warning">Scheduled</span>
+              {% elif meeting.status == 'cancelled' %}<span class="badge badge-muted">Cancelled</span>
+              {% elif meeting.status == 'no_show' %}<span class="badge badge-danger">No show</span>
+              {% else %}<span class="badge badge-muted">{{ meeting.get_status_display }}</span>{% endif %}
+            </td>
+            <td class="list-meta">{% if meeting.scheduled_date %}{{ meeting.scheduled_date|date:"d M Y" }}{% else %}—{% endif %}</td>
+            <td class="list-meta">{% if meeting.start_time %}{{ meeting.start_time|time:"H:i" }}{% else %}—{% endif %}</td>
+            <td>
+              <div class="table-actions">
+                <a href="{% url 'activities:meeting_detail' meeting.pk %}" class="btn-icon" title="View"><i data-lucide="eye"></i></a>
+                <a href="{% url 'activities:meeting_edit' meeting.pk %}" class="btn-icon" title="Edit"><i data-lucide="pencil"></i></a>
+                <form method="post" action="{% url 'activities:meeting_delete' meeting.pk %}" onsubmit="return confirm('Delete this meeting?')">
+                  {% csrf_token %}
+                  <button type="submit" class="btn-icon danger" title="Delete"><i data-lucide="trash-2"></i></button>
+                </form>
+              </div>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="6"><div class="empty-state"><div class="empty-icon"><i data-lucide="calendar"></i></div><h3>No meetings</h3><p>Schedule your first meeting to populate the calendar.</p><a href="{% url 'activities:meeting_create' %}" class="btn btn-primary" style="margin-top:14px"><i data-lucide="plus"></i> Schedule Meeting</a></div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div style="padding:0 16px 12px">{% include "partials/pagination.html" %}</div>
+</div>
+{% endblock %}
