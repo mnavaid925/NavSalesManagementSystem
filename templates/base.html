@@ -45,7 +45,11 @@
   {% include "partials/customizer.html" %}
   {% include "partials/messages.html" %}
 
-  <script>lucide.createIcons();</script>
+  <script>
+    lucide.createIcons();
+    // Re-render icons after any HTMX swap so injected partials get their glyphs.
+    document.body.addEventListener("htmx:afterSwap", function () { lucide.createIcons(); });
+  </script>
   {% block scripts %}{% endblock %}
 </body>
 </html>
