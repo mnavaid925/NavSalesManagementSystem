@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'leads:lead_list' %}">Lead Management</a><i data-lucide="chevron-right" style="width:14px"></i>
+  <a href="{% url 'leads:leadscore_list' %}">Scores</a><i data-lucide="chevron-right" style="width:14px"></i><span>{{ obj.lead.full_name }}</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Score {{ obj.score }} <span class="badge badge-info" style="vertical-align:middle">{{ obj.get_grade_display }}</span></h1>
+    <p class="page-subtitle">{{ obj.lead.full_name }} · {{ obj.lead.number }}</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'leads:leadscore_list' %}" class="btn btn-outline"><i data-lucide="arrow-left"></i> Back</a>
+    <a href="{% url 'leads:leadscore_edit' obj.pk %}" class="btn btn-primary"><i data-lucide="pencil"></i> Edit</a>
+  </div>
+</div>
+
+<div class="detail-grid">
+  <div>
+    <div class="card"><div class="card-body">
+      <h3 style="font-size:15px;margin-bottom:12px">Details</h3>
+      <div class="form-group"><div class="form-label">Lead</div>
+        <div class="fw-600"><a href="{% url 'leads:lead_detail' obj.lead.pk %}">{{ obj.lead.full_name }}</a></div></div>
+      <div class="form-group"><div class="form-label">Score</div>
+        <div class="fw-600">{{ obj.score }}</div></div>
+      <div class="form-group"><div class="form-label">Grade</div>
+        {% if obj.grade == 'A' %}<span class="badge badge-success">A — Excellent</span>
+        {% elif obj.grade == 'B' %}<span class="badge badge-info">B — Good</span>
+        {% elif obj.grade == 'C' %}<span class="badge badge-warning">C — Fair</span>
+        {% elif obj.grade == 'D' %}<span class="badge badge-danger">D — Poor</span>
+        {% else %}<span class="badge badge-muted">{{ obj.get_grade_display }}</span>{% endif %}
+      </div>
+      <div class="form-group"><div class="form-label">Scoring model</div>
+        <div>{{ obj.get_scoring_model_display }}</div></div>
+      <div class="form-group"><div class="form-label">Demographic points</div>
+        <div>{{ obj.demographic_points }}</div></div>
+      <div class="form-group"><div class="form-label">Behavioral points</div>
+        <div>{{ obj.behavioral_points }}</div></div>
+      <div class="form-group"><div class="form-label">Reason</div>
+        <div>{{ obj.reason|default:"—" }}</div></div>
+      <div class="form-group"><div class="form-label">Scored on</div>
+        <div>{% if obj.scored_on %}{{ obj.scored_on|date:"d M Y" }}{% else %}—{% endif %}</div></div>
+    </div></div>
+  </div>
+
+  <div class="card"><div class="card-body">
+    <h3 style="font-size:15px;margin-bottom:12px">Actions</h3>
+    <a href="{% url 'leads:leadscore_edit' obj.pk %}" class="btn btn-outline btn-block" style="margin-bottom:10px"><i data-lucide="pencil"></i> Edit score</a>
+    <form method="post" action="{% url 'leads:leadscore_delete' obj.pk %}" onsubmit="return confirm('Delete this score?')">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger btn-block"><i data-lucide="trash-2"></i> Delete score</button>
+    </form>
+    <hr class="divider">
+    <div class="list-meta">Created {{ obj.created_at|date:"d M Y" }}</div>
+  </div></div>
+</div>
+{% endblock %}
