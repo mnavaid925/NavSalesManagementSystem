@@ -55,7 +55,8 @@ class Command(BaseCommand):
                 defaults={"name": spec["name"], "industry": spec["industry"], "status": Tenant.STATUS_ACTIVE},
             )
             if not t_created and tenant.users.exists():
-                self.stdout.write(f"Tenant '{tenant.slug}' already seeded — skipping users.")
+                self.stdout.write(f"Tenant '{tenant.slug}' already seeded — skipping.")
+                continue
             self._seed_tenant(tenant)
 
         self._summary()
