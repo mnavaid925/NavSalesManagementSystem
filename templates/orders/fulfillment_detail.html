@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}{{ obj }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'orders:order_list' %}">Order Management</a><i data-lucide="chevron-right" style="width:14px"></i>
+  <a href="{% url 'orders:fulfillment_list' %}">Fulfillment</a><i data-lucide="chevron-right" style="width:14px"></i><span>{{ obj.order.number }}</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Fulfillment · {{ obj.order.number }}</h1>
+    <p class="page-subtitle">{{ obj.get_carrier_display }} · {{ obj.tracking_number|default:"no tracking" }}</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'orders:fulfillment_list' %}" class="btn btn-outline"><i data-lucide="arrow-left"></i> Back</a>
+    <a href="{% url 'orders:fulfillment_edit' obj.pk %}" class="btn btn-primary"><i data-lucide="pencil"></i> Edit</a>
+  </div>
+</div>
+
+<div class="detail-grid">
+  <div>
+    <div class="card"><div class="card-body">
+      <h3 style="font-size:15px;margin-bottom:12px">Details</h3>
+      <div class="form-group"><div class="form-label">Order</div>
+        <div><a href="{% url 'orders:order_detail' obj.order.pk %}" class="fw-600">{{ obj.order.number }}</a></div></div>
+      <div class="form-group"><div class="form-label">Warehouse</div>
+        <div>{{ obj.warehouse|default:"—" }}</div></div>
+      <div class="form-group"><div class="form-label">Carrier</div>
+        <div>{{ obj.get_carrier_display }}</div></div>
+      <div class="form-group"><div class="form-label">Tracking number</div>
+        <div class="fw-600">{{ obj.tracking_number|default:"—" }}</div></div>
+      <div class="form-group"><div class="form-label">Status</div>
+        {% if obj.status == 'delivered' %}<span class="badge badge-success">Delivered</span>
+        {% elif obj.status == 'shipped' %}<span class="badge badge-info">Shipped</span>
+        {% elif obj.status == 'packed' %}<span class="badge badge-warning">Packed</span>
+        {% elif obj.status == 'picking' %}<span class="badge badge-warning">Picking</span>
+        {% elif obj.status == 'returned' %}<span class="badge badge-danger">Returned</span>
+        {% elif obj.status == 'pending' %}<span class="badge badge-muted">Pending</span>
+        {% else %}<span class="badge badge-muted">{{ obj.get_status_display }}</span>{% endif %}
+      </div>
+      <div class="form-group"><div class="form-label">Shipped on</div>
+        <div>{% if obj.shipped_on %}{{ obj.shipped_on|date:"d M Y" }}{% else %}—{% endif %}</div></div>
+      <div class="form-group"><div class="form-label">Expected delivery</div>
+        <div>{% if obj.expected_delivery %}{{ obj.expected_delivery|date:"d M Y" }}{% else %}—{% endif %}</div></div>
+      <div class="form-group"><div class="form-label">Notes</div>
+        <div>{{ obj.notes|default:"—" }}</div></div>
+    </div></div>
+  </div>
+
+  <div class="card"><div class="card-body">
+    <h3 style="font-size:15px;margin-bottom:12px">Actions</h3>
+    <a href="{% url 'orders:fulfillment_edit' obj.pk %}" class="btn btn-outline btn-block" style="margin-bottom:10px"><i data-lucide="pencil"></i> Edit fulfillment</a>
+    <form method="post" action="{% url 'orders:fulfillment_delete' obj.pk %}" onsubmit="return confirm('Delete this fulfillment?')">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger btn-block"><i data-lucide="trash-2"></i> Delete fulfillment</button>
+    </form>
+    <hr class="divider">
+    <div class="list-meta">Created {{ obj.created_at|date:"d M Y" }}</div>
+    {% if obj.delivered_at %}<div class="list-meta">Delivered {{ obj.delivered_at|date:"d M Y" }}</div>{% endif %}
+  </div></div>
+</div>
+{% endblock %}
