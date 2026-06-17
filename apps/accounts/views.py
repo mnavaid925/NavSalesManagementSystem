@@ -1,3 +1,4 @@
+from datetime import timedelta
 from functools import wraps
 
 from django.contrib import messages
@@ -245,7 +246,7 @@ def invite_create(request):
 def invite_resend(request, pk):
     invite = get_object_or_404(UserInvite, pk=pk, tenant=request.tenant)
     if request.method == "POST" and invite.status == UserInvite.STATUS_PENDING:
-        invite.expires_at = timezone.now() + timezone.timedelta(days=14)
+        invite.expires_at = timezone.now() + timedelta(days=14)
         invite.save(update_fields=["expires_at", "updated_at"])
         _send_invite_email(request, invite)
         messages.success(request, f"Invitation re-sent to {invite.email}.")
