@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}{{ sub_name|default:"Roadmap" }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'dashboard:index' %}">Dashboard</a><i data-lucide="chevron-right" style="width:14px"></i>
+  <span>{{ module_name }}</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ sub_name|default:module_name }}</h1>
+    <p class="page-subtitle">Part of <strong>{{ module_name }}</strong> (Module {{ module_number }})</p>
+  </div>
+</div>
+
+<div class="card"><div class="card-body">
+  <div class="empty-state">
+    <div class="empty-icon"><i data-lucide="construction"></i></div>
+    <h3>On the roadmap</h3>
+    <p style="max-width:480px;margin:0 auto">
+      <strong>{{ sub_name }}</strong> is planned for an upcoming release. The foundation, multi-tenancy and
+      <a href="{% url 'tenants:overview' %}">Tenant &amp; Subscription Management</a> are live today — the remaining
+      sales modules are being delivered one by one.
+    </p>
+    <a href="{% url 'dashboard:index' %}" class="btn btn-primary" style="margin-top:18px"><i data-lucide="arrow-left"></i> Back to dashboard</a>
+  </div>
+</div></div>
+{% endblock %}
