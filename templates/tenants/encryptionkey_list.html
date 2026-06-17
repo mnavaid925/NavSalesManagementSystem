@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}Tenant Isolation &amp; Security{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'tenants:overview' %}">Tenant &amp; Subscription</a><i data-lucide="chevron-right" style="width:14px"></i><span>Encryption Keys</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Encryption Keys</h1>
+    <p class="page-subtitle">{{ total }} key{{ total|pluralize }} for tenant isolation &amp; security</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'tenants:encryptionkey_create' %}" class="btn btn-primary"><i data-lucide="plus"></i> Generate Key</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <form method="get" style="display:flex;gap:10px;flex-wrap:wrap;width:100%">
+      <div class="searchbar" style="max-width:320px;flex:1">
+        <i data-lucide="search" style="width:17px"></i>
+        <input type="text" name="q" value="{{ request.GET.q }}" placeholder="Search by label…">
+      </div>
+      <select name="status" class="form-select" style="max-width:180px" onchange="this.form.submit()">
+        <option value="">All statuses</option>
+        {% for value, label in status_choices %}
+          <option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <select name="algorithm" class="form-select" style="max-width:180px" onchange="this.form.submit()">
+        <option value="">All algorithms</option>
+        {% for value, label in algo_choices %}
+          <option value="{{ value }}" {% if request.GET.algorithm == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <button class="btn btn-outline" type="submit"><i data-lucide="filter"></i> Filter</button>
+    </form>
+  </div>
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr><th>Label</th><th>Key</th><th>Algorithm</th><th>Status</th><th>Created</th><th style="text-align:end">Actions</th></tr></thead>
+      <tbody>
+        {% for key in keys %}
+          <tr>
+            <td>
+              <a href="{% url 'tenants:encryptionkey_detail' key.pk %}" class="fw-600">{{ key.label }}</a>
+            </td>
+            <td><span class="code-pill">{{ key.masked }}</span></td>
+            <td class="list-meta">{{ key.get_algorithm_display }}</td>
+            <td>
+              {% if key.status == 'active' %}<span class="badge badge-success">Active</span>
+              {% elif key.status == 'rotated' %}<span class="badge badge-warning">Rotated</span>
+              {% elif key.status == 'revoked' %}<span class="badge badge-danger">Revoked</span>
+              {% else %}<span class="badge badge-muted">{{ key.get_status_display }}</span>{% endif %}
+            </td>
+            <td class="list-meta">{{ key.created_at|date:"d M Y" }}</td>
+            <td>
+              <div class="table-actions">
+                <a href="{% url 'tenants:encryptionkey_detail' key.pk %}" class="btn-icon" title="View"><i data-lucide="eye"></i></a>
+                <a href="{% url 'tenants:encryptionkey_edit' key.pk %}" class="btn-icon" title="Edit"><i data-lucide="pencil"></i></a>
+                <form method="post" action="{% url 'tenants:encryptionkey_delete' key.pk %}" onsubmit="return confirm('Revoke &amp; delete this key? This cannot be undone.')">
+                  {% csrf_token %}
+                  <button type="submit" class="btn-icon danger" title="Delete"><i data-lucide="trash-2"></i></button>
+                </form>
+              </div>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="6"><div class="empty-state"><div class="empty-icon"><i data-lucide="key-round"></i></div><h3>No encryption keys</h3><p>Generate your first key to secure tenant data.</p><a href="{% url 'tenants:encryptionkey_create' %}" class="btn btn-primary" style="margin-top:14px"><i data-lucide="plus"></i> Generate Key</a></div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div style="padding:0 16px 12px">{% include "partials/pagination.html" %}</div>
+</div>
+{% endblock %}
