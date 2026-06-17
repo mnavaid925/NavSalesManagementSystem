@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}{{ obj.title }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'enablement:contentasset_list' %}">Sales Enablement</a><i data-lucide="chevron-right" style="width:14px"></i>
+  <a href="{% url 'enablement:playbook_list' %}">Playbooks</a><i data-lucide="chevron-right" style="width:14px"></i><span>{{ obj.title }}</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ obj.title }}</h1>
+    <p class="page-subtitle">{{ obj.get_stage_display }} stage · v{{ obj.version }}</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'enablement:playbook_list' %}" class="btn btn-outline"><i data-lucide="arrow-left"></i> Back</a>
+    <a href="{% url 'enablement:playbook_edit' obj.pk %}" class="btn btn-primary"><i data-lucide="pencil"></i> Edit</a>
+  </div>
+</div>
+
+<div class="detail-grid">
+  <div>
+    <div class="card"><div class="card-body">
+      <h3 style="font-size:15px;margin-bottom:12px">Details</h3>
+      <div class="form-group"><div class="form-label">Stage</div>
+        <div><span class="badge badge-info">{{ obj.get_stage_display }}</span></div></div>
+      <div class="form-group"><div class="form-label">Status</div>
+        {% if obj.status == 'active' %}<span class="badge badge-success">Active</span>
+        {% elif obj.status == 'draft' %}<span class="badge badge-muted">Draft</span>
+        {% elif obj.status == 'retired' %}<span class="badge badge-warning">Retired</span>
+        {% else %}<span class="badge badge-muted">{{ obj.get_status_display }}</span>{% endif %}
+      </div>
+      <div class="form-group"><div class="form-label">Persona</div>
+        <div>{{ obj.persona|default:"—" }}</div></div>
+      <div class="form-group"><div class="form-label">Owner</div>
+        <div>{{ obj.owner|default:"—" }}</div></div>
+      <div class="form-group"><div class="form-label">Summary</div>
+        <div>{{ obj.summary|default:"—"|linebreaksbr }}</div></div>
+      <div class="form-group"><div class="form-label">Guidance</div>
+        <div>{{ obj.guidance|default:"—"|linebreaksbr }}</div></div>
+      <div class="form-group"><div class="form-label">Version</div>
+        <div>{{ obj.version }}</div></div>
+    </div></div>
+  </div>
+
+  <div class="card"><div class="card-body">
+    <h3 style="font-size:15px;margin-bottom:12px">Actions</h3>
+    <a href="{% url 'enablement:playbook_edit' obj.pk %}" class="btn btn-outline btn-block" style="margin-bottom:10px"><i data-lucide="pencil"></i> Edit playbook</a>
+    <form method="post" action="{% url 'enablement:playbook_delete' obj.pk %}" onsubmit="return confirm('Delete this playbook?')">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger btn-block"><i data-lucide="trash-2"></i> Delete playbook</button>
+    </form>
+    <hr class="divider">
+    <div class="list-meta">Created {{ obj.created_at|date:"d M Y" }}</div>
+    <div class="list-meta">Updated {{ obj.updated_at|date:"d M Y" }}</div>
+  </div></div>
+</div>
+{% endblock %}
