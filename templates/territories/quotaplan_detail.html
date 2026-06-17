@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}{{ obj.number|default:obj.name }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'territories:territory_list' %}">Territory &amp; Quota</a><i data-lucide="chevron-right" style="width:14px"></i>
+  <a href="{% url 'territories:quotaplan_list' %}">Quota Plans</a><i data-lucide="chevron-right" style="width:14px"></i><span>{{ obj.number|default:obj.name }}</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ obj.number|default:obj.name }}</h1>
+    <p class="page-subtitle">{{ obj.name }} · {{ obj.get_period_type_display }} FY{{ obj.fiscal_year }}</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'territories:quotaplan_list' %}" class="btn btn-outline"><i data-lucide="arrow-left"></i> Back</a>
+    <a href="{% url 'territories:quotaplan_edit' obj.pk %}" class="btn btn-primary"><i data-lucide="pencil"></i> Edit</a>
+  </div>
+</div>
+
+<div class="detail-grid">
+  <div>
+    <div class="card"><div class="card-body">
+      <h3 style="font-size:15px;margin-bottom:12px">Details</h3>
+      <div class="form-group"><div class="form-label">Number</div>
+        <div class="fw-600">{{ obj.number|default:"—" }}</div></div>
+      <div class="form-group"><div class="form-label">Name</div>
+        <div>{{ obj.name }}</div></div>
+      <div class="form-group"><div class="form-label">Territory</div>
+        <div>{% if obj.territory %}<a href="{% url 'territories:territory_detail' obj.territory.pk %}" class="fw-600">{{ obj.territory.name }}</a>{% else %}—{% endif %}</div></div>
+      <div class="form-group"><div class="form-label">Period</div>
+        <div>{{ obj.get_period_type_display }} · FY{{ obj.fiscal_year }}</div></div>
+      <div class="form-group"><div class="form-label">Status</div>
+        {% if obj.status == 'approved' %}<span class="badge badge-success">Approved</span>
+        {% elif obj.status == 'proposed' %}<span class="badge badge-info">Proposed</span>
+        {% elif obj.status == 'locked' %}<span class="badge badge-warning">Locked</span>
+        {% elif obj.status == 'draft' %}<span class="badge badge-muted">Draft</span>
+        {% else %}<span class="badge badge-muted">{{ obj.get_status_display }}</span>{% endif %}
+      </div>
+      <div class="form-group"><div class="form-label">Target amount</div>
+        <div>${{ obj.target_amount|floatformat:2 }}</div></div>
+      <div class="form-group"><div class="form-label">Stretch amount</div>
+        <div>${{ obj.stretch_amount|floatformat:2 }}</div></div>
+      <div class="form-group"><div class="form-label">Start date</div>
+        <div>{% if obj.start_date %}{{ obj.start_date|date:"d M Y" }}{% else %}—{% endif %}</div></div>
+      <div class="form-group"><div class="form-label">End date</div>
+        <div>{% if obj.end_date %}{{ obj.end_date|date:"d M Y" }}{% else %}—{% endif %}</div></div>
+      <div class="form-group"><div class="form-label">Approved at</div>
+        <div>{% if obj.approved_at %}{{ obj.approved_at|date:"d M Y H:i" }}{% else %}—{% endif %}</div></div>
+      {% if obj.notes %}
+        <div class="form-group"><div class="form-label">Notes</div>
+          <div>{{ obj.notes|linebreaksbr }}</div></div>
+      {% endif %}
+    </div></div>
+  </div>
+
+  <div class="card"><div class="card-body">
+    <h3 style="font-size:15px;margin-bottom:12px">Actions</h3>
+    <a href="{% url 'territories:quotaplan_edit' obj.pk %}" class="btn btn-outline btn-block" style="margin-bottom:10px"><i data-lucide="pencil"></i> Edit quota plan</a>
+    <form method="post" action="{% url 'territories:quotaplan_delete' obj.pk %}" onsubmit="return confirm('Delete this quota plan?')">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger btn-block"><i data-lucide="trash-2"></i> Delete quota plan</button>
+    </form>
+    <hr class="divider">
+    <div class="list-meta">Created {{ obj.created_at|date:"d M Y" }}</div>
+  </div></div>
+</div>
+{% endblock %}
