@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}{{ obj.title }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'crm:account_list' %}">Contact &amp; Account Management</a><i data-lucide="chevron-right" style="width:14px"></i>
+  <a href="{% url 'crm:accountplan_list' %}">Account Plans</a><i data-lucide="chevron-right" style="width:14px"></i><span>{{ obj.title }}</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ obj.title }}</h1>
+    <p class="page-subtitle">{{ obj.number }} · FY{{ obj.fiscal_year }}{% if obj.account %} · {{ obj.account.name }}{% endif %}</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'crm:accountplan_list' %}" class="btn btn-outline"><i data-lucide="arrow-left"></i> Back</a>
+    <a href="{% url 'crm:accountplan_edit' obj.pk %}" class="btn btn-primary"><i data-lucide="pencil"></i> Edit</a>
+  </div>
+</div>
+
+<div class="detail-grid">
+  <div>
+    <div class="card"><div class="card-body">
+      <h3 style="font-size:15px;margin-bottom:12px">Details</h3>
+      <div class="detail-grid">
+        <div class="form-group"><div class="form-label">Plan number</div><div class="fw-600">{{ obj.number }}</div></div>
+        <div class="form-group"><div class="form-label">Account</div>
+          <div>{% if obj.account %}<a href="{% url 'crm:account_detail' obj.account.pk %}">{{ obj.account.name }}</a>{% else %}—{% endif %}</div></div>
+        <div class="form-group"><div class="form-label">Fiscal year</div><div>{{ obj.fiscal_year }}</div></div>
+        <div class="form-group"><div class="form-label">Status</div>
+          {% if obj.status == 'draft' %}<span class="badge badge-muted">Draft</span>
+          {% elif obj.status == 'active' %}<span class="badge badge-info">Active</span>
+          {% elif obj.status == 'on_track' %}<span class="badge badge-success">On track</span>
+          {% elif obj.status == 'at_risk' %}<span class="badge badge-danger">At risk</span>
+          {% elif obj.status == 'completed' %}<span class="badge badge-success">Completed</span>
+          {% else %}<span class="badge badge-muted">{{ obj.get_status_display }}</span>{% endif %}
+        </div>
+        <div class="form-group"><div class="form-label">Priority</div>
+          {% if obj.priority == 'high' %}<span class="badge badge-danger">High</span>
+          {% elif obj.priority == 'medium' %}<span class="badge badge-warning">Medium</span>
+          {% elif obj.priority == 'low' %}<span class="badge badge-muted">Low</span>
+          {% else %}<span class="badge badge-muted">{{ obj.get_priority_display }}</span>{% endif %}
+        </div>
+        <div class="form-group"><div class="form-label">Target revenue</div><div>${{ obj.target_revenue|floatformat:2 }}</div></div>
+        <div class="form-group"><div class="form-label">Current revenue</div><div>${{ obj.current_revenue|floatformat:2 }}</div></div>
+        <div class="form-group"><div class="form-label">Start date</div><div>{% if obj.start_date %}{{ obj.start_date|date:"d M Y" }}{% else %}—{% endif %}</div></div>
+        <div class="form-group"><div class="form-label">End date</div><div>{% if obj.end_date %}{{ obj.end_date|date:"d M Y" }}{% else %}—{% endif %}</div></div>
+        <div class="form-group"><div class="form-label">Approved at</div><div>{% if obj.approved_at %}{{ obj.approved_at|date:"d M Y H:i" }}{% else %}—{% endif %}</div></div>
+      </div>
+      {% if obj.objective %}<div class="form-group" style="margin-top:8px"><div class="form-label">Objective</div><div>{{ obj.objective|linebreaksbr }}</div></div>{% endif %}
+      {% if obj.growth_strategy %}<div class="form-group" style="margin-top:8px"><div class="form-label">Growth strategy</div><div>{{ obj.growth_strategy|linebreaksbr }}</div></div>{% endif %}
+    </div></div>
+  </div>
+
+  <div class="card"><div class="card-body">
+    <h3 style="font-size:15px;margin-bottom:12px">Actions</h3>
+    <a href="{% url 'crm:accountplan_edit' obj.pk %}" class="btn btn-outline btn-block" style="margin-bottom:10px"><i data-lucide="pencil"></i> Edit plan</a>
+    <form method="post" action="{% url 'crm:accountplan_delete' obj.pk %}" onsubmit="return confirm('Delete this plan?')">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger btn-block"><i data-lucide="trash-2"></i> Delete plan</button>
+    </form>
+    <hr class="divider">
+    <div class="list-meta">Created {{ obj.created_at|date:"d M Y" }}</div>
+  </div></div>
+</div>
+{% endblock %}
