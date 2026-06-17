@@ -63,3 +63,69 @@ run on XAMPP. Sidebar lists all 21 modules (1–20 as roadmap placeholders).
 
 **Verification:** `manage.py check` 0 issues · migrations clean · seeders idempotent · pytest 342/0 · smoke 54/0 · live browser confirmed.
 Commits: one file per commit, never pushed (user pushes manually).
+
+---
+
+# Build Modules 1–10 (Workflow orchestration)
+
+Goal: build modules 1–10 end-to-end matching Module 0 (`apps/tenants`). Orchestrated with the
+Workflow tool (user cap: 25 agents). Each module tenant-scoped, intra-app FKs only (no cross-module
+FKs) so the 10 build agents are fully independent.
+
+| # | name | slug | models |
+|---|---|---|---|
+| 1 | Lead Management | `leads` | Lead, LeadSource, LeadScore, NurtureCampaign, LeadConversion |
+| 2 | Opportunity & Pipeline | `opportunities` | Opportunity, PipelineStage, OpportunityActivity, Competitor, DealCollaborator |
+| 3 | Contact & Account | `crm` | Account, Contact, RelationshipMap, AccountTier, AccountPlan |
+| 4 | Sales Forecasting | `forecasting` | ForecastCategory, Forecast, Quota, ForecastAdjustment, ForecastAccuracy |
+| 5 | Quote & Proposal | `quotes` | Quote, QuoteLineItem, PricingRule, Proposal, QuoteVersion |
+| 6 | Order Management | `orders` | Order, OrderLine, Fulfillment, OrderAmendment, RevenueSchedule |
+| 7 | Territory & Quota | `territories` | Territory, TerritoryAssignment, QuotaPlan, CoverageModel, TerritoryPerformance |
+| 8 | Sales Activity & Task | `activities` | Activity, SalesTask, Meeting, EmailLog, SalesPlan |
+| 9 | Sales Enablement | `enablement` | ContentAsset, Playbook, TrainingRecord, CallRecording, CompetitiveCard |
+| 10 | Incentive Compensation | `compensation` | CommissionPlan, Earning, Clawback, GlobalPlanVariation, Payout |
+
+Phases: **Build** (10 parallel agents → code + manifest, no shared-file edits, no migrations) →
+**Integrate** (1 serial agent = single DB writer: wire settings/urls/navigation, makemigrations →
+migrate → seed_demo → seed_<slug> ×2 → check, fix at source) → **Verify** (10 parallel agents:
+smoke each module's URLs as admin_acme, assert 200/302, scan comment leaks) → **Post-workflow (me):**
+review, fix remaining failures, re-verify, emit one-file-per-commit snippet, update README.
+
+Note: the per-module 7-agent review sequence is compressed under the 25-agent cap; build+integrate+
+verify covers correctness, deeper review available later via `/sqa-review`.
+
+## Checklist
+- [x] Build (10 modules)  - [x] Integrate  - [x] Verify  - [x] Fix + re-verify (none needed)  - [x] README  - [x] Commit snippet
+
+## Review (modules 1–10)
+Delivered modules 1–10 via the `build-sms-modules-1-10` Workflow (21 agents: 10 build → 1 integrate →
+10 verify), all mirroring the Module 0 (`apps/tenants`) conventions.
+
+**Build:** 50 tenant-scoped models across 10 apps (`leads`, `opportunities`, `crm`, `forecasting`,
+`quotes`, `orders`, `territories`, `activities`, `enablement`, `compensation`), each with slug-prefixed
+unique `related_name`s, intra-app FKs only (no cross-module FKs), named indexes, per-tenant auto-numbers
+(LEAD-/OPP-/QUO-/ORD-/EARN-/PAY-… via `save()` with existence guards), system timestamps kept off forms,
+full CRUD function-based views (`@login_required` reads, `@tenant_admin_required` writes, `log_action`
+audit), `StyledFormMixin` ModelForms with tenant-scoped FK querysets, admin registration, and the
+list/detail/form template trio per model (design-system classes, GET filters reflecting `request.GET`,
+Actions column, pagination, empty-state). 274 files.
+
+**Integrate (single DB writer):** wired all 10 apps into `INSTALLED_APPS`, `config/urls.py`, and 50
+`LIVE_LINKS` entries in `apps/core/navigation.py`; `makemigrations` → 10 `0001_initial` → `migrate`
+clean to `nav_sms`; `seed_demo` + all 10 `seed_<slug>` ran and were **idempotent** on the 2nd pass
+(byte-identical counts). Zero source fixes were required.
+
+**Verification (independent gate, `temp/verify_all_1_10.py`):**
+- Sidebar: modules 1–10 each **5/5 sub-modules Live** (every `LIVE_LINKS` key matches `MODULE_CATALOG`
+  and every url_name reverses).
+- URL sweep as `admin_acme`: **250/250** URLs 200/302 (list/create/detail/edit + GET-delete→302 no-mutation).
+- **50/50** list pages: no `{# / {% comment` leaks.
+- **10/10** cross-tenant IDOR checks → 404 (tenant isolation holds).
+- `manage.py check`: 0 issues.
+
+**Known follow-up (out of scope under the 25-agent cap):** FK-bearing list views (e.g. `lead_list`,
+`opportunity_list`) don't yet `select_related()` their FKs — a minor N+1 polish, not a correctness bug.
+The full per-module 7-agent review sequence (code/explorer/frontend/perf/qa/security/test) was compressed
+into build+integrate+verify; deeper review can run later per module via `/sqa-review <module>`.
+
+Commits: one file per commit (274 files), PowerShell-safe, never pushed (user commits manually).
