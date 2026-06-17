@@ -3,16 +3,16 @@
 ## Generates a consolidated <NN>_<slug>.txt file in temp/ containing all backend
 ## (apps/<name>/) and frontend (templates/<name>/) code for one NavSalesManagementSystem module.
 ##
-## NavSalesManagementSystem is a multi-tenant Project Management System (Django 5.1 + Tailwind/HTMX/Chart.js/Lucide,
-## MySQL/MariaDB via PyMySQL). Module 0 (apps/tenants) is the flagship COMPLETE module; the
-## foundation apps accounts/core/projects/dashboard are also built. Modules 1-20 are roadmap
+## NavSalesManagementSystem is a multi-tenant Sales Management System (Django 5.1 + Tailwind/HTMX/Chart.js/Lucide,
+## MySQL/MariaDB via PyMySQL, DB nav_sms). Module 0 (apps/tenants) is the flagship COMPLETE module; the
+## foundation apps accounts/core/dashboard are also built. Modules 1-20 are roadmap
 ## placeholders built on demand by the /next-module skill — until then the script prints
 ## "(no backend folder found ...)" for them, which is expected.
 ##
 ## Usage:
 ##   pwsh .claude\skills\dump-module\dump_module.ps1 -Module tenants
 ##   pwsh .claude\skills\dump-module\dump_module.ps1 -Module 0
-##   pwsh .claude\skills\dump-module\dump_module.ps1 -Module "projects"
+##   pwsh .claude\skills\dump-module\dump_module.ps1 -Module "leads"
 ##   pwsh .claude\skills\dump-module\dump_module.ps1 -Module all      # regenerates every module
 
 [CmdletBinding()]
@@ -27,49 +27,50 @@ $ErrorActionPreference = 'Stop'
 
 # -------- Module registry --------
 # key = output file slug; value = @(<apps_folder>, <templates_folder>, <human title>)
-# Built today: tenants (Module 0) + the foundation apps accounts/core/projects/dashboard.
+# Built today: tenants (Module 0) + the foundation apps accounts/core/dashboard.
 # Modules 1-20 are FORWARD-COMPATIBLE entries matching the /next-module roadmap app slugs;
 # their apps/<slug> + templates/<slug> folders do not exist until /next-module builds them.
 $registry = [ordered]@{
     # --- Module 0 (COMPLETE) + foundation apps ---
-    '00_tenant_subscription_management' = @('tenants',        'tenants',        '0. Tenant & Subscription Management')
-    'accounts'                          = @('accounts',       'accounts',       'Foundation: Accounts (Users, Roles, Auth)')
-    'core'                              = @('core',           'core',           'Foundation: Core (Tenant, Audit, Navigation)')
-    'projects'                          = @('projects',       'projects',       'Foundation: Workspace (Projects, Tasks, Meetings, Tickets, Invoices)')
-    'dashboard'                         = @('dashboard',      'dashboard',      'Foundation: Dashboard (KPI aggregation)')
+    '00_tenants'        = @('tenants',        'tenants',        '0. Tenant & Subscription Management')
+    'accounts'          = @('accounts',       'accounts',       'Foundation: Accounts (Users, Roles, Auth)')
+    'core'              = @('core',           'core',           'Foundation: Core (Tenant, Audit, Navigation)')
+    'dashboard'         = @('dashboard',      'dashboard',      'Foundation: Dashboard (KPI aggregation)')
     # --- Modules 1-20 (roadmap; built on demand by /next-module) ---
-    '01_project_initiation'             = @('initiation',     'initiation',     '1. Project Initiation & Charter')
-    '02_project_planning'               = @('planning',       'planning',       '2. Project Planning & Scheduling')
-    '03_resource_management'            = @('resources',      'resources',      '3. Resource Management')
-    '04_cost_budget_management'         = @('budgeting',      'budgeting',      '4. Cost & Budget Management')
-    '05_risk_issue_management'          = @('risks',          'risks',          '5. Risk & Issue Management')
-    '06_quality_management'             = @('quality',        'quality',        '6. Quality Management')
-    '07_scope_requirements'             = @('scope',          'scope',          '7. Scope & Requirements Management')
-    '08_task_work_management'           = @('work',           'work',           '8. Task & Work Management')
-    '09_collaboration'                  = @('collaboration',  'collaboration',  '9. Collaboration & Communication')
-    '10_document_knowledge'             = @('documents',      'documents',      '10. Document & Knowledge Management')
-    '11_time_attendance'                = @('timesheets',     'timesheets',     '11. Time & Attendance Tracking')
-    '12_portfolio_program'              = @('portfolio',      'portfolio',      '12. Portfolio & Program Management')
-    '13_agile_scrum'                    = @('agile',          'agile',          '13. Agile & Scrum Management')
-    '14_client_collaboration'           = @('clients',        'clients',        '14. Client & External Collaboration')
-    '15_financial_billing'              = @('finance',        'finance',        '15. Financial & Billing Management')
-    '16_reporting_bi'                   = @('reporting',      'reporting',      '16. Reporting & Business Intelligence')
-    '17_workflow_automation'            = @('automation',     'automation',     '17. Workflow & Automation')
-    '18_integration_api'                = @('integrations',   'integrations',   '18. Integration & API Hub')
-    '19_master_data'                    = @('masterdata',     'masterdata',     '19. Master Data & Configuration')
-    '20_system_administration'          = @('administration', 'administration', '20. System Administration & Security')
+    '01_leads'          = @('leads',          'leads',          '1. Lead Management')
+    '02_opportunities'  = @('opportunities',  'opportunities',  '2. Opportunity & Pipeline Management')
+    '03_crm'            = @('crm',            'crm',            '3. Contact & Account Management')
+    '04_forecasting'    = @('forecasting',    'forecasting',    '4. Sales Forecasting')
+    '05_quotes'         = @('quotes',         'quotes',         '5. Quote & Proposal Management')
+    '06_orders'         = @('orders',         'orders',         '6. Order Management')
+    '07_territories'    = @('territories',    'territories',    '7. Territory & Quota Management')
+    '08_activities'     = @('activities',     'activities',     '8. Sales Activity & Task Management')
+    '09_enablement'     = @('enablement',     'enablement',     '9. Sales Enablement')
+    '10_compensation'   = @('compensation',   'compensation',   '10. Incentive Compensation Management')
+    '11_success'        = @('success',        'success',        '11. Customer Success & Account Management')
+    '12_analytics'      = @('analytics',      'analytics',      '12. Sales Analytics & Intelligence')
+    '13_marketing'      = @('marketing',      'marketing',      '13. Marketing Alignment & Attribution')
+    '14_partners'       = @('partners',       'partners',       '14. Partner & Channel Management')
+    '15_contracts'      = @('contracts',      'contracts',      '15. Contract & Subscription Management')
+    '16_mobile'         = @('mobile',         'mobile',         '16. Mobile Sales')
+    '17_automation'     = @('automation',     'automation',     '17. Workflow & Process Automation')
+    '18_integrations'   = @('integrations',   'integrations',   '18. Integration & API Hub')
+    '19_masterdata'     = @('masterdata',     'masterdata',     '19. Master Data & Configuration')
+    '20_administration' = @('administration', 'administration', '20. System Administration & Security')
 }
 
 # Friendly aliases -> registry key
 $aliases = @{
     # --- Module 0 + foundation ---
-    '0'   = '00_tenant_subscription_management'
-    '00'  = '00_tenant_subscription_management'
-    'tenants'        = '00_tenant_subscription_management'
-    'tenant'         = '00_tenant_subscription_management'
-    'subscription'   = '00_tenant_subscription_management'
-    'subscriptions'  = '00_tenant_subscription_management'
-    'billing'        = '00_tenant_subscription_management'
+    '0'   = '00_tenants'
+    '00'  = '00_tenants'
+    'tenants'        = '00_tenants'
+    'tenant'         = '00_tenants'
+    'subscription'   = '00_tenants'
+    'subscriptions'  = '00_tenants'
+    'billing'        = '00_tenants'
+    'invoice'        = '00_tenants'
+    'invoices'       = '00_tenants'
     'accounts'       = 'accounts'
     'account'        = 'accounts'
     'users'          = 'accounts'
@@ -79,97 +80,105 @@ $aliases = @{
     'core'           = 'core'
     'audit'          = 'core'
     'navigation'     = 'core'
-    'projects'       = 'projects'
-    'project'        = 'projects'
-    'workspace'      = 'projects'
-    'tasks'          = 'projects'
-    'meetings'       = 'projects'
-    'tickets'        = 'projects'
     'dashboard'      = 'dashboard'
     'kpi'            = 'dashboard'
     'home'           = 'dashboard'
     # --- Modules 1-20 numeric ---
-    '1'   = '01_project_initiation'
-    '01'  = '01_project_initiation'
-    '2'   = '02_project_planning'
-    '02'  = '02_project_planning'
-    '3'   = '03_resource_management'
-    '03'  = '03_resource_management'
-    '4'   = '04_cost_budget_management'
-    '04'  = '04_cost_budget_management'
-    '5'   = '05_risk_issue_management'
-    '05'  = '05_risk_issue_management'
-    '6'   = '06_quality_management'
-    '06'  = '06_quality_management'
-    '7'   = '07_scope_requirements'
-    '07'  = '07_scope_requirements'
-    '8'   = '08_task_work_management'
-    '08'  = '08_task_work_management'
-    '9'   = '09_collaboration'
-    '09'  = '09_collaboration'
-    '10'  = '10_document_knowledge'
-    '11'  = '11_time_attendance'
-    '12'  = '12_portfolio_program'
-    '13'  = '13_agile_scrum'
-    '14'  = '14_client_collaboration'
-    '15'  = '15_financial_billing'
-    '16'  = '16_reporting_bi'
-    '17'  = '17_workflow_automation'
-    '18'  = '18_integration_api'
-    '19'  = '19_master_data'
-    '20'  = '20_system_administration'
-    # --- Modules 1-20 app folder names + friendly keywords ---
-    'initiation'     = '01_project_initiation'
-    'charter'        = '01_project_initiation'
-    'planning'       = '02_project_planning'
-    'scheduling'     = '02_project_planning'
-    'wbs'            = '02_project_planning'
-    'resources'      = '03_resource_management'
-    'resource'       = '03_resource_management'
-    'allocation'     = '03_resource_management'
-    'budgeting'      = '04_cost_budget_management'
-    'budget'         = '04_cost_budget_management'
-    'cost'           = '04_cost_budget_management'
-    'risks'          = '05_risk_issue_management'
-    'risk'           = '05_risk_issue_management'
-    'issues'         = '05_risk_issue_management'
-    'quality'        = '06_quality_management'
-    'qa'             = '06_quality_management'
-    'scope'          = '07_scope_requirements'
-    'requirements'   = '07_scope_requirements'
-    'work'           = '08_task_work_management'
-    'kanban'         = '08_task_work_management'
-    'collaboration'  = '09_collaboration'
-    'communication'  = '09_collaboration'
-    'documents'      = '10_document_knowledge'
-    'document'       = '10_document_knowledge'
-    'knowledge'      = '10_document_knowledge'
-    'timesheets'     = '11_time_attendance'
-    'timesheet'      = '11_time_attendance'
-    'attendance'     = '11_time_attendance'
-    'portfolio'      = '12_portfolio_program'
-    'program'        = '12_portfolio_program'
-    'agile'          = '13_agile_scrum'
-    'scrum'          = '13_agile_scrum'
-    'sprint'         = '13_agile_scrum'
-    'clients'        = '14_client_collaboration'
-    'client'         = '14_client_collaboration'
-    'finance'        = '15_financial_billing'
-    'financial'      = '15_financial_billing'
-    'reporting'      = '16_reporting_bi'
-    'reports'        = '16_reporting_bi'
-    'bi'             = '16_reporting_bi'
-    'automation'     = '17_workflow_automation'
-    'workflow'       = '17_workflow_automation'
-    'integrations'   = '18_integration_api'
-    'integration'    = '18_integration_api'
-    'api'            = '18_integration_api'
-    'masterdata'     = '19_master_data'
-    'configuration'  = '19_master_data'
-    'config'         = '19_master_data'
-    'administration' = '20_system_administration'
-    'admin'          = '20_system_administration'
-    'security'       = '20_system_administration'
+    '1'   = '01_leads'
+    '01'  = '01_leads'
+    '2'   = '02_opportunities'
+    '02'  = '02_opportunities'
+    '3'   = '03_crm'
+    '03'  = '03_crm'
+    '4'   = '04_forecasting'
+    '04'  = '04_forecasting'
+    '5'   = '05_quotes'
+    '05'  = '05_quotes'
+    '6'   = '06_orders'
+    '06'  = '06_orders'
+    '7'   = '07_territories'
+    '07'  = '07_territories'
+    '8'   = '08_activities'
+    '08'  = '08_activities'
+    '9'   = '09_enablement'
+    '09'  = '09_enablement'
+    '10'  = '10_compensation'
+    '11'  = '11_success'
+    '12'  = '12_analytics'
+    '13'  = '13_marketing'
+    '14'  = '14_partners'
+    '15'  = '15_contracts'
+    '16'  = '16_mobile'
+    '17'  = '17_automation'
+    '18'  = '18_integrations'
+    '19'  = '19_masterdata'
+    '20'  = '20_administration'
+    # --- Modules 1-20 app folder names + friendly keywords (sales terms) ---
+    'leads'          = '01_leads'
+    'lead'           = '01_leads'
+    'nurture'        = '01_leads'
+    'opportunities'  = '02_opportunities'
+    'opportunity'    = '02_opportunities'
+    'pipeline'       = '02_opportunities'
+    'deal'           = '02_opportunities'
+    'deals'          = '02_opportunities'
+    'crm'            = '03_crm'
+    'contact'        = '03_crm'
+    'contacts'       = '03_crm'
+    'forecasting'    = '04_forecasting'
+    'forecast'       = '04_forecasting'
+    'quota'          = '04_forecasting'
+    'quotes'         = '05_quotes'
+    'quote'          = '05_quotes'
+    'proposal'       = '05_quotes'
+    'cpq'            = '05_quotes'
+    'orders'         = '06_orders'
+    'order'          = '06_orders'
+    'fulfillment'    = '06_orders'
+    'territories'    = '07_territories'
+    'territory'      = '07_territories'
+    'activities'     = '08_activities'
+    'activity'       = '08_activities'
+    'task'           = '08_activities'
+    'tasks'          = '08_activities'
+    'enablement'     = '09_enablement'
+    'playbook'       = '09_enablement'
+    'training'       = '09_enablement'
+    'compensation'   = '10_compensation'
+    'commission'     = '10_compensation'
+    'incentive'      = '10_compensation'
+    'payout'         = '10_compensation'
+    'success'        = '11_success'
+    'renewal'        = '11_success'
+    'qbr'            = '11_success'
+    'analytics'      = '12_analytics'
+    'intelligence'   = '12_analytics'
+    'velocity'       = '12_analytics'
+    'marketing'      = '13_marketing'
+    'campaign'       = '13_marketing'
+    'attribution'    = '13_marketing'
+    'partners'       = '14_partners'
+    'partner'        = '14_partners'
+    'channel'        = '14_partners'
+    'contracts'      = '15_contracts'
+    'contract'       = '15_contracts'
+    'mobile'         = '16_mobile'
+    'field'          = '16_mobile'
+    'automation'     = '17_automation'
+    'workflow'       = '17_automation'
+    'process'        = '17_automation'
+    'integrations'   = '18_integrations'
+    'integration'    = '18_integrations'
+    'api'            = '18_integrations'
+    'connector'      = '18_integrations'
+    'masterdata'     = '19_masterdata'
+    'configuration'  = '19_masterdata'
+    'config'         = '19_masterdata'
+    'catalog'        = '19_masterdata'
+    'product'        = '19_masterdata'
+    'administration' = '20_administration'
+    'admin'          = '20_administration'
+    'security'       = '20_administration'
 }
 
 # -------- Resolve which keys to process --------
@@ -202,16 +211,16 @@ Unknown module: '$Module'.
 
 Valid identifiers:
   Number:       0..20  (or 00..20)
-  App folder:   tenants, accounts, core, projects, dashboard,
-                initiation, planning, resources, budgeting, risks, quality, scope, work,
-                collaboration, documents, timesheets, portfolio, agile, clients, finance,
-                reporting, automation, integrations, masterdata, administration
+  App folder:   tenants, accounts, core, dashboard,
+                leads, opportunities, crm, forecasting, quotes, orders, territories,
+                activities, enablement, compensation, success, analytics, marketing,
+                partners, contracts, mobile, automation, integrations, masterdata, administration
   Special:      all   (regenerate every module)
 
 Examples:
   pwsh .claude\skills\dump-module\dump_module.ps1 -Module tenants
   pwsh .claude\skills\dump-module\dump_module.ps1 -Module 0
-  pwsh .claude\skills\dump-module\dump_module.ps1 -Module projects
+  pwsh .claude\skills\dump-module\dump_module.ps1 -Module leads
   pwsh .claude\skills\dump-module\dump_module.ps1 -Module all
 "@
     exit 1
