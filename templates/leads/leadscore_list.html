@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}Lead Scoring &amp; Grading{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'leads:lead_list' %}">Lead Management</a><i data-lucide="chevron-right" style="width:14px"></i><span>Scores</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Lead Scoring &amp; Grading</h1>
+    <p class="page-subtitle">{{ total }} score{{ total|pluralize }} recorded</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'leads:leadscore_create' %}" class="btn btn-primary"><i data-lucide="plus"></i> Add Score</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <form method="get" style="display:flex;gap:10px;flex-wrap:wrap;width:100%;align-items:center">
+      <input type="search" name="q" value="{{ request.GET.q }}" placeholder="Search by lead or reason…" class="form-input" style="max-width:260px;margin-inline-end:auto">
+      <select name="grade" class="form-select" style="max-width:180px" onchange="this.form.submit()">
+        <option value="">All grades</option>
+        {% for value, label in grade_choices %}
+          <option value="{{ value }}" {% if request.GET.grade == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <select name="scoring_model" class="form-select" style="max-width:180px" onchange="this.form.submit()">
+        <option value="">All models</option>
+        {% for value, label in model_choices %}
+          <option value="{{ value }}" {% if request.GET.scoring_model == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <button class="btn btn-outline" type="submit"><i data-lucide="filter"></i> Filter</button>
+    </form>
+  </div>
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr><th>Lead</th><th>Score</th><th>Grade</th><th>Model</th><th>Scored on</th><th style="text-align:end">Actions</th></tr></thead>
+      <tbody>
+        {% for sc in scores %}
+          <tr>
+            <td>
+              <a href="{% url 'leads:leadscore_detail' sc.pk %}" class="fw-600">{{ sc.lead.full_name }}</a>
+              <div class="list-meta">{{ sc.lead.number }}</div>
+            </td>
+            <td class="fw-600">{{ sc.score }}</td>
+            <td>
+              {% if sc.grade == 'A' %}<span class="badge badge-success">A — Excellent</span>
+              {% elif sc.grade == 'B' %}<span class="badge badge-info">B — Good</span>
+              {% elif sc.grade == 'C' %}<span class="badge badge-warning">C — Fair</span>
+              {% elif sc.grade == 'D' %}<span class="badge badge-danger">D — Poor</span>
+              {% else %}<span class="badge badge-muted">{{ sc.get_grade_display }}</span>{% endif %}
+            </td>
+            <td class="list-meta">{{ sc.get_scoring_model_display }}</td>
+            <td class="list-meta">{% if sc.scored_on %}{{ sc.scored_on|date:"d M Y" }}{% else %}—{% endif %}</td>
+            <td>
+              <div class="table-actions">
+                <a href="{% url 'leads:leadscore_detail' sc.pk %}" class="btn-icon" title="View"><i data-lucide="eye"></i></a>
+                <a href="{% url 'leads:leadscore_edit' sc.pk %}" class="btn-icon" title="Edit"><i data-lucide="pencil"></i></a>
+                <form method="post" action="{% url 'leads:leadscore_delete' sc.pk %}" onsubmit="return confirm('Delete this score?')">
+                  {% csrf_token %}
+                  <button type="submit" class="btn-icon danger" title="Delete"><i data-lucide="trash-2"></i></button>
+                </form>
+              </div>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="6"><div class="empty-state"><div class="empty-icon"><i data-lucide="gauge"></i></div><h3>No scores</h3><p>Record a score to grade and prioritise your leads.</p><a href="{% url 'leads:leadscore_create' %}" class="btn btn-primary" style="margin-top:14px"><i data-lucide="plus"></i> Add Score</a></div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div style="padding:0 16px 12px">{% include "partials/pagination.html" %}</div>
+</div>
+{% endblock %}
