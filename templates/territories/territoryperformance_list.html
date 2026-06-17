@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}Territory Performance Analytics{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'territories:territory_list' %}">Territory &amp; Quota</a><i data-lucide="chevron-right" style="width:14px"></i><span>Performance</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Territory Performance Analytics</h1>
+    <p class="page-subtitle">{{ total }} snapshot{{ total|pluralize }} on record</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'territories:territoryperformance_create' %}" class="btn btn-primary"><i data-lucide="plus"></i> Add Snapshot</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <form method="get" style="display:flex;gap:10px;flex-wrap:wrap;width:100%;align-items:center">
+      <input type="text" name="q" value="{{ request.GET.q }}" placeholder="Search period, territory…" class="form-input" style="max-width:230px">
+      <span class="list-meta" style="margin-inline-end:auto"></span>
+      <select name="territory" class="form-select" style="max-width:190px" onchange="this.form.submit()">
+        <option value="">All territories</option>
+        {% for t in territories %}
+          <option value="{{ t.pk }}" {% if request.GET.territory == t.pk|stringformat:"d" %}selected{% endif %}>{{ t.name }}</option>
+        {% endfor %}
+      </select>
+      <select name="period_type" class="form-select" style="max-width:150px" onchange="this.form.submit()">
+        <option value="">All periods</option>
+        {% for value, label in period_choices %}
+          <option value="{{ value }}" {% if request.GET.period_type == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <select name="rating" class="form-select" style="max-width:170px" onchange="this.form.submit()">
+        <option value="">All ratings</option>
+        {% for value, label in rating_choices %}
+          <option value="{{ value }}" {% if request.GET.rating == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <button class="btn btn-outline" type="submit"><i data-lucide="filter"></i> Filter</button>
+    </form>
+  </div>
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr><th>Territory</th><th>Period</th><th>Rating</th><th>Attainment</th><th>Quota</th><th>Actual</th><th style="text-align:end">Actions</th></tr></thead>
+      <tbody>
+        {% for s in snapshots %}
+          <tr>
+            <td><a href="{% url 'territories:territoryperformance_detail' s.pk %}" class="fw-600">{{ s.territory.name }}</a></td>
+            <td class="list-meta">{{ s.period_label|default:s.get_period_type_display }}</td>
+            <td>
+              {% if s.rating == 'exceeding' %}<span class="badge badge-success">Exceeding</span>
+              {% elif s.rating == 'on_track' %}<span class="badge badge-info">On track</span>
+              {% elif s.rating == 'at_risk' %}<span class="badge badge-warning">At risk</span>
+              {% elif s.rating == 'underperforming' %}<span class="badge badge-danger">Underperforming</span>
+              {% else %}<span class="badge badge-muted">{{ s.get_rating_display }}</span>{% endif %}
+            </td>
+            <td class="fw-600">{{ s.attainment_percent|floatformat:1 }}%</td>
+            <td>${{ s.quota_amount|floatformat:0 }}</td>
+            <td>${{ s.actual_amount|floatformat:0 }}</td>
+            <td>
+              <div class="table-actions">
+                <a href="{% url 'territories:territoryperformance_detail' s.pk %}" class="btn-icon" title="View"><i data-lucide="eye"></i></a>
+                <a href="{% url 'territories:territoryperformance_edit' s.pk %}" class="btn-icon" title="Edit"><i data-lucide="pencil"></i></a>
+                <form method="post" action="{% url 'territories:territoryperformance_delete' s.pk %}" onsubmit="return confirm('Delete this snapshot?')">
+                  {% csrf_token %}
+                  <button type="submit" class="btn-icon danger" title="Delete"><i data-lucide="trash-2"></i></button>
+                </form>
+              </div>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="7"><div class="empty-state"><div class="empty-icon"><i data-lucide="bar-chart-3"></i></div><h3>No snapshots</h3><p>Record a performance snapshot to track attainment.</p><a href="{% url 'territories:territoryperformance_create' %}" class="btn btn-primary" style="margin-top:14px"><i data-lucide="plus"></i> Add Snapshot</a></div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div style="padding:0 16px 12px">{% include "partials/pagination.html" %}</div>
+</div>
+{% endblock %}
