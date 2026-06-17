@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <span>My Profile</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">My Profile</h1>
+    <p class="page-subtitle">Your personal account details</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'accounts:change_password' %}" class="btn btn-outline"><i data-lucide="key-round"></i> Change Password</a>
+    <a href="{% url 'accounts:profile_edit' %}" class="btn btn-primary"><i data-lucide="pencil"></i> Edit Profile</a>
+  </div>
+</div>
+
+<div style="display:grid;grid-template-columns:2fr 1fr;gap:18px">
+  <div class="card"><div class="card-body">
+    <div style="display:flex;align-items:center;gap:16px;margin-bottom:18px">
+      <div class="avatar-initial avatar-lg">{{ obj.initials }}</div>
+      <div>
+        <div class="fw-700" style="font-size:18px">{{ obj.display_name }}</div>
+        <div class="list-meta">{% if obj.email %}{{ obj.email }}{% else %}—{% endif %}</div>
+        <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">
+          {% if obj.is_tenant_admin %}<span class="badge badge-brand">Workspace Admin</span>{% endif %}
+          {% if obj.is_active %}<span class="badge badge-success">Active</span>
+          {% else %}<span class="badge badge-muted">Inactive</span>{% endif %}
+        </div>
+      </div>
+    </div>
+
+    <h3 style="font-size:15px;margin-bottom:12px">Details</h3>
+    <div class="form-grid">
+      <div class="form-group"><div class="form-label">Username</div>
+        <div class="code-pill">{{ obj.username }}</div></div>
+      <div class="form-group"><div class="form-label">Email</div>
+        <div>{% if obj.email %}{{ obj.email }}{% else %}—{% endif %}</div></div>
+      <div class="form-group"><div class="form-label">Role</div>
+        <div>{% if obj.role %}{{ obj.role.name }}{% else %}—{% endif %}</div></div>
+      <div class="form-group"><div class="form-label">Job Title</div>
+        <div>{% if obj.job_title %}{{ obj.job_title }}{% else %}—{% endif %}</div></div>
+      <div class="form-group"><div class="form-label">Phone</div>
+        <div>{% if obj.phone %}{{ obj.phone }}{% else %}—{% endif %}</div></div>
+      <div class="form-group"><div class="form-label">Workspace</div>
+        <div>{% if obj.tenant %}{{ obj.tenant.name }}{% else %}—{% endif %}</div></div>
+    </div>
+  </div></div>
+
+  <div class="card"><div class="card-body">
+    <h3 style="font-size:15px;margin-bottom:12px">Account</h3>
+    <a href="{% url 'accounts:profile_edit' %}" class="btn btn-outline btn-block" style="margin-bottom:10px"><i data-lucide="pencil"></i> Edit Profile</a>
+    <a href="{% url 'accounts:change_password' %}" class="btn btn-outline btn-block"><i data-lucide="key-round"></i> Change Password</a>
+    <hr class="divider">
+    <div class="form-group"><div class="form-label">Last login</div>
+      <div class="list-meta">{% if obj.last_login %}{{ obj.last_login|date:"d M Y, H:i" }}{% else %}— never{% endif %}</div></div>
+    <div class="list-meta">Joined {{ obj.date_joined|date:"d M Y" }}</div>
+  </div></div>
+</div>
+{% endblock %}
