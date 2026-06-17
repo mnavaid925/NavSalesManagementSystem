@@ -7,6 +7,7 @@ from django.db.models import Q, Sum
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
+from apps.core.decorators import tenant_admin_required
 from apps.core.utils import log_action
 
 from .forms import (
@@ -68,7 +69,7 @@ def onboardingstep_list(request):
     })
 
 
-@login_required
+@tenant_admin_required
 def onboardingstep_create(request):
     if request.tenant is None:
         return _no_tenant_redirect(request)
@@ -90,7 +91,7 @@ def onboardingstep_detail(request, pk):
     return render(request, "tenants/onboardingstep_detail.html", {"obj": obj, "page_title": obj.title})
 
 
-@login_required
+@tenant_admin_required
 def onboardingstep_edit(request, pk):
     obj = get_object_or_404(OnboardingStep, pk=pk, tenant=request.tenant)
     form = OnboardingStepForm(request.POST or None, instance=obj)
@@ -103,7 +104,7 @@ def onboardingstep_edit(request, pk):
                   {"form": form, "obj": obj, "page_title": f"Edit {obj.title}", "mode": "edit"})
 
 
-@login_required
+@tenant_admin_required
 def onboardingstep_delete(request, pk):
     obj = get_object_or_404(OnboardingStep, pk=pk, tenant=request.tenant)
     if request.method == "POST":
@@ -131,7 +132,7 @@ def subscription_list(request):
     })
 
 
-@login_required
+@tenant_admin_required
 def subscription_create(request):
     if request.tenant is None:
         return _no_tenant_redirect(request)
@@ -155,7 +156,7 @@ def subscription_detail(request, pk):
                   {"obj": obj, "invoices": invoices, "page_title": str(obj)})
 
 
-@login_required
+@tenant_admin_required
 def subscription_edit(request, pk):
     obj = get_object_or_404(Subscription, pk=pk, tenant=request.tenant)
     form = SubscriptionForm(request.POST or None, instance=obj)
@@ -168,7 +169,7 @@ def subscription_edit(request, pk):
                   {"form": form, "obj": obj, "page_title": f"Edit {obj}", "mode": "edit"})
 
 
-@login_required
+@tenant_admin_required
 def subscription_delete(request, pk):
     obj = get_object_or_404(Subscription, pk=pk, tenant=request.tenant)
     if request.method == "POST":
@@ -195,7 +196,7 @@ def invoice_list(request):
     })
 
 
-@login_required
+@tenant_admin_required
 def invoice_create(request):
     if request.tenant is None:
         return _no_tenant_redirect(request)
@@ -217,7 +218,7 @@ def invoice_detail(request, pk):
     return render(request, "tenants/invoice_detail.html", {"obj": obj, "page_title": obj.number})
 
 
-@login_required
+@tenant_admin_required
 def invoice_edit(request, pk):
     obj = get_object_or_404(Invoice, pk=pk, tenant=request.tenant)
     form = InvoiceForm(request.POST or None, instance=obj, tenant=request.tenant)
@@ -230,7 +231,7 @@ def invoice_edit(request, pk):
                   {"form": form, "obj": obj, "page_title": f"Edit {obj.number}", "mode": "edit"})
 
 
-@login_required
+@tenant_admin_required
 def invoice_delete(request, pk):
     obj = get_object_or_404(Invoice, pk=pk, tenant=request.tenant)
     if request.method == "POST":
@@ -262,7 +263,7 @@ def encryptionkey_list(request):
     })
 
 
-@login_required
+@tenant_admin_required
 def encryptionkey_create(request):
     if request.tenant is None:
         return _no_tenant_redirect(request)
@@ -275,8 +276,10 @@ def encryptionkey_create(request):
         obj.hashed_key = hashed
         obj.save()
         log_action(request, "create", instance=obj, detail="Encryption key generated")
-        # WARNING: the plaintext is surfaced ONCE and never stored. (L20)
-        messages.success(request, f"Key “{obj.label}” created. Copy it now — it will not be shown again: {plaintext}")
+        # WARNING: the plaintext is surfaced ONCE on the detail page via a pop-once
+        # session key — NOT a flash message (which would persist in the session store). (L20/L25)
+        request.session["_key_reveal"] = {"pk": obj.pk, "secret": plaintext}
+        messages.success(request, f"Key “{obj.label}” created — copy the secret below now; it won't be shown again.")
         return redirect("tenants:encryptionkey_detail", pk=obj.pk)
     return render(request, "tenants/encryptionkey_form.html",
                   {"form": form, "page_title": "Generate Key", "mode": "create"})
@@ -285,10 +288,13 @@ def encryptionkey_create(request):
 @login_required
 def encryptionkey_detail(request, pk):
     obj = get_object_or_404(EncryptionKey, pk=pk, tenant=request.tenant)
-    return render(request, "tenants/encryptionkey_detail.html", {"obj": obj, "page_title": obj.label})
+    reveal = request.session.pop("_key_reveal", None)
+    plaintext_once = reveal["secret"] if reveal and reveal.get("pk") == obj.pk else None
+    return render(request, "tenants/encryptionkey_detail.html",
+                  {"obj": obj, "page_title": obj.label, "plaintext_once": plaintext_once})
 
 
-@login_required
+@tenant_admin_required
 def encryptionkey_edit(request, pk):
     obj = get_object_or_404(EncryptionKey, pk=pk, tenant=request.tenant)
     form = EncryptionKeyForm(request.POST or None, instance=obj)
@@ -301,7 +307,7 @@ def encryptionkey_edit(request, pk):
                   {"form": form, "obj": obj, "page_title": f"Edit {obj.label}", "mode": "edit"})
 
 
-@login_required
+@tenant_admin_required
 def encryptionkey_rotate(request, pk):
     obj = get_object_or_404(EncryptionKey, pk=pk, tenant=request.tenant)
     if request.method == "POST":
@@ -312,11 +318,12 @@ def encryptionkey_rotate(request, pk):
         obj.last_rotated_at = timezone.now()
         obj.save()
         log_action(request, "update", instance=obj, detail="Encryption key rotated")
-        messages.success(request, f"Key rotated. New secret (shown once): {plaintext}")
+        request.session["_key_reveal"] = {"pk": obj.pk, "secret": plaintext}
+        messages.success(request, "Key rotated — copy the new secret below now; it won't be shown again.")
     return redirect("tenants:encryptionkey_detail", pk=obj.pk)
 
 
-@login_required
+@tenant_admin_required
 def encryptionkey_delete(request, pk):
     obj = get_object_or_404(EncryptionKey, pk=pk, tenant=request.tenant)
     if request.method == "POST":
@@ -344,7 +351,7 @@ def brandingsetting_list(request):
     })
 
 
-@login_required
+@tenant_admin_required
 def brandingsetting_create(request):
     if request.tenant is None:
         return _no_tenant_redirect(request)
@@ -366,7 +373,7 @@ def brandingsetting_detail(request, pk):
     return render(request, "tenants/brandingsetting_detail.html", {"obj": obj, "page_title": obj.name})
 
 
-@login_required
+@tenant_admin_required
 def brandingsetting_edit(request, pk):
     obj = get_object_or_404(BrandingSetting, pk=pk, tenant=request.tenant)
     form = BrandingSettingForm(request.POST or None, instance=obj)
@@ -379,7 +386,7 @@ def brandingsetting_edit(request, pk):
                   {"form": form, "obj": obj, "page_title": f"Edit {obj.name}", "mode": "edit"})
 
 
-@login_required
+@tenant_admin_required
 def brandingsetting_delete(request, pk):
     obj = get_object_or_404(BrandingSetting, pk=pk, tenant=request.tenant)
     if request.method == "POST":
@@ -411,7 +418,7 @@ def healthmetric_list(request):
     })
 
 
-@login_required
+@tenant_admin_required
 def healthmetric_create(request):
     if request.tenant is None:
         return _no_tenant_redirect(request)
@@ -433,7 +440,7 @@ def healthmetric_detail(request, pk):
     return render(request, "tenants/healthmetric_detail.html", {"obj": obj, "page_title": obj.metric_name})
 
 
-@login_required
+@tenant_admin_required
 def healthmetric_edit(request, pk):
     obj = get_object_or_404(HealthMetric, pk=pk, tenant=request.tenant)
     form = HealthMetricForm(request.POST or None, instance=obj)
@@ -446,7 +453,7 @@ def healthmetric_edit(request, pk):
                   {"form": form, "obj": obj, "page_title": f"Edit {obj.metric_name}", "mode": "edit"})
 
 
-@login_required
+@tenant_admin_required
 def healthmetric_delete(request, pk):
     obj = get_object_or_404(HealthMetric, pk=pk, tenant=request.tenant)
     if request.method == "POST":
