@@ -180,3 +180,22 @@ forms — its only DateTimeFields are `auto_now`/`auto_now_add` audit columns, n
 sit only on real `DateField`s (issue_date/due_date/etc.). **Rule:** treat observed/system timestamps as read-only —
 keep them on the model + detail page but OUT of the form. Reserve `DateInput(type=date)` for genuine user-set
 `DateField`s. This is the root-cause fix, not swapping in a `datetime-local` widget.
+
+## L23 — MariaDB 10.4 shim: lowering the version floor is NOT enough — also force RETURNING off (refines L4)
+Bootstrapping NavSalesManagementSystem (Django 5.1 on XAMPP MariaDB 10.4), the shim only set
+`DatabaseFeatures.minimum_database_version=(10,4)` + a no-op `check_database_version_supported`. `migrate` still
+died on the very first `INSERT … RETURNING django_migrations.id` (`pymysql.err.ProgrammingError 1064`). Root cause:
+because 10.5 is Django 5.1's *minimum* supported MariaDB, the backend no longer version-gates RETURNING — it enables
+it for **any** MariaDB. The old "`mysql_version >= (10,5)`" sub-check is gone, so on 10.4 it wrongly returns True.
+**Rule:** the 10.4 shim in `config/__init__.py` MUST also force the feature flags off explicitly —
+`DatabaseFeatures.can_return_columns_from_insert = False` and `...can_return_rows_from_bulk_insert = False`
+(assigning a plain value overrides the cached_property descriptor). Then migrate runs clean. A half-migrated DB from
+the first failure had tables but an empty `django_migrations`; recover by DROP+CREATE the (fresh, ours) `nav_sms` DB.
+
+## L24 — Greenfield bootstrap with the auto-verify hook: write ALL backend before config/settings.py
+On an empty repo the `PostToolUse:Edit` hook (`on_edit.py`) does `django.setup()` under `config.settings`; while
+`config/settings.py` does **not** exist yet it raises ModuleNotFoundError → caught → "skipped" (exit 0). So you can
+write every app file (models/views/urls/forms/admin) freely with the hook no-opping, then write `config/settings.py`
+**last** — that single write is the first real `manage.py check`, validating the whole backend (INSTALLED_APPS +
+URLConf import) in one pass. Custom `AUTH_USER_MODEL` only needs to exist before the first *migrate*, not *check*.
+(Generalises L12: wire-up after files exist.)
