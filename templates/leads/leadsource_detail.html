@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}{{ obj.name }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'leads:lead_list' %}">Lead Management</a><i data-lucide="chevron-right" style="width:14px"></i>
+  <a href="{% url 'leads:leadsource_list' %}">Sources</a><i data-lucide="chevron-right" style="width:14px"></i><span>{{ obj.name }}</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ obj.name }}</h1>
+    <p class="page-subtitle">{{ obj.get_source_type_display }} · {{ obj.get_routing_rule_display }}</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'leads:leadsource_list' %}" class="btn btn-outline"><i data-lucide="arrow-left"></i> Back</a>
+    <a href="{% url 'leads:leadsource_edit' obj.pk %}" class="btn btn-primary"><i data-lucide="pencil"></i> Edit</a>
+  </div>
+</div>
+
+<div class="detail-grid">
+  <div>
+    <div class="card"><div class="card-body">
+      <h3 style="font-size:15px;margin-bottom:12px">Details</h3>
+      <div class="form-group"><div class="form-label">Name</div>
+        <div class="fw-600">{{ obj.name }}</div></div>
+      <div class="form-group"><div class="form-label">Type</div>
+        <div>{{ obj.get_source_type_display }}</div></div>
+      <div class="form-group"><div class="form-label">Routing rule</div>
+        <div>{{ obj.get_routing_rule_display }}</div></div>
+      <div class="form-group"><div class="form-label">Status</div>
+        {% if obj.status == 'active' %}<span class="badge badge-success">Active</span>
+        {% elif obj.status == 'paused' %}<span class="badge badge-warning">Paused</span>
+        {% elif obj.status == 'archived' %}<span class="badge badge-muted">Archived</span>
+        {% else %}<span class="badge badge-muted">{{ obj.get_status_display }}</span>{% endif %}
+      </div>
+      <div class="form-group"><div class="form-label">Default owner</div>
+        <div>{{ obj.default_owner|default:"—" }}</div></div>
+      <div class="form-group"><div class="form-label">Cost per lead</div>
+        <div>${{ obj.cost_per_lead|floatformat:2 }}</div></div>
+      {% if obj.description %}
+      <div class="form-group"><div class="form-label">Description</div>
+        <div>{{ obj.description|linebreaksbr }}</div></div>
+      {% endif %}
+    </div></div>
+
+    <div class="card" style="margin-top:18px"><div class="card-header"><h3 class="card-title">Recent leads</h3></div>
+      <div class="table-wrap">
+        <table class="table">
+          <thead><tr><th>Lead</th><th>Status</th><th style="text-align:end">Captured on</th></tr></thead>
+          <tbody>
+            {% for lead in leads %}
+              <tr>
+                <td><a href="{% url 'leads:lead_detail' lead.pk %}" class="fw-600">{{ lead.full_name }}</a><div class="list-meta">{{ lead.number }}</div></td>
+                <td>
+                  {% if lead.status == 'qualified' %}<span class="badge badge-success">Qualified</span>
+                  {% elif lead.status == 'converted' %}<span class="badge badge-success">Converted</span>
+                  {% elif lead.status == 'unqualified' %}<span class="badge badge-danger">Unqualified</span>
+                  {% else %}<span class="badge badge-info">{{ lead.get_status_display }}</span>{% endif %}
+                </td>
+                <td class="list-meta" style="text-align:end">{{ lead.captured_on|date:"d M Y" }}</td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="3"><div class="empty-state"><div class="empty-icon"><i data-lucide="user-plus"></i></div><h3>No leads</h3><p>Leads captured from this source will appear here.</p></div></td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="card"><div class="card-body">
+    <h3 style="font-size:15px;margin-bottom:12px">Actions</h3>
+    <a href="{% url 'leads:leadsource_edit' obj.pk %}" class="btn btn-outline btn-block" style="margin-bottom:10px"><i data-lucide="pencil"></i> Edit source</a>
+    <form method="post" action="{% url 'leads:leadsource_delete' obj.pk %}" onsubmit="return confirm('Delete this source?')">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger btn-block"><i data-lucide="trash-2"></i> Delete source</button>
+    </form>
+    <hr class="divider">
+    <div class="list-meta">Created {{ obj.created_at|date:"d M Y" }}</div>
+  </div></div>
+</div>
+{% endblock %}
