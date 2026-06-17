@@ -17,11 +17,8 @@
 
 <div class="card">
   <div class="card-header">
-    <form method="get" style="display:flex;gap:10px;flex-wrap:wrap;width:100%">
-      <div class="searchbar" style="max-width:320px;flex:1">
-        <i data-lucide="search" style="width:17px"></i>
-        <input type="text" name="q" value="{{ request.GET.q }}" placeholder="Search subscriptions…">
-      </div>
+    <form method="get" style="display:flex;gap:10px;flex-wrap:wrap;width:100%;align-items:center">
+      <span class="list-meta" style="margin-inline-end:auto">{{ total }} subscription{{ total|pluralize }}</span>
       <select name="plan" class="form-select" style="max-width:180px" onchange="this.form.submit()">
         <option value="">All plans</option>
         {% for value, label in plan_choices %}
