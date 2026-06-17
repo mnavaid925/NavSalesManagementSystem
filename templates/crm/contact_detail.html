@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}{{ obj.full_name }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'crm:account_list' %}">Contact &amp; Account Management</a><i data-lucide="chevron-right" style="width:14px"></i>
+  <a href="{% url 'crm:contact_list' %}">Contacts</a><i data-lucide="chevron-right" style="width:14px"></i><span>{{ obj.full_name }}</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ obj.full_name }}</h1>
+    <p class="page-subtitle">{{ obj.title|default:"Contact" }}{% if obj.account %} · {{ obj.account.name }}{% endif %}</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'crm:contact_list' %}" class="btn btn-outline"><i data-lucide="arrow-left"></i> Back</a>
+    <a href="{% url 'crm:contact_edit' obj.pk %}" class="btn btn-primary"><i data-lucide="pencil"></i> Edit</a>
+  </div>
+</div>
+
+<div class="detail-grid">
+  <div>
+    <div class="card"><div class="card-body">
+      <h3 style="font-size:15px;margin-bottom:12px">Profile</h3>
+      <div class="detail-grid">
+        <div class="form-group"><div class="form-label">Account</div>
+          <div>{% if obj.account %}<a href="{% url 'crm:account_detail' obj.account.pk %}">{{ obj.account.name }}</a>{% else %}—{% endif %}</div></div>
+        <div class="form-group"><div class="form-label">Title</div><div>{{ obj.title|default:"—" }}</div></div>
+        <div class="form-group"><div class="form-label">Department</div><div>{{ obj.department|default:"—" }}</div></div>
+        <div class="form-group"><div class="form-label">Status</div>
+          {% if obj.status == 'active' %}<span class="badge badge-success">Active</span>
+          {% elif obj.status == 'inactive' %}<span class="badge badge-muted">Inactive</span>
+          {% elif obj.status == 'bounced' %}<span class="badge badge-danger">Bounced</span>
+          {% else %}<span class="badge badge-muted">{{ obj.get_status_display }}</span>{% endif %}
+        </div>
+        <div class="form-group"><div class="form-label">Enrichment</div>
+          {% if obj.enrichment_status == 'verified' %}<span class="badge badge-success">Verified</span>
+          {% elif obj.enrichment_status == 'partial' %}<span class="badge badge-warning">Partial</span>
+          {% elif obj.enrichment_status == 'none' %}<span class="badge badge-muted">Not enriched</span>
+          {% else %}<span class="badge badge-muted">{{ obj.get_enrichment_status_display }}</span>{% endif %}
+        </div>
+        <div class="form-group"><div class="form-label">Primary contact</div>
+          {% if obj.is_primary %}<span class="badge badge-info">Yes</span>{% else %}<span class="badge badge-muted">No</span>{% endif %}
+        </div>
+        <div class="form-group"><div class="form-label">Email</div><div>{{ obj.email|default:"—" }}</div></div>
+        <div class="form-group"><div class="form-label">Phone</div><div>{{ obj.phone|default:"—" }}</div></div>
+        <div class="form-group"><div class="form-label">Mobile</div><div>{{ obj.mobile|default:"—" }}</div></div>
+        <div class="form-group"><div class="form-label">LinkedIn</div>
+          <div>{% if obj.linkedin_url %}<a href="{{ obj.linkedin_url }}" target="_blank" rel="noopener">View profile</a>{% else %}—{% endif %}</div></div>
+      </div>
+      {% if obj.notes %}<div class="form-group" style="margin-top:8px"><div class="form-label">Notes</div><div>{{ obj.notes|linebreaksbr }}</div></div>{% endif %}
+    </div></div>
+
+    <div class="card" style="margin-top:18px"><div class="card-header"><h3 class="card-title">Relationships</h3></div>
+      <div class="table-wrap">
+        <table class="table">
+          <thead><tr><th>To contact</th><th>Type</th><th>Strength</th></tr></thead>
+          <tbody>
+            {% for r in relationships %}
+              <tr>
+                <td><a href="{% url 'crm:relationshipmap_detail' r.pk %}" class="fw-600">{{ r.to_contact.full_name }}</a></td>
+                <td class="list-meta">{{ r.get_relationship_type_display }}</td>
+                <td class="list-meta">{{ r.get_strength_display }}</td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="3"><div class="empty-state"><div class="empty-icon"><i data-lucide="share-2"></i></div><h3>No relationships</h3><p>Mapped relationships from this contact will appear here.</p></div></td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="card"><div class="card-body">
+    <h3 style="font-size:15px;margin-bottom:12px">Actions</h3>
+    <a href="{% url 'crm:contact_edit' obj.pk %}" class="btn btn-outline btn-block" style="margin-bottom:10px"><i data-lucide="pencil"></i> Edit contact</a>
+    <form method="post" action="{% url 'crm:contact_delete' obj.pk %}" onsubmit="return confirm('Delete this contact?')">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger btn-block"><i data-lucide="trash-2"></i> Delete contact</button>
+    </form>
+    <hr class="divider">
+    <div class="list-meta">Created {{ obj.created_at|date:"d M Y" }}</div>
+  </div></div>
+</div>
+{% endblock %}
