@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}Real-Time Earnings Tracking{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'compensation:commissionplan_list' %}">Incentive Compensation</a><i data-lucide="chevron-right" style="width:14px"></i><span>Earnings</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Real-Time Earnings Tracking</h1>
+    <p class="page-subtitle">{{ total }} earning{{ total|pluralize }} on record</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'compensation:earning_create' %}" class="btn btn-primary"><i data-lucide="plus"></i> Add Earning</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <form method="get" style="display:flex;gap:10px;flex-wrap:wrap;width:100%;align-items:center">
+      <input type="text" name="q" value="{{ request.GET.q }}" placeholder="Search earnings…" class="form-input" style="max-width:240px">
+      <span class="list-meta" style="margin-inline-end:auto"></span>
+      <select name="plan" class="form-select" style="max-width:200px" onchange="this.form.submit()">
+        <option value="">All plans</option>
+        {% for p in plans %}
+          <option value="{{ p.pk }}" {% if request.GET.plan == p.pk|stringformat:"d" %}selected{% endif %}>{{ p.name }}</option>
+        {% endfor %}
+      </select>
+      <select name="status" class="form-select" style="max-width:180px" onchange="this.form.submit()">
+        <option value="">All statuses</option>
+        {% for value, label in status_choices %}
+          <option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <button class="btn btn-outline" type="submit"><i data-lucide="filter"></i> Filter</button>
+    </form>
+  </div>
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr><th>Number</th><th>Rep</th><th>Plan</th><th>Status</th><th>Earned on</th><th style="text-align:end">Commission</th><th style="text-align:end">Actions</th></tr></thead>
+      <tbody>
+        {% for earning in earnings %}
+          <tr>
+            <td>
+              <a href="{% url 'compensation:earning_detail' earning.pk %}" class="fw-600">{{ earning.number }}</a>
+              {% if earning.deal_reference %}<div class="list-meta">{{ earning.deal_reference }}</div>{% endif %}
+            </td>
+            <td>{{ earning.rep_name }}</td>
+            <td class="list-meta">{% if earning.plan %}{{ earning.plan.name }}{% else %}—{% endif %}</td>
+            <td>
+              {% if earning.status == 'paid' %}<span class="badge badge-success">Paid</span>
+              {% elif earning.status == 'approved' %}<span class="badge badge-info">Approved</span>
+              {% elif earning.status == 'pending' %}<span class="badge badge-warning">Pending</span>
+              {% elif earning.status == 'disputed' %}<span class="badge badge-danger">Disputed</span>
+              {% else %}<span class="badge badge-muted">{{ earning.get_status_display }}</span>{% endif %}
+            </td>
+            <td class="list-meta">{% if earning.earned_on %}{{ earning.earned_on|date:"d M Y" }}{% else %}—{% endif %}</td>
+            <td style="text-align:end" class="fw-600">${{ earning.commission_amount|floatformat:2 }}</td>
+            <td>
+              <div class="table-actions">
+                <a href="{% url 'compensation:earning_detail' earning.pk %}" class="btn-icon" title="View"><i data-lucide="eye"></i></a>
+                <a href="{% url 'compensation:earning_edit' earning.pk %}" class="btn-icon" title="Edit"><i data-lucide="pencil"></i></a>
+                <form method="post" action="{% url 'compensation:earning_delete' earning.pk %}" onsubmit="return confirm('Delete this earning?')">
+                  {% csrf_token %}
+                  <button type="submit" class="btn-icon danger" title="Delete"><i data-lucide="trash-2"></i></button>
+                </form>
+              </div>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="7"><div class="empty-state"><div class="empty-icon"><i data-lucide="banknote"></i></div><h3>No earnings</h3><p>Record your first earning to start tracking commission.</p><a href="{% url 'compensation:earning_create' %}" class="btn btn-primary" style="margin-top:14px"><i data-lucide="plus"></i> Add Earning</a></div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div style="padding:0 16px 12px">{% include "partials/pagination.html" %}</div>
+</div>
+{% endblock %}
