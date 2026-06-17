@@ -30,9 +30,10 @@ conftest fixtures (real shapes — verify against the code):
   - Logged-in client: `from django.test import Client; c = Client(); c.force_login(user)`.
 
 What to cover:
-  - **Models** — defaults, `__str__`, status CHOICES, auto-numbers (`INV-#####`, `PINV-#####`), computed
-    properties, `unique_together` (e.g. Role `(tenant, name)`, FinancialSnapshot `(tenant, period)`).
-  - **Forms** — required fields, invalid input, and that `tenant` / auto-`number` / `owner` are NOT form fields.
+  - **Models** — defaults, `__str__`, status CHOICES, auto-numbers (`INV-#####`), computed
+    properties, `unique_together` (e.g. Role `(tenant, name)`, Invoice `(tenant, number)`).
+  - **Forms** — required fields, invalid input, and that `tenant` / auto-`number` / secret fields
+    (`key_prefix`/`hashed_key`) / system `*_at` timestamps are NOT form fields.
   - **Views / CRUD** — list (200 + search/filter/pagination), create (POST → object saved with the request
     tenant), edit, delete (POST-only), and that the right template + context keys are used.
   - **Multi-tenant isolation (mandatory)** — log in as Tenant A, request a Tenant B object's pk → assert **404**
