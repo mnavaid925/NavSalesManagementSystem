@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block title %}Pricing &amp; Discount Approval{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'quotes:quote_list' %}">Quote &amp; Proposal</a><i data-lucide="chevron-right" style="width:14px"></i><span>Pricing Rules</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Pricing &amp; Discount Approval</h1>
+    <p class="page-subtitle">{{ total }} rule{{ total|pluralize }} on record</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'quotes:pricingrule_create' %}" class="btn btn-primary"><i data-lucide="plus"></i> Add Pricing Rule</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <form method="get" style="display:flex;gap:10px;flex-wrap:wrap;width:100%;align-items:center">
+      <input type="text" name="q" value="{{ request.GET.q }}" class="form-input" placeholder="Search name…" style="max-width:220px">
+      <span class="list-meta" style="margin-inline-end:auto"></span>
+      <select name="rule_type" class="form-select" style="max-width:180px" onchange="this.form.submit()">
+        <option value="">All types</option>
+        {% for value, label in rule_choices %}
+          <option value="{{ value }}" {% if request.GET.rule_type == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <select name="approval_level" class="form-select" style="max-width:180px" onchange="this.form.submit()">
+        <option value="">All approvals</option>
+        {% for value, label in approval_choices %}
+          <option value="{{ value }}" {% if request.GET.approval_level == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <select name="status" class="form-select" style="max-width:160px" onchange="this.form.submit()">
+        <option value="">All statuses</option>
+        {% for value, label in status_choices %}
+          <option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <button class="btn btn-outline" type="submit"><i data-lucide="filter"></i> Filter</button>
+    </form>
+  </div>
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr><th>Name</th><th>Type</th><th>Approval</th><th>Discount band</th><th>Status</th><th style="text-align:end">Actions</th></tr></thead>
+      <tbody>
+        {% for rule in rules %}
+          <tr>
+            <td><a href="{% url 'quotes:pricingrule_detail' rule.pk %}" class="fw-600">{{ rule.name }}</a></td>
+            <td>{{ rule.get_rule_type_display }}</td>
+            <td>
+              {% if rule.approval_level == 'auto' %}<span class="badge badge-success">Auto-approved</span>
+              {% elif rule.approval_level == 'manager' %}<span class="badge badge-info">Manager</span>
+              {% elif rule.approval_level == 'director' %}<span class="badge badge-warning">Director</span>
+              {% elif rule.approval_level == 'vp' %}<span class="badge badge-danger">VP</span>
+              {% else %}<span class="badge badge-muted">{{ rule.get_approval_level_display }}</span>{% endif %}
+            </td>
+            <td class="list-meta">{{ rule.min_discount_percent|floatformat:0 }}% – {{ rule.max_discount_percent|floatformat:0 }}%</td>
+            <td>
+              {% if rule.status == 'active' %}<span class="badge badge-success">Active</span>
+              {% elif rule.status == 'inactive' %}<span class="badge badge-muted">Inactive</span>
+              {% elif rule.status == 'archived' %}<span class="badge badge-muted">Archived</span>
+              {% else %}<span class="badge badge-muted">{{ rule.get_status_display }}</span>{% endif %}
+            </td>
+            <td>
+              <div class="table-actions">
+                <a href="{% url 'quotes:pricingrule_detail' rule.pk %}" class="btn-icon" title="View"><i data-lucide="eye"></i></a>
+                <a href="{% url 'quotes:pricingrule_edit' rule.pk %}" class="btn-icon" title="Edit"><i data-lucide="pencil"></i></a>
+                <form method="post" action="{% url 'quotes:pricingrule_delete' rule.pk %}" onsubmit="return confirm('Delete this pricing rule?')">
+                  {% csrf_token %}
+                  <button type="submit" class="btn-icon danger" title="Delete"><i data-lucide="trash-2"></i></button>
+                </form>
+              </div>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="6"><div class="empty-state"><div class="empty-icon"><i data-lucide="percent"></i></div><h3>No pricing rules</h3><p>Define discount bands and the approval each requires.</p><a href="{% url 'quotes:pricingrule_create' %}" class="btn btn-primary" style="margin-top:14px"><i data-lucide="plus"></i> Add Pricing Rule</a></div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div style="padding:0 16px 12px">{% include "partials/pagination.html" %}</div>
+</div>
+{% endblock %}
