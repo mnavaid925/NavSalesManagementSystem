@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block title %}Email Integration &amp; Tracking{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'activities:activity_list' %}">Sales Activity</a><i data-lucide="chevron-right" style="width:14px"></i><span>Emails</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Email Integration &amp; Tracking</h1>
+    <p class="page-subtitle">{{ total }} email{{ total|pluralize }} tracked</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'activities:emaillog_create' %}" class="btn btn-primary"><i data-lucide="plus"></i> Log Email</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <form method="get" style="display:flex;gap:10px;flex-wrap:wrap;width:100%;align-items:center">
+      <input type="text" name="q" value="{{ request.GET.q }}" placeholder="Search subject, sender, recipient…" class="form-input" style="max-width:280px">
+      <select name="status" class="form-select" style="max-width:180px" onchange="this.form.submit()">
+        <option value="">All statuses</option>
+        {% for value, label in status_choices %}
+          <option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <select name="direction" class="form-select" style="max-width:170px" onchange="this.form.submit()">
+        <option value="">All directions</option>
+        {% for value, label in direction_choices %}
+          <option value="{{ value }}" {% if request.GET.direction == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <button class="btn btn-outline" type="submit"><i data-lucide="filter"></i> Filter</button>
+    </form>
+  </div>
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr><th>Subject</th><th>Direction</th><th>Status</th><th>Recipient</th><th>Opens</th><th style="text-align:end">Actions</th></tr></thead>
+      <tbody>
+        {% for email in emails %}
+          <tr>
+            <td>
+              <a href="{% url 'activities:emaillog_detail' email.pk %}" class="fw-600">{{ email.subject }}</a>
+              {% if email.from_email %}<div class="list-meta">{{ email.from_email }}</div>{% endif %}
+            </td>
+            <td>
+              {% if email.direction == 'outbound' %}<span class="badge badge-info">Outbound</span>
+              {% elif email.direction == 'inbound' %}<span class="badge badge-muted">Inbound</span>
+              {% else %}<span class="badge badge-muted">{{ email.get_direction_display }}</span>{% endif %}
+            </td>
+            <td>
+              {% if email.status == 'replied' %}<span class="badge badge-success">Replied</span>
+              {% elif email.status == 'clicked' %}<span class="badge badge-success">Clicked</span>
+              {% elif email.status == 'opened' %}<span class="badge badge-info">Opened</span>
+              {% elif email.status == 'delivered' %}<span class="badge badge-info">Delivered</span>
+              {% elif email.status == 'sent' %}<span class="badge badge-warning">Sent</span>
+              {% elif email.status == 'draft' %}<span class="badge badge-muted">Draft</span>
+              {% elif email.status == 'bounced' %}<span class="badge badge-danger">Bounced</span>
+              {% else %}<span class="badge badge-muted">{{ email.get_status_display }}</span>{% endif %}
+            </td>
+            <td>{{ email.to_email|default:"—" }}</td>
+            <td class="fw-600">{{ email.open_count }}</td>
+            <td>
+              <div class="table-actions">
+                <a href="{% url 'activities:emaillog_detail' email.pk %}" class="btn-icon" title="View"><i data-lucide="eye"></i></a>
+                <a href="{% url 'activities:emaillog_edit' email.pk %}" class="btn-icon" title="Edit"><i data-lucide="pencil"></i></a>
+                <form method="post" action="{% url 'activities:emaillog_delete' email.pk %}" onsubmit="return confirm('Delete this email log?')">
+                  {% csrf_token %}
+                  <button type="submit" class="btn-icon danger" title="Delete"><i data-lucide="trash-2"></i></button>
+                </form>
+              </div>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="6"><div class="empty-state"><div class="empty-icon"><i data-lucide="mail"></i></div><h3>No emails</h3><p>Log your first email to start tracking engagement.</p><a href="{% url 'activities:emaillog_create' %}" class="btn btn-primary" style="margin-top:14px"><i data-lucide="plus"></i> Log Email</a></div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div style="padding:0 16px 12px">{% include "partials/pagination.html" %}</div>
+</div>
+{% endblock %}
