@@ -4,16 +4,20 @@ A multi-tenant **Sales Management System** built with **Django 5.1** (backend) a
 **Tailwind CSS + HTMX** (frontend). Clean, fully responsive blue/white dashboard with a
 full layout customizer (dark mode, RTL, sidebar variants, boxed/fluid, and more).
 
-This repository currently ships the **foundation + Module 0**:
+This repository currently ships the **foundation + Modules 0–10**:
 
 - Multi-tenant core (isolated workspaces, tenant middleware, audit log)
 - Authentication — login, self-service registration (tenant onboarding), forgot/reset password, invitation acceptance
 - User management — users, invitations, roles, profile & password change
 - The blue/white **dashboard** (KPIs, revenue chart, sales gauge, recent sales) wired to live tenant data
 - **Module 0 — Tenant & Subscription Management** (5 sub-modules, full CRUD)
+- **Modules 1–10** — Leads, Opportunities & Pipeline, Contacts & Accounts (CRM), Forecasting, Quotes &
+  Proposals, Orders, Territories & Quotas, Sales Activities & Tasks, Sales Enablement, and Incentive
+  Compensation — each 5 sub-modules, ~5 tenant-scoped models, full CRUD (list/search/filter/paginate +
+  detail + create + edit + delete) and an idempotent seeder
 - Migrations, idempotent seeders (fake data via Faker), and the `.env`-driven MySQL config
 
-Modules 1–20 from [`SalesManagementSystem.md`](SalesManagementSystem.md) appear in the sidebar as
+Modules 11–20 from [`SalesManagementSystem.md`](SalesManagementSystem.md) appear in the sidebar as
 **roadmap placeholders** and are delivered one at a time.
 
 ---
@@ -57,8 +61,19 @@ copy .env.example .env      # adjust DB credentials if your XAMPP differs
 venv\Scripts\python.exe manage.py migrate
 
 # 5. Seed demo data (idempotent)
-venv\Scripts\python.exe manage.py seed_demo       # tenants, roles, users, invites
+venv\Scripts\python.exe manage.py seed_demo       # tenants, roles, users, invites (run first)
 venv\Scripts\python.exe manage.py seed_tenants    # Module 0: subscriptions, invoices, keys, branding, health
+# Modules 1-10 (each idempotent; run after seed_demo):
+venv\Scripts\python.exe manage.py seed_leads
+venv\Scripts\python.exe manage.py seed_opportunities
+venv\Scripts\python.exe manage.py seed_crm
+venv\Scripts\python.exe manage.py seed_forecasting
+venv\Scripts\python.exe manage.py seed_quotes
+venv\Scripts\python.exe manage.py seed_orders
+venv\Scripts\python.exe manage.py seed_territories
+venv\Scripts\python.exe manage.py seed_activities
+venv\Scripts\python.exe manage.py seed_enablement
+venv\Scripts\python.exe manage.py seed_compensation
 
 # 6. Run
 venv\Scripts\python.exe manage.py runserver
@@ -95,16 +110,16 @@ Open <http://127.0.0.1:8000/> → you'll be redirected to the login page.
 | # | Module | Status |
 |---|--------|--------|
 | 0 | Tenant & Subscription Management | ✅ **Complete** |
-| 1 | Lead Management | 🔜 Roadmap |
-| 2 | Opportunity & Pipeline Management | 🔜 Roadmap |
-| 3 | Contact & Account Management | 🔜 Roadmap |
-| 4 | Sales Forecasting | 🔜 Roadmap |
-| 5 | Quote & Proposal Management | 🔜 Roadmap |
-| 6 | Order Management | 🔜 Roadmap |
-| 7 | Territory & Quota Management | 🔜 Roadmap |
-| 8 | Sales Activity & Task Management | 🔜 Roadmap |
-| 9 | Sales Enablement | 🔜 Roadmap |
-| 10 | Incentive Compensation Management | 🔜 Roadmap |
+| 1 | Lead Management | ✅ **Complete** |
+| 2 | Opportunity & Pipeline Management | ✅ **Complete** |
+| 3 | Contact & Account Management | ✅ **Complete** |
+| 4 | Sales Forecasting | ✅ **Complete** |
+| 5 | Quote & Proposal Management | ✅ **Complete** |
+| 6 | Order Management | ✅ **Complete** |
+| 7 | Territory & Quota Management | ✅ **Complete** |
+| 8 | Sales Activity & Task Management | ✅ **Complete** |
+| 9 | Sales Enablement | ✅ **Complete** |
+| 10 | Incentive Compensation Management | ✅ **Complete** |
 | 11 | Customer Success & Account Management | 🔜 Roadmap |
 | 12 | Sales Analytics & Intelligence | 🔜 Roadmap |
 | 13 | Marketing Alignment & Attribution | 🔜 Roadmap |
@@ -126,6 +141,24 @@ Open <http://127.0.0.1:8000/> → you'll be redirected to the login page.
 | Custom Branding | `/tenant/branding/` |
 | Tenant Health Monitoring | `/tenant/health/` |
 
+### Modules 1–10 (live)
+
+Each module is a Django app under `apps/<slug>/` with ~5 tenant-scoped models, full CRUD, and an
+idempotent `seed_<slug>` command. All 5 sub-modules of every module resolve as **Live** in the sidebar.
+
+| # | Module | App / base URL |
+|---|--------|----------------|
+| 1 | Lead Management | `apps/leads` — `/leads/` |
+| 2 | Opportunity & Pipeline Management | `apps/opportunities` — `/opportunities/` |
+| 3 | Contact & Account Management | `apps/crm` — `/crm/` |
+| 4 | Sales Forecasting | `apps/forecasting` — `/forecasting/` |
+| 5 | Quote & Proposal Management | `apps/quotes` — `/quotes/` |
+| 6 | Order Management | `apps/orders` — `/orders/` |
+| 7 | Territory & Quota Management | `apps/territories` — `/territories/` |
+| 8 | Sales Activity & Task Management | `apps/activities` — `/activities/` |
+| 9 | Sales Enablement | `apps/enablement` — `/enablement/` |
+| 10 | Incentive Compensation Management | `apps/compensation` — `/compensation/` |
+
 ---
 
 ## Project structure
@@ -136,6 +169,8 @@ apps/core/     Tenant, AuditLog, tenant middleware, sidebar navigation catalog
 apps/accounts/ custom User, Role, UserInvite + auth & user-management views
 apps/dashboard/ the overview dashboard
 apps/tenants/  Module 0 — Tenant & Subscription Management
+apps/leads/ opportunities/ crm/ forecasting/ quotes/ orders/
+apps/territories/ activities/ enablement/ compensation/   Modules 1-10
 templates/     base + auth layouts, partials, per-module pages
 static/        css/theme.css, js/layout.js
 ```
