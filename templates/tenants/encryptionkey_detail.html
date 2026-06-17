@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}{{ obj.label }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'tenants:overview' %}">Tenant &amp; Subscription</a><i data-lucide="chevron-right" style="width:14px"></i>
+  <a href="{% url 'tenants:encryptionkey_list' %}">Encryption Keys</a><i data-lucide="chevron-right" style="width:14px"></i><span>{{ obj.label }}</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ obj.label }}</h1>
+    <p class="page-subtitle">Tenant isolation &amp; security key</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'tenants:encryptionkey_list' %}" class="btn btn-outline"><i data-lucide="arrow-left"></i> Back</a>
+    <a href="{% url 'tenants:encryptionkey_edit' obj.pk %}" class="btn btn-primary"><i data-lucide="pencil"></i> Edit</a>
+  </div>
+</div>
+
+<div style="display:grid;grid-template-columns:2fr 1fr;gap:18px">
+  <div class="card"><div class="card-body">
+    <h3 style="font-size:15px;margin-bottom:12px">Details</h3>
+    <div class="form-group"><div class="form-label">Label</div>
+      <div class="fw-600">{{ obj.label }}</div></div>
+    <div class="form-group"><div class="form-label">Key</div>
+      <div><span class="code-pill">{{ obj.masked }}</span></div></div>
+    {% comment %}
+      SECURITY (L20): only the masked value is rendered. The plaintext secret is
+      never stored — we keep just a prefix + SHA-256 hash. It is surfaced once at
+      creation/rotation and can never be retrieved afterwards.
+    {% endcomment %}
+    <div class="form-group"><div class="form-label">Algorithm</div>
+      <div>{{ obj.get_algorithm_display }}</div></div>
+    <div class="form-group"><div class="form-label">Status</div>
+      {% if obj.status == 'active' %}<span class="badge badge-success">Active</span>
+      {% elif obj.status == 'rotated' %}<span class="badge badge-warning">Rotated</span>
+      {% elif obj.status == 'revoked' %}<span class="badge badge-danger">Revoked</span>
+      {% else %}<span class="badge badge-muted">{{ obj.get_status_display }}</span>{% endif %}
+    </div>
+    <div class="form-group"><div class="form-label">Last rotated</div>
+      <div>{% if obj.last_rotated_at %}{{ obj.last_rotated_at|date:"d M Y, H:i" }}{% else %}—{% endif %}</div></div>
+    <div class="muted-box" style="padding:12px 14px;margin-top:4px">
+      <div class="list-meta"><i data-lucide="shield-alert" style="width:14px;vertical-align:-2px"></i> The full secret is shown only once at creation and cannot be retrieved later. Rotate the key to issue a new secret.</div>
+    </div>
+  </div></div>
+
+  <div class="card"><div class="card-body">
+    <h3 style="font-size:15px;margin-bottom:12px">Actions</h3>
+    <a href="{% url 'tenants:encryptionkey_edit' obj.pk %}" class="btn btn-outline btn-block" style="margin-bottom:10px"><i data-lucide="pencil"></i> Edit key</a>
+    <form method="post" action="{% url 'tenants:encryptionkey_rotate' obj.pk %}" onsubmit="return confirm('Rotate this key? A new secret will be generated and shown once.')" style="margin-bottom:10px">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-outline btn-block"><i data-lucide="refresh-cw"></i> Rotate key</button>
+    </form>
+    <form method="post" action="{% url 'tenants:encryptionkey_delete' obj.pk %}" onsubmit="return confirm('Revoke &amp; delete this key? This cannot be undone.')">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger btn-block"><i data-lucide="trash-2"></i> Delete key</button>
+    </form>
+    <hr class="divider">
+    <div class="list-meta">Created {{ obj.created_at|date:"d M Y" }}</div>
+  </div></div>
+</div>
+{% endblock %}
