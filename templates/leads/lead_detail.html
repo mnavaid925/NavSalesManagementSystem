@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+{% block title %}{{ obj.full_name }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'leads:lead_list' %}">Lead Management</a><i data-lucide="chevron-right" style="width:14px"></i>
+  <a href="{% url 'leads:lead_list' %}">Leads</a><i data-lucide="chevron-right" style="width:14px"></i><span>{{ obj.full_name }}</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ obj.full_name }}</h1>
+    <p class="page-subtitle">{{ obj.number }}{% if obj.company %} · {{ obj.company }}{% endif %}</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'leads:lead_list' %}" class="btn btn-outline"><i data-lucide="arrow-left"></i> Back</a>
+    <a href="{% url 'leads:lead_edit' obj.pk %}" class="btn btn-primary"><i data-lucide="pencil"></i> Edit</a>
+  </div>
+</div>
+
+<div class="detail-grid">
+  <div>
+    <div class="card"><div class="card-body">
+      <h3 style="font-size:15px;margin-bottom:12px">Details</h3>
+      <div class="form-group"><div class="form-label">Number</div>
+        <div class="fw-600">{{ obj.number }}</div></div>
+      <div class="form-group"><div class="form-label">Name</div>
+        <div>{{ obj.full_name }}</div></div>
+      <div class="form-group"><div class="form-label">Company</div>
+        <div>{{ obj.company|default:"—" }}</div></div>
+      <div class="form-group"><div class="form-label">Job title</div>
+        <div>{{ obj.job_title|default:"—" }}</div></div>
+      <div class="form-group"><div class="form-label">Email</div>
+        <div>{{ obj.email|default:"—" }}</div></div>
+      <div class="form-group"><div class="form-label">Phone</div>
+        <div>{{ obj.phone|default:"—" }}</div></div>
+      <div class="form-group"><div class="form-label">Status</div>
+        {% if obj.status == 'new' %}<span class="badge badge-info">New</span>
+        {% elif obj.status == 'contacted' %}<span class="badge badge-info">Contacted</span>
+        {% elif obj.status == 'working' %}<span class="badge badge-warning">Working</span>
+        {% elif obj.status == 'nurturing' %}<span class="badge badge-warning">Nurturing</span>
+        {% elif obj.status == 'qualified' %}<span class="badge badge-success">Qualified</span>
+        {% elif obj.status == 'unqualified' %}<span class="badge badge-danger">Unqualified</span>
+        {% elif obj.status == 'converted' %}<span class="badge badge-success">Converted</span>
+        {% else %}<span class="badge badge-muted">{{ obj.get_status_display }}</span>{% endif %}
+      </div>
+      <div class="form-group"><div class="form-label">Rating</div>
+        {% if obj.rating == 'hot' %}<span class="badge badge-danger">Hot</span>
+        {% elif obj.rating == 'warm' %}<span class="badge badge-warning">Warm</span>
+        {% elif obj.rating == 'cold' %}<span class="badge badge-info">Cold</span>
+        {% else %}<span class="badge badge-muted">{{ obj.get_rating_display }}</span>{% endif %}
+      </div>
+      <div class="form-group"><div class="form-label">Source</div>
+        <div>{% if obj.source %}<a href="{% url 'leads:leadsource_detail' obj.source.pk %}">{{ obj.source.name }}</a>{% else %}—{% endif %}</div></div>
+      <div class="form-group"><div class="form-label">Campaign</div>
+        <div>{% if obj.campaign %}<a href="{% url 'leads:nurturecampaign_detail' obj.campaign.pk %}">{{ obj.campaign.name }}</a>{% else %}—{% endif %}</div></div>
+      <div class="form-group"><div class="form-label">Owner</div>
+        <div>{{ obj.owner|default:"—" }}</div></div>
+      <div class="form-group"><div class="form-label">Estimated value</div>
+        <div>${{ obj.estimated_value|floatformat:2 }}</div></div>
+      <div class="form-group"><div class="form-label">Captured on</div>
+        <div>{% if obj.captured_on %}{{ obj.captured_on|date:"d M Y" }}{% else %}—{% endif %}</div></div>
+      {% if obj.notes %}
+      <div class="form-group"><div class="form-label">Notes</div>
+        <div>{{ obj.notes|linebreaksbr }}</div></div>
+      {% endif %}
+    </div></div>
+
+    <div class="card" style="margin-top:18px"><div class="card-header"><h3 class="card-title">Scores</h3></div>
+      <div class="table-wrap">
+        <table class="table">
+          <thead><tr><th>Score</th><th>Grade</th><th>Model</th><th style="text-align:end">Scored on</th></tr></thead>
+          <tbody>
+            {% for sc in scores %}
+              <tr>
+                <td><a href="{% url 'leads:leadscore_detail' sc.pk %}" class="fw-600">{{ sc.score }}</a></td>
+                <td>
+                  {% if sc.grade == 'A' %}<span class="badge badge-success">A</span>
+                  {% elif sc.grade == 'B' %}<span class="badge badge-info">B</span>
+                  {% elif sc.grade == 'C' %}<span class="badge badge-warning">C</span>
+                  {% elif sc.grade == 'D' %}<span class="badge badge-danger">D</span>
+                  {% else %}<span class="badge badge-muted">{{ sc.get_grade_display }}</span>{% endif %}
+                </td>
+                <td class="list-meta">{{ sc.get_scoring_model_display }}</td>
+                <td class="list-meta" style="text-align:end">{{ sc.scored_on|date:"d M Y" }}</td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="4"><div class="empty-state"><div class="empty-icon"><i data-lucide="gauge"></i></div><h3>No scores</h3><p>Scores recorded for this lead appear here.</p></div></td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:18px"><div class="card-header"><h3 class="card-title">Conversions</h3></div>
+      <div class="table-wrap">
+        <table class="table">
+          <thead><tr><th>Number</th><th>Status</th><th>Outcome</th><th style="text-align:end">Deal value</th></tr></thead>
+          <tbody>
+            {% for cv in conversions %}
+              <tr>
+                <td><a href="{% url 'leads:leadconversion_detail' cv.pk %}" class="fw-600">{{ cv.number }}</a></td>
+                <td>
+                  {% if cv.status == 'pending' %}<span class="badge badge-warning">Pending</span>
+                  {% elif cv.status == 'accepted' %}<span class="badge badge-info">Accepted</span>
+                  {% elif cv.status == 'rejected' %}<span class="badge badge-danger">Rejected</span>
+                  {% elif cv.status == 'completed' %}<span class="badge badge-success">Completed</span>
+                  {% else %}<span class="badge badge-muted">{{ cv.get_status_display }}</span>{% endif %}
+                </td>
+                <td class="list-meta">{{ cv.get_outcome_display }}</td>
+                <td style="text-align:end">${{ cv.deal_value|floatformat:2 }}</td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="4"><div class="empty-state"><div class="empty-icon"><i data-lucide="git-merge"></i></div><h3>No conversions</h3><p>Handoffs created for this lead appear here.</p></div></td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="card"><div class="card-body">
+    <h3 style="font-size:15px;margin-bottom:12px">Actions</h3>
+    <a href="{% url 'leads:lead_edit' obj.pk %}" class="btn btn-outline btn-block" style="margin-bottom:10px"><i data-lucide="pencil"></i> Edit lead</a>
+    <form method="post" action="{% url 'leads:lead_delete' obj.pk %}" onsubmit="return confirm('Delete this lead?')">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger btn-block"><i data-lucide="trash-2"></i> Delete lead</button>
+    </form>
+    <hr class="divider">
+    <div class="list-meta">Created {{ obj.created_at|date:"d M Y" }}</div>
+  </div></div>
+</div>
+{% endblock %}
