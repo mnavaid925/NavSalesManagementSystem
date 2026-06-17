@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Stop hook — end-of-turn verification for NavPMS.
+"""Stop hook — end-of-turn verification for NavSalesManagementSystem.
 
 Runs when Claude finishes a turn:
   1. Always: Django `manage.py check`.
@@ -89,7 +89,7 @@ def main():
                          + "\nFix the above before finishing.\n")
         return 2
 
-    note = "NavPMS verify - manage.py check OK" + (" - tests OK" if real_tests else " - no test suite yet")
+    note = "NavSalesManagementSystem verify - manage.py check OK" + (" - tests OK" if real_tests else " - no test suite yet")
     print(json.dumps({"systemMessage": note, "suppressOutput": True}))
     return 0
 

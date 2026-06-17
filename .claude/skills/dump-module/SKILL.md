@@ -1,13 +1,13 @@
 ---
 name: dump-module
-description: Regenerate the consolidated <NN>_<slug>.txt code dump for one (or all) NavPMS modules into the temp/ folder. The .txt file contains every backend file from apps/<name>/ followed by every frontend template from templates/<name>/, with per-file separators. Use when the user says "dump module X", "regenerate the temp file for X", "extract code for module X", "give me a code dump of X", or invokes /dump-module. The user can pass a module number (0-20), an app folder name (tenants/accounts/core/projects/dashboard plus the roadmap slugs like risks/planning/finance), a friendly name (e.g. "subscription", "kanban", "agile"), or "all" to regenerate every module.
+description: Regenerate the consolidated <NN>_<slug>.txt code dump for one (or all) NavSalesManagementSystem modules into the temp/ folder. The .txt file contains every backend file from apps/<name>/ followed by every frontend template from templates/<name>/, with per-file separators. Use when the user says "dump module X", "regenerate the temp file for X", "extract code for module X", "give me a code dump of X", or invokes /dump-module. The user can pass a module number (0-20), an app folder name (tenants/accounts/core/projects/dashboard plus the roadmap slugs like risks/planning/finance), a friendly name (e.g. "subscription", "kanban", "agile"), or "all" to regenerate every module.
 ---
 
-# dump-module — NavPMS module code-dump generator
+# dump-module — NavSalesManagementSystem module code-dump generator
 
 This skill regenerates one (or all) of the consolidated `temp\<NN>_<slug>.txt` files that contain a single module's complete backend + frontend source code, for use in code review, hand-off, AI prompts, or archival.
 
-NavPMS is a multi-tenant **Project Management System** (Django 5.1 + Tailwind/HTMX/Chart.js/Lucide, MySQL/MariaDB via PyMySQL, DB `nav_pms`). Built today: **Module 0 = `apps/tenants`** (Tenant & Subscription Management — the flagship complete module) plus the foundation apps **`accounts` / `core` / `projects` / `dashboard`**. Modules **1–20** from `ProjectManagementSystem.md` are sidebar roadmap placeholders built on demand by the **`/next-module`** skill — until each is built, dumping it produces only a header and a "(no backend folder found ...)" note, which is expected.
+NavSalesManagementSystem is a multi-tenant **Project Management System** (Django 5.1 + Tailwind/HTMX/Chart.js/Lucide, MySQL/MariaDB via PyMySQL, DB `nav_pms`). Built today: **Module 0 = `apps/tenants`** (Tenant & Subscription Management — the flagship complete module) plus the foundation apps **`accounts` / `core` / `projects` / `dashboard`**. Modules **1–20** from `SalesManagementSystem.md` are sidebar roadmap placeholders built on demand by the **`/next-module`** skill — until each is built, dumping it produces only a header and a "(no backend folder found ...)" note, which is expected.
 
 ## When to use
 
@@ -54,7 +54,7 @@ Examples:
 ```
 
 Notes:
-- The script's `$RepoRoot` defaults to `C:\xampp\htdocs\NavProjectManagementSystem`.
+- The script's `$RepoRoot` defaults to `C:\xampp\htdocs\NavSalesManagementSystem`.
 - The script auto-creates `temp/` if missing.
 - The script overwrites the matching `<NN>_<slug>.txt` file (idempotent — safe to re-run).
 - `temp/` should be gitignored — no commit snippet needed for the generated `.txt`.
@@ -97,7 +97,7 @@ If a module's `apps\<name>\` or `templates\<name>\` folder does not exist yet (a
 
 ## Module registry (kept in `dump_module.ps1`)
 
-Module numbers follow `ProjectManagementSystem.md` (Modules 0–20). **Module 0** (Tenant & Subscription Management → `apps/tenants`) is COMPLETE, alongside the foundation apps. **Modules 1–20** are forward-compatible registry rows that map to the `/next-module` roadmap app slugs; their folders are created only when `/next-module` builds them.
+Module numbers follow `SalesManagementSystem.md` (Modules 0–20). **Module 0** (Tenant & Subscription Management → `apps/tenants`) is COMPLETE, alongside the foundation apps. **Modules 1–20** are forward-compatible registry rows that map to the `/next-module` roadmap app slugs; their folders are created only when `/next-module` builds them.
 
 | # | Slug                                | apps\            | templates\       | Status |
 |---|-------------------------------------|------------------|------------------|--------|

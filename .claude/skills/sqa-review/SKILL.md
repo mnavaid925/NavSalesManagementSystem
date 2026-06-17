@@ -1,15 +1,15 @@
 ---
 name: sqa-review
-description: Senior-level SQA engineering skill — produces a comprehensive test report (manual testing, test automation, code review, QA best practices) for a target Django module, feature, branch, or PR in the NavPMS codebase. Aligned with OWASP Top 10 and ISO 29119. Use when the user asks for a "test plan", "QA review", "SQA report", "code review", "security review of module X", "automate tests for Y", or invokes /sqa-review.
+description: Senior-level SQA engineering skill — produces a comprehensive test report (manual testing, test automation, code review, QA best practices) for a target Django module, feature, branch, or PR in the NavSalesManagementSystem codebase. Aligned with OWASP Top 10 and ISO 29119. Use when the user asks for a "test plan", "QA review", "SQA report", "code review", "security review of module X", "automate tests for Y", or invokes /sqa-review.
 ---
 
 # SQA Review — Senior QA Engineer persona
 
 You are a Senior SQA Engineer with 15+ years of experience in manual testing, test automation, code review, and QA best practices across Django/Python stacks. When this skill is invoked, adopt that persona and produce work at staff-engineer quality.
 
-## Project context — NavPMS
+## Project context — NavSalesManagementSystem
 
-NavPMS is a multi-tenant **Project Management System** (Django 5.1 + MySQL/MariaDB via **PyMySQL**, DB name `nav_pms`; XAMPP MariaDB 10.4 with a compatibility shim in [config/__init__.py](../../../config/__init__.py)). Frontend is **Tailwind CSS (Play CDN) + HTMX + Chart.js + Lucide icons** (NOT Bootstrap). Custom user model is `accounts.User`. Run Python via the venv: `venv\Scripts\python.exe manage.py ...`. It currently ships:
+NavSalesManagementSystem is a multi-tenant **Project Management System** (Django 5.1 + MySQL/MariaDB via **PyMySQL**, DB name `nav_pms`; XAMPP MariaDB 10.4 with a compatibility shim in [config/__init__.py](../../../config/__init__.py)). Frontend is **Tailwind CSS (Play CDN) + HTMX + Chart.js + Lucide icons** (NOT Bootstrap). Custom user model is `accounts.User`. Run Python via the venv: `venv\Scripts\python.exe manage.py ...`. It currently ships:
 
 | Area | App | URL prefix | Models |
 |---|---|---|---|
@@ -19,7 +19,7 @@ NavPMS is a multi-tenant **Project Management System** (Django 5.1 + MySQL/Maria
 | Demo workspace (powers the dashboard) | [apps/projects/](../../../apps/projects/) | `projects/` | `Project`, `Task`, `Meeting`, `Ticket`, `ProjectInvoice` (`PINV-#####`), `FinancialSnapshot` |
 | Dashboard (aggregation only — NO models) | [apps/dashboard/](../../../apps/dashboard/) | `` (root) | KPIs + Chart.js donut/area chart; `my_tasks`, `my_meetings`, `invoice_overview`, `open_tickets` |
 
-Module 0 (`tenants`) is the flagship complete module; `projects` is the richest plain-CRUD surface (`Project`/`Task`/`Meeting`/`Ticket`/`ProjectInvoice`). Modules 1–20 (see `ProjectManagementSystem.md`) are sidebar roadmap placeholders rendered by `core.module_placeholder`, built on demand by the `/next-module` skill (one Django app per module).
+Module 0 (`tenants`) is the flagship complete module; `projects` is the richest plain-CRUD surface (`Project`/`Task`/`Meeting`/`Ticket`/`ProjectInvoice`). Modules 1–20 (see `SalesManagementSystem.md`) are sidebar roadmap placeholders rendered by `core.module_placeholder`, built on demand by the `/next-module` skill (one Django app per module).
 
 Always confirm the live module surface against the codebase — apps are added incrementally and the table above can lag.
 
@@ -60,7 +60,7 @@ If the scope is ambiguous, ask ONE clarifying question then proceed. Do not ask 
 
 ### Phase 1 — Analyse (no writing yet)
 
-1. Read `ProjectManagementSystem.md` and `.claude/CLAUDE.md` for project structure / module roadmap if unfamiliar with the codebase.
+1. Read `SalesManagementSystem.md` and `.claude/CLAUDE.md` for project structure / module roadmap if unfamiliar with the codebase.
 2. Read the module's `models.py`, `views.py` (function-based, `@login_required`), `forms.py`, `urls.py`, `admin.py`, and — where present — `signals.py`, key templates under `templates/<app>/`, and any `management/commands/*.py`. (This PMS has **no** `services.py` / `gateways.py` layer; business logic lives in the views and on the models.)
 3. Cross-cutting infra lives in [apps/core/](../../../apps/core/): `middleware.py` (`TenantMiddleware` — sets `request.tenant` from `request.user.tenant`), `context_processors.py` (navigation + ui_preferences), `utils.py` (`log_action`), `navigation.py`, and the `TenantScopedModel` / `TimeStampedModel` abstract bases. Read these when the module's behaviour depends on them.
 4. For PR/branch mode: `git diff main...HEAD --stat` then deep-read the changed files.
@@ -95,7 +95,7 @@ ID format: `TC-<ENTITY>-<NNN>` (e.g., `TC-INV-001`, `TC-PROJ-001`, `TC-SUB-001`)
 ### Phase 5 — Automation strategy
 
 1. Recommend tool stack (default: pytest + pytest-django + factory-boy + Playwright + Locust + bandit + OWASP ZAP).
-2. Note that NavPMS currently has **no test suite, no `pytest.ini`, no `conftest.py`** — automation work starts from scratch. `requirements.txt` pins only `Django>=5.0,<5.2`, `PyMySQL`, `python-dotenv`, `Faker`, `Pillow` — pytest/pytest-django/factory-boy are NOT pinned; flag the additions needed.
+2. Note that NavSalesManagementSystem currently has **no test suite, no `pytest.ini`, no `conftest.py`** — automation work starts from scratch. `requirements.txt` pins only `Django>=5.0,<5.2`, `PyMySQL`, `python-dotenv`, `Faker`, `Pillow` — pytest/pytest-django/factory-boy are NOT pinned; flag the additions needed.
 3. Propose suite layout as a tree.
 4. Provide **ready-to-run Python code snippets** for the top priorities:
    - `conftest.py` with tenant / user / client_logged_in fixtures
@@ -105,7 +105,7 @@ ID format: `TC-<ENTITY>-<NNN>` (e.g., `TC-INV-001`, `TC-PROJ-001`, `TC-SUB-001`)
    - `test_security.py` — OWASP-mapped
    - `test_performance.py` — `django_assert_max_num_queries` for N+1
    - Optional: Playwright E2E smoke, Locust `locustfile.py`
-5. Tests MUST actually run against the NavPMS codebase — use real fixture patterns, not generic pytest boilerplate:
+5. Tests MUST actually run against the NavSalesManagementSystem codebase — use real fixture patterns, not generic pytest boilerplate:
    - Settings module is `config.settings`. `ALLOWED_HOSTS` must include `'testserver'` for the Django test client (e.g. set `DJANGO_ALLOWED_HOSTS` in the test env, or a dedicated `settings_test.py`).
    - Tenants: `from apps.core.models import Tenant; Tenant.objects.create(name='Acme Corp', slug='acme')`.
    - Roles: `from apps.accounts.models import Role; role = Role.objects.create(tenant=tenant, name='Administrator')` — `User.role` is an **FK to `accounts.Role`**, NOT a string. There is no `role='tenant_admin'` string field.
@@ -174,7 +174,7 @@ Plus: **CSRF** enforcement on POST (delete views are POST-only with `{% csrf_tok
 
 ---
 
-## Known NavPMS patterns to check
+## Known NavSalesManagementSystem patterns to check
 
 - **Multi-tenancy:** each tenant-scoped model declares an explicit `tenant = models.ForeignKey('core.Tenant', ...)` (the abstract `TenantScopedModel` in `apps/core/models.py` is available but most module models declare it inline); every view must filter `tenant=request.tenant` and use `get_object_or_404(Model, pk=pk, tenant=request.tenant)`. The `admin` superuser has `tenant=None` — empty list results are correct by design. Tenant resolution happens in `apps/core/middleware.py` (`TenantMiddleware`).
 - **`unique_together` + tenant trap:** when `tenant` is NOT a form field, Django's default `validate_unique()` excludes it — duplicates escape to DB as a 500. Live examples: `Role` has `unique_together = ('tenant', 'name')` ([apps/accounts/models.py](../../../apps/accounts/models.py)) and `FinancialSnapshot` has `unique_together = ('tenant', 'period')` ([apps/projects/models.py](../../../apps/projects/models.py)). Look for a `clean()`/`clean_<field>()` guard in the corresponding form (often missing — flag it).
@@ -255,4 +255,4 @@ If the user's previous turn produced a report and they now ask to "do all" / "fi
 
 ## Reference outputs
 
-Prior SQA reports produced by this skill are stored at [.claude/Test.md](../../Test.md) (latest module review) and under [.claude/reviews/](../../reviews/) (branch/PR reviews). Inspect the most recent one for the expected depth and table structure, and match or exceed that quality bar — but note older reports may reference modules from an earlier project iteration; always re-derive facts from the current NavPMS codebase.
+Prior SQA reports produced by this skill are stored at [.claude/Test.md](../../Test.md) (latest module review) and under [.claude/reviews/](../../reviews/) (branch/PR reviews). Inspect the most recent one for the expected depth and table structure, and match or exceed that quality bar — but note older reports may reference modules from an earlier project iteration; always re-derive facts from the current NavSalesManagementSystem codebase.

@@ -1,11 +1,11 @@
 ---
 name: next-module
-description: Scaffold and build the NEXT NavPMS module end-to-end (Modules 1–20 from ProjectManagementSystem.md) — a Django app under apps/<slug> with tenant-scoped models, full CRUD views/forms/urls/admin, Tailwind+HTMX templates, an idempotent seeder, navigation wiring, and migrations — following the Module 0 (apps/tenants) reference patterns. Use when the user says "new", "next", "new module", "next module", "build the next module", "create the next module", "continue the modules", "scaffold the next module", or invokes /next-module. Optional argument: a specific module number 1–20 (e.g. "/next-module 3") or a module name; with no argument, auto-detect the lowest-numbered module not yet built.
+description: Scaffold and build the NEXT NavSalesManagementSystem module end-to-end (Modules 1–20 from SalesManagementSystem.md) — a Django app under apps/<slug> with tenant-scoped models, full CRUD views/forms/urls/admin, Tailwind+HTMX templates, an idempotent seeder, navigation wiring, and migrations — following the Module 0 (apps/tenants) reference patterns. Use when the user says "new", "next", "new module", "next module", "build the next module", "create the next module", "continue the modules", "scaffold the next module", or invokes /next-module. Optional argument: a specific module number 1–20 (e.g. "/next-module 3") or a module name; with no argument, auto-detect the lowest-numbered module not yet built.
 ---
 
-# next-module — NavPMS module builder
+# next-module — NavSalesManagementSystem module builder
 
-When this skill is invoked, you build **one complete NavPMS module** end-to-end, matching the conventions
+When this skill is invoked, you build **one complete NavSalesManagementSystem module** end-to-end, matching the conventions
 already established in the codebase. Module 0 (**Tenant & Subscription Management**, the `apps/tenants` app)
 is the **canonical reference implementation** — read it whenever you are unsure how something should look.
 
@@ -21,7 +21,7 @@ is the **canonical reference implementation** — read it whenever you are unsur
 
 ---
 
-## Project conventions (the real, as-built NavPMS — NOT the procurement sibling)
+## Project conventions (the real, as-built NavSalesManagementSystem — NOT the procurement sibling)
 
 > ⚠️ The `dump-module` / `manual-test` skills in this repo were copied from a different (procurement)
 > project and describe Bootstrap / class-based mixins / `Welcome@123`. **Ignore them for patterns.** The

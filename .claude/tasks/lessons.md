@@ -2,10 +2,10 @@
 
 ## L1 — Verify a database is actually ours (and empty) before migrating
 `CREATE DATABASE IF NOT EXISTS x` is a **silent no-op** when `x` already exists. On this XAMPP instance,
-`navpms` was already owned by a different Nav app (~170 procurement tables, live data). **Rule:** before
+`NavSalesManagementSystem` was already owned by a different Nav app (~170 procurement tables, live data). **Rule:** before
 pointing `.env` at a DB and running migrate, check `SELECT COUNT(*) FROM information_schema.tables WHERE
 table_schema='<db>'` and confirm it's empty or ours. Never flush/fake-migrate a non-empty unknown DB.
-NavPMS uses its own DB **`nav_pms`**.
+NavSalesManagementSystem uses its own DB **`nav_pms`**.
 
 ## L2 — Django `{# … #}` comments are single-line only
 Multi-line `{# … #}` comments **leak as visible text**. Use `{% comment %} … {% endcomment %}` for any
@@ -87,13 +87,13 @@ fetches the new URL. For verification in the preview, a unique page query (`/?_c
 fetch. (Long-term: a `{% static %}`-with-mtime template tag or ManifestStaticFilesStorage auto-versions.)
 
 ## L14 — `.claude/launch.json` runs the dev server with `--noreload` → ALWAYS restart after a build
-The preview server (`launch.json` config `navpms`) starts `manage.py runserver --noreload`. `--noreload` means
+The preview server (`launch.json` config `NavSalesManagementSystem`) starts `manage.py runserver --noreload`. `--noreload` means
 **file edits are NEVER picked up** — after building/wiring a module, the running server keeps serving pre-change
 code, so new sub-modules show the "On the roadmap" placeholder and edits look like they "didn't work". This is a
 specific instance of [L6]. **Rule:** after finishing a module build (especially `navigation.py`/`urls.py`/
 `settings.py` wiring), restart the server: find the LISTENING pid on :8000 with **`netstat -ano | Select-String
 ':8000\b'`** (NOT `Get-NetTCPConnection` — it false-negatived a real listener here), `Stop-Process -Id <pid>
--Force`, then `preview_start navpms`. Then verify the live page renders (fetch `/initiation/requests/` → contains
+-Force`, then `preview_start NavSalesManagementSystem`. Then verify the live page renders (fetch `/initiation/requests/` → contains
 "Project Requests", not "On the roadmap"). The disk code was already correct — only the stale process was wrong.
 
 ## L13 — Template agents reference utility CSS classes that don't exist

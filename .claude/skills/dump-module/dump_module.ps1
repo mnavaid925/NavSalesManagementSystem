@@ -1,9 +1,9 @@
 ## dump_module.ps1
 ##
 ## Generates a consolidated <NN>_<slug>.txt file in temp/ containing all backend
-## (apps/<name>/) and frontend (templates/<name>/) code for one NavPMS module.
+## (apps/<name>/) and frontend (templates/<name>/) code for one NavSalesManagementSystem module.
 ##
-## NavPMS is a multi-tenant Project Management System (Django 5.1 + Tailwind/HTMX/Chart.js/Lucide,
+## NavSalesManagementSystem is a multi-tenant Project Management System (Django 5.1 + Tailwind/HTMX/Chart.js/Lucide,
 ## MySQL/MariaDB via PyMySQL). Module 0 (apps/tenants) is the flagship COMPLETE module; the
 ## foundation apps accounts/core/projects/dashboard are also built. Modules 1-20 are roadmap
 ## placeholders built on demand by the /next-module skill — until then the script prints
@@ -20,7 +20,7 @@ param(
     [Parameter(Mandatory = $true, Position = 0)]
     [string]$Module,
 
-    [string]$RepoRoot = 'C:\xampp\htdocs\NavProjectManagementSystem'
+    [string]$RepoRoot = 'C:\xampp\htdocs\NavSalesManagementSystem'
 )
 
 $ErrorActionPreference = 'Stop'

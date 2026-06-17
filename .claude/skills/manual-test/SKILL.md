@@ -25,9 +25,9 @@ The deliverable is a **runnable click-through script**, not an automation strate
 
 ---
 
-## Project at a glance — NavPMS
+## Project at a glance — NavSalesManagementSystem
 
-NavPMS is a multi-tenant Django 5.1 **Project Management System** (Tailwind CSS via Play CDN + HTMX + Chart.js + Lucide icons; MySQL/MariaDB via PyMySQL, DB `nav_pms`). The apps that ship today live under [apps/](apps/):
+NavSalesManagementSystem is a multi-tenant Django 5.1 **Project Management System** (Tailwind CSS via Play CDN + HTMX + Chart.js + Lucide icons; MySQL/MariaDB via PyMySQL, DB `nav_pms`). The apps that ship today live under [apps/](apps/):
 
 | App | URL prefix | What it does | Main testable surface |
 |---|---|---|---|
@@ -42,7 +42,7 @@ Two surfaces are worth testing first:
 - **tenants** ([apps/tenants/urls.py](apps/tenants/urls.py)) is **Module 0 — the flagship complete module** and the **default target** when the user just says "manually test the module". Its richest plain-CRUD entity is **Invoice** (auto-numbered `INV-#####`).
 - **projects** ([apps/projects/urls.py](apps/projects/urls.py)) is the richest plain-CRUD surface overall — five entities (Project, Task, Meeting, Ticket, ProjectInvoice) each with full list/detail/create/edit/delete.
 
-Modules 1–20 from [ProjectManagementSystem.md](ProjectManagementSystem.md) are sidebar "roadmap" placeholders built on demand by the `/next-module` skill; only Module 0 (tenants) ships today.
+Modules 1–20 from [SalesManagementSystem.md](SalesManagementSystem.md) are sidebar "roadmap" placeholders built on demand by the `/next-module` skill; only Module 0 (tenants) ships today.
 
 ---
 
@@ -289,7 +289,7 @@ Prefer **tables over prose** everywhere. Numbered steps inside the Steps cell ar
 
 ---
 
-## NavPMS-specific patterns to bake into every report
+## NavSalesManagementSystem-specific patterns to bake into every report
 
 Every manual test plan MUST account for these project realities:
 
@@ -356,7 +356,7 @@ The delivered manual test plan should be:
 
 - **Executable by a non-developer.** A junior tester (or the user) can follow every step without asking questions.
 - **Concrete.** Every step names a specific button, field, URL, or expected text — no hand-waving.
-- **Project-aware.** Uses real NavPMS URLs (`/tenants/invoices/...`, `/projects/projects/...`, `/login/`), real seeded usernames (`admin_acme`, `admin_globex`, password `password123`), real model field names, real status values (Invoice: `draft`/`sent`/`paid`/`overdue`/`void`; Project: `not_started`/`in_progress`/`on_hold`/`completed`/`cancelled`) — not generic placeholders.
+- **Project-aware.** Uses real NavSalesManagementSystem URLs (`/tenants/invoices/...`, `/projects/projects/...`, `/login/`), real seeded usernames (`admin_acme`, `admin_globex`, password `password123`), real model field names, real status values (Invoice: `draft`/`sent`/`paid`/`overdue`/`void`; Project: `not_started`/`in_progress`/`on_hold`/`completed`/`cancelled`) — not generic placeholders.
 - **Comprehensive within scope.** Covers every mandatory checklist from §Phase 5; explicitly marks any category as N/A with a reason rather than silently omitting.
 - **Verifiable.** Every claim about a UI element points at the template/model/view file:line where it lives.
 - **Tester-friendly.** Pass/Fail/Notes columns are empty for the tester to fill. Bug log template ready to use.
