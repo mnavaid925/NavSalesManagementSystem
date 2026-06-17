@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block title %}Subscription &amp; Billing{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'tenants:overview' %}">Tenant &amp; Subscription</a><i data-lucide="chevron-right" style="width:14px"></i><span>Subscriptions</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Subscription &amp; Billing</h1>
+    <p class="page-subtitle">{{ total }} subscription{{ total|pluralize }} on record</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'tenants:subscription_create' %}" class="btn btn-primary"><i data-lucide="plus"></i> Add Subscription</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <form method="get" style="display:flex;gap:10px;flex-wrap:wrap;width:100%">
+      <div class="searchbar" style="max-width:320px;flex:1">
+        <i data-lucide="search" style="width:17px"></i>
+        <input type="text" name="q" value="{{ request.GET.q }}" placeholder="Search subscriptions…">
+      </div>
+      <select name="plan" class="form-select" style="max-width:180px" onchange="this.form.submit()">
+        <option value="">All plans</option>
+        {% for value, label in plan_choices %}
+          <option value="{{ value }}" {% if request.GET.plan == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <select name="status" class="form-select" style="max-width:180px" onchange="this.form.submit()">
+        <option value="">All statuses</option>
+        {% for value, label in status_choices %}
+          <option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <button class="btn btn-outline" type="submit"><i data-lucide="filter"></i> Filter</button>
+    </form>
+  </div>
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr><th>Plan</th><th>Status</th><th>Seats</th><th>Monthly</th><th>Renews on</th><th style="text-align:end">Actions</th></tr></thead>
+      <tbody>
+        {% for sub in subscriptions %}
+          <tr>
+            <td>
+              <a href="{% url 'tenants:subscription_detail' sub.pk %}" class="fw-600">{{ sub.get_plan_display }}</a>
+              {% if sub.is_auto_renew %}<div class="list-meta">Auto-renew on</div>{% else %}<div class="list-meta">Auto-renew off</div>{% endif %}
+            </td>
+            <td>
+              {% if sub.status == 'active' %}<span class="badge badge-success">Active</span>
+              {% elif sub.status == 'trialing' %}<span class="badge badge-info">Trialing</span>
+              {% elif sub.status == 'past_due' %}<span class="badge badge-warning">Past due</span>
+              {% elif sub.status == 'canceled' %}<span class="badge badge-muted">Canceled</span>
+              {% else %}<span class="badge badge-muted">{{ sub.get_status_display }}</span>{% endif %}
+            </td>
+            <td class="fw-600">{{ sub.seats }}</td>
+            <td>${{ sub.monthly_amount|floatformat:2 }}</td>
+            <td class="list-meta">{% if sub.renews_on %}{{ sub.renews_on|date:"d M Y" }}{% else %}—{% endif %}</td>
+            <td>
+              <div class="table-actions">
+                <a href="{% url 'tenants:subscription_detail' sub.pk %}" class="btn-icon" title="View"><i data-lucide="eye"></i></a>
+                <a href="{% url 'tenants:subscription_edit' sub.pk %}" class="btn-icon" title="Edit"><i data-lucide="pencil"></i></a>
+                <form method="post" action="{% url 'tenants:subscription_delete' sub.pk %}" onsubmit="return confirm('Delete this subscription?')">
+                  {% csrf_token %}
+                  <button type="submit" class="btn-icon danger" title="Delete"><i data-lucide="trash-2"></i></button>
+                </form>
+              </div>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="6"><div class="empty-state"><div class="empty-icon"><i data-lucide="credit-card"></i></div><h3>No subscriptions</h3><p>Create your first subscription to start billing.</p><a href="{% url 'tenants:subscription_create' %}" class="btn btn-primary" style="margin-top:14px"><i data-lucide="plus"></i> Add Subscription</a></div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div style="padding:0 16px 12px">{% include "partials/pagination.html" %}</div>
+</div>
+{% endblock %}
