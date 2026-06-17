@@ -1,0 +1,46 @@
+<header class="topbar">
+  <button class="icon-btn" data-sidebar-toggle aria-label="Toggle menu"><i data-lucide="menu"></i></button>
+  <div class="topbar-title">{{ page_title|default:"Overview" }}</div>
+
+  <div class="searchbar">
+    <i data-lucide="search" style="width:18px;height:18px"></i>
+    <input type="text" placeholder="Search leads, deals, customers…" aria-label="Search">
+    <span class="kbd">⌘ K</span>
+  </div>
+
+  <div style="margin-inline-start:auto;display:flex;align-items:center;gap:10px">
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme" title="Light / dark">
+      <i data-lucide="sun-moon"></i>
+    </button>
+    <button class="icon-btn" data-customizer-open aria-label="Customize layout" title="Customize">
+      <i data-lucide="settings-2"></i>
+    </button>
+    <button class="icon-btn" aria-label="Notifications" title="Notifications">
+      <i data-lucide="bell"></i><span class="dot-alert"></span>
+    </button>
+
+    <div style="position:relative" id="user-menu">
+      <button class="nav-link" style="padding:5px 8px;border:1px solid var(--border);border-radius:12px;width:auto"
+              onclick="document.getElementById('user-dropdown').classList.toggle('hide')">
+        <span class="avatar-initial" style="width:32px;height:32px;font-size:12px">{{ request.user.initials }}</span>
+        <span class="nav-label" style="display:flex;flex-direction:column;line-height:1.2;text-align:start">
+          <span class="fw-600" style="color:var(--text)">{{ request.user.display_name }}</span>
+          <span class="list-meta">{% if current_tenant %}{{ current_tenant.name }}{% else %}Platform{% endif %}</span>
+        </span>
+        <i data-lucide="chevron-down" style="width:15px;height:15px"></i>
+      </button>
+      <div id="user-dropdown" class="card hide"
+           style="position:absolute;inset-inline-end:0;top:52px;width:230px;padding:8px;z-index:60;box-shadow:var(--shadow-lg)">
+        <a href="{% url 'accounts:profile' %}" class="nav-link"><i data-lucide="user"></i><span class="nav-label">My Profile</span></a>
+        <a href="{% url 'accounts:change_password' %}" class="nav-link"><i data-lucide="key-round"></i><span class="nav-label">Change Password</span></a>
+        <hr class="divider" style="margin:6px 0">
+        <form method="post" action="{% url 'accounts:logout' %}">
+          {% csrf_token %}
+          <button type="submit" class="nav-link" style="width:100%;color:var(--danger)">
+            <i data-lucide="log-out"></i><span class="nav-label">Sign out</span>
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</header>
