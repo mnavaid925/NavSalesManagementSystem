@@ -1,0 +1,58 @@
+{% extends "auth/base_auth.html" %}
+{% block title %}Join {{ invite.tenant.name }}{% endblock %}
+
+{% block auth_content %}
+<h2 style="font-size:25px;font-weight:800;margin-bottom:6px">Join {{ invite.tenant.name }}</h2>
+<p class="text-muted" style="margin-bottom:22px">You've been invited to join this workspace — set up your account to get started.</p>
+
+<div class="muted-box" style="padding:12px 14px;margin-bottom:22px;font-size:12.5px">
+  <div class="fw-600" style="margin-bottom:4px">Invited email</div>
+  <div class="text-muted"><span class="code-pill">{{ invite.email }}</span></div>
+</div>
+
+{% if form.non_field_errors %}
+  <div class="alert danger" style="position:static;margin-bottom:18px;box-shadow:none">
+    <i data-lucide="alert-circle"></i><span>{{ form.non_field_errors|join:" " }}</span>
+  </div>
+{% endif %}
+
+<form method="post" action="">
+  {% csrf_token %}
+  <div class="form-group">
+    <label class="form-label" for="{{ form.username.id_for_label }}">Username <span class="req">*</span></label>
+    {{ form.username }}
+    {% for e in form.username.errors %}<div class="form-error">{{ e }}</div>{% endfor %}
+  </div>
+  <div class="form-grid">
+    <div class="form-group">
+      <label class="form-label" for="{{ form.first_name.id_for_label }}">First name <span class="req">*</span></label>
+      {{ form.first_name }}
+      {% for e in form.first_name.errors %}<div class="form-error">{{ e }}</div>{% endfor %}
+    </div>
+    <div class="form-group">
+      <label class="form-label" for="{{ form.last_name.id_for_label }}">Last name</label>
+      {{ form.last_name }}
+      {% for e in form.last_name.errors %}<div class="form-error">{{ e }}</div>{% endfor %}
+    </div>
+  </div>
+  <div class="form-grid">
+    <div class="form-group">
+      <label class="form-label" for="{{ form.password1.id_for_label }}">Password <span class="req">*</span></label>
+      {{ form.password1 }}
+      {% for e in form.password1.errors %}<div class="form-error">{{ e }}</div>{% endfor %}
+    </div>
+    <div class="form-group">
+      <label class="form-label" for="{{ form.password2.id_for_label }}">Confirm <span class="req">*</span></label>
+      {{ form.password2 }}
+      {% for e in form.password2.errors %}<div class="form-error">{{ e }}</div>{% endfor %}
+    </div>
+  </div>
+  <button type="submit" class="btn btn-primary btn-block" style="margin-top:4px">
+    <i data-lucide="user-plus"></i> Create account
+  </button>
+</form>
+
+<p class="text-muted" style="text-align:center;margin-top:20px;font-size:13.5px">
+  Already have an account? <a href="{% url 'accounts:login' %}" class="fw-600">Sign in</a>
+</p>
+{% endblock %}
