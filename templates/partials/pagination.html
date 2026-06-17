@@ -1,0 +1,28 @@
+{% comment %}
+  Reusable pager. Uses Django 5.1's built-in {% querystring %} tag so active
+  filters/search are preserved, and guards prev/next so page 1 never 500s (L9).
+{% endcomment %}
+{% if page_obj.paginator.num_pages > 1 %}
+<nav class="pagination" aria-label="Pagination">
+  <span class="list-meta" style="margin-inline-end:auto">
+    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }} · {{ page_obj.paginator.count }} total
+  </span>
+  {% if page_obj.has_previous %}
+    <a href="{% querystring page=page_obj.previous_page_number %}" aria-label="Previous"><i data-lucide="chevron-left" style="width:16px"></i></a>
+  {% else %}
+    <span class="disabled"><i data-lucide="chevron-left" style="width:16px"></i></span>
+  {% endif %}
+  {% for num in page_obj.paginator.page_range %}
+    {% if num == page_obj.number %}
+      <span class="current">{{ num }}</span>
+    {% elif num > page_obj.number|add:"-3" and num < page_obj.number|add:"3" %}
+      <a href="{% querystring page=num %}">{{ num }}</a>
+    {% endif %}
+  {% endfor %}
+  {% if page_obj.has_next %}
+    <a href="{% querystring page=page_obj.next_page_number %}" aria-label="Next"><i data-lucide="chevron-right" style="width:16px"></i></a>
+  {% else %}
+    <span class="disabled"><i data-lucide="chevron-right" style="width:16px"></i></span>
+  {% endif %}
+</nav>
+{% endif %}
