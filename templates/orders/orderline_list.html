@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}Order Line Items{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'orders:order_list' %}">Order Management</a><i data-lucide="chevron-right" style="width:14px"></i><span>Line Items</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Order Line Items</h1>
+    <p class="page-subtitle">{{ total }} line item{{ total|pluralize }} on record</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'orders:orderline_create' %}" class="btn btn-primary"><i data-lucide="plus"></i> Add Line Item</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <form method="get" style="display:flex;gap:10px;flex-wrap:wrap;width:100%;align-items:center">
+      <input type="text" name="q" value="{{ request.GET.q }}" placeholder="Search products, SKU, order…" class="form-input" style="max-width:260px">
+      <span class="list-meta" style="margin-inline-end:auto"></span>
+      <select name="order" class="form-select" style="max-width:200px" onchange="this.form.submit()">
+        <option value="">All orders</option>
+        {% for o in orders %}
+          <option value="{{ o.pk }}" {% if request.GET.order == o.pk|stringformat:"d" %}selected{% endif %}>{{ o.number }}</option>
+        {% endfor %}
+      </select>
+      <button class="btn btn-outline" type="submit"><i data-lucide="filter"></i> Filter</button>
+    </form>
+  </div>
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr><th>Product</th><th>Order</th><th>SKU</th><th>Qty</th><th>Unit price</th><th>Discount</th><th>Line total</th><th style="text-align:end">Actions</th></tr></thead>
+      <tbody>
+        {% for line in lines %}
+          <tr>
+            <td><a href="{% url 'orders:orderline_detail' line.pk %}" class="fw-600">{{ line.product_name }}</a></td>
+            <td class="list-meta"><a href="{% url 'orders:order_detail' line.order.pk %}">{{ line.order.number }}</a></td>
+            <td class="list-meta">{{ line.sku|default:"—" }}</td>
+            <td>{{ line.quantity }}</td>
+            <td>{{ line.unit_price|floatformat:2 }}</td>
+            <td class="list-meta">{{ line.discount_percent|floatformat:0 }}%</td>
+            <td class="fw-600">{{ line.line_total|floatformat:2 }}</td>
+            <td>
+              <div class="table-actions">
+                <a href="{% url 'orders:orderline_detail' line.pk %}" class="btn-icon" title="View"><i data-lucide="eye"></i></a>
+                <a href="{% url 'orders:orderline_edit' line.pk %}" class="btn-icon" title="Edit"><i data-lucide="pencil"></i></a>
+                <form method="post" action="{% url 'orders:orderline_delete' line.pk %}" onsubmit="return confirm('Delete this line item?')">
+                  {% csrf_token %}
+                  <button type="submit" class="btn-icon danger" title="Delete"><i data-lucide="trash-2"></i></button>
+                </form>
+              </div>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="8"><div class="empty-state"><div class="empty-icon"><i data-lucide="package"></i></div><h3>No line items</h3><p>Add a line item to an order to get started.</p><a href="{% url 'orders:orderline_create' %}" class="btn btn-primary" style="margin-top:14px"><i data-lucide="plus"></i> Add Line Item</a></div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div style="padding:0 16px 12px">{% include "partials/pagination.html" %}</div>
+</div>
+{% endblock %}
