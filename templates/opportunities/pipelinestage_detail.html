@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}{{ obj.name }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'opportunities:opportunity_list' %}">Opportunity &amp; Pipeline</a><i data-lucide="chevron-right" style="width:14px"></i>
+  <a href="{% url 'opportunities:pipelinestage_list' %}">Pipeline Stages</a><i data-lucide="chevron-right" style="width:14px"></i><span>{{ obj.name }}</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ obj.name }}</h1>
+    <p class="page-subtitle">{{ obj.probability }}% default win probability</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'opportunities:pipelinestage_list' %}" class="btn btn-outline"><i data-lucide="arrow-left"></i> Back</a>
+    <a href="{% url 'opportunities:pipelinestage_edit' obj.pk %}" class="btn btn-primary"><i data-lucide="pencil"></i> Edit</a>
+  </div>
+</div>
+
+<div class="detail-grid">
+  <div>
+    <div class="card"><div class="card-body">
+      <h3 style="font-size:15px;margin-bottom:12px">Details</h3>
+      <div class="form-group"><div class="form-label">Name</div>
+        <div class="fw-600">{{ obj.name }}</div></div>
+      <div class="form-group"><div class="form-label">Type</div>
+        {% if obj.stage_type == 'open' %}<span class="badge badge-info">Open</span>
+        {% elif obj.stage_type == 'won' %}<span class="badge badge-success">Won</span>
+        {% elif obj.stage_type == 'lost' %}<span class="badge badge-danger">Lost</span>
+        {% else %}<span class="badge badge-muted">{{ obj.get_stage_type_display }}</span>{% endif %}
+      </div>
+      <div class="form-group"><div class="form-label">Order</div>
+        <div>{{ obj.order }}</div></div>
+      <div class="form-group"><div class="form-label">Default probability</div>
+        <div>{{ obj.probability }}%</div></div>
+      <div class="form-group"><div class="form-label">Active</div>
+        {% if obj.is_active %}<span class="badge badge-success">Active</span>{% else %}<span class="badge badge-muted">Inactive</span>{% endif %}
+      </div>
+      <div class="form-group"><div class="form-label">Description</div>
+        <div>{{ obj.description|default:"—"|linebreaksbr }}</div></div>
+    </div></div>
+
+    <div class="card" style="margin-top:18px"><div class="card-header"><h3 class="card-title">Opportunities in this stage</h3></div>
+      <div class="table-wrap">
+        <table class="table">
+          <thead><tr><th>Number</th><th>Name</th><th>Status</th><th style="text-align:end">Amount</th></tr></thead>
+          <tbody>
+            {% for opp in opportunities %}
+              <tr>
+                <td><a href="{% url 'opportunities:opportunity_detail' opp.pk %}" class="fw-600">{{ opp.number }}</a></td>
+                <td class="list-meta">{{ opp.name }}</td>
+                <td>
+                  {% if opp.status == 'won' %}<span class="badge badge-success">Won</span>
+                  {% elif opp.status == 'lost' %}<span class="badge badge-danger">Lost</span>
+                  {% elif opp.status == 'open' %}<span class="badge badge-info">Open</span>
+                  {% else %}<span class="badge badge-muted">{{ opp.get_status_display }}</span>{% endif %}
+                </td>
+                <td style="text-align:end">${{ opp.amount|floatformat:2 }}</td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="4"><div class="empty-state"><div class="empty-icon"><i data-lucide="briefcase"></i></div><h3>No opportunities</h3><p>Opportunities at this stage will appear here.</p></div></td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="card"><div class="card-body">
+    <h3 style="font-size:15px;margin-bottom:12px">Actions</h3>
+    <a href="{% url 'opportunities:pipelinestage_edit' obj.pk %}" class="btn btn-outline btn-block" style="margin-bottom:10px"><i data-lucide="pencil"></i> Edit stage</a>
+    <form method="post" action="{% url 'opportunities:pipelinestage_delete' obj.pk %}" onsubmit="return confirm('Delete this stage?')">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger btn-block"><i data-lucide="trash-2"></i> Delete stage</button>
+    </form>
+    <hr class="divider">
+    <div class="list-meta">Created {{ obj.created_at|date:"d M Y" }}</div>
+  </div></div>
+</div>
+{% endblock %}
