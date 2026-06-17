@@ -267,7 +267,8 @@ def invite_revoke(request, pk):
 # ------------------------------------------------------------------------- roles
 @tenant_admin_required
 def role_list(request):
-    qs = Role.objects.filter(tenant=request.tenant).annotate(user_count=Count("users"))
+    qs = (Role.objects.filter(tenant=request.tenant)
+          .annotate(user_count=Count("users")).order_by("name"))
     q = request.GET.get("q", "").strip()
     if q:
         qs = qs.filter(name__icontains=q)
