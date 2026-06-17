@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block title %}Payout Processing &amp; Integration{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'compensation:commissionplan_list' %}">Incentive Compensation</a><i data-lucide="chevron-right" style="width:14px"></i><span>Payouts</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Payout Processing &amp; Integration</h1>
+    <p class="page-subtitle">{{ total }} payout{{ total|pluralize }} on record</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'compensation:payout_create' %}" class="btn btn-primary"><i data-lucide="plus"></i> Add Payout</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <form method="get" style="display:flex;gap:10px;flex-wrap:wrap;width:100%;align-items:center">
+      <input type="text" name="q" value="{{ request.GET.q }}" placeholder="Search payouts…" class="form-input" style="max-width:240px">
+      <span class="list-meta" style="margin-inline-end:auto"></span>
+      <select name="method" class="form-select" style="max-width:180px" onchange="this.form.submit()">
+        <option value="">All methods</option>
+        {% for value, label in method_choices %}
+          <option value="{{ value }}" {% if request.GET.method == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <select name="status" class="form-select" style="max-width:180px" onchange="this.form.submit()">
+        <option value="">All statuses</option>
+        {% for value, label in status_choices %}
+          <option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <button class="btn btn-outline" type="submit"><i data-lucide="filter"></i> Filter</button>
+    </form>
+  </div>
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr><th>Number</th><th>Rep</th><th>Method</th><th>Status</th><th>Scheduled on</th><th style="text-align:end">Net</th><th style="text-align:end">Actions</th></tr></thead>
+      <tbody>
+        {% for payout in payouts %}
+          <tr>
+            <td>
+              <a href="{% url 'compensation:payout_detail' payout.pk %}" class="fw-600">{{ payout.number }}</a>
+              {% if payout.period_label %}<div class="list-meta">{{ payout.period_label }}</div>{% endif %}
+            </td>
+            <td>{{ payout.rep_name }}</td>
+            <td class="list-meta">{{ payout.get_method_display }}</td>
+            <td>
+              {% if payout.status == 'paid' %}<span class="badge badge-success">Paid</span>
+              {% elif payout.status == 'scheduled' %}<span class="badge badge-info">Scheduled</span>
+              {% elif payout.status == 'processing' %}<span class="badge badge-warning">Processing</span>
+              {% elif payout.status == 'failed' %}<span class="badge badge-danger">Failed</span>
+              {% elif payout.status == 'canceled' %}<span class="badge badge-muted">Canceled</span>
+              {% else %}<span class="badge badge-muted">{{ payout.get_status_display }}</span>{% endif %}
+            </td>
+            <td class="list-meta">{% if payout.scheduled_on %}{{ payout.scheduled_on|date:"d M Y" }}{% else %}—{% endif %}</td>
+            <td style="text-align:end" class="fw-600">${{ payout.net_amount|floatformat:2 }}</td>
+            <td>
+              <div class="table-actions">
+                <a href="{% url 'compensation:payout_detail' payout.pk %}" class="btn-icon" title="View"><i data-lucide="eye"></i></a>
+                <a href="{% url 'compensation:payout_edit' payout.pk %}" class="btn-icon" title="Edit"><i data-lucide="pencil"></i></a>
+                <form method="post" action="{% url 'compensation:payout_delete' payout.pk %}" onsubmit="return confirm('Delete this payout?')">
+                  {% csrf_token %}
+                  <button type="submit" class="btn-icon danger" title="Delete"><i data-lucide="trash-2"></i></button>
+                </form>
+              </div>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="7"><div class="empty-state"><div class="empty-icon"><i data-lucide="wallet"></i></div><h3>No payouts</h3><p>Schedule your first payout run to push compensation to payroll.</p><a href="{% url 'compensation:payout_create' %}" class="btn btn-primary" style="margin-top:14px"><i data-lucide="plus"></i> Add Payout</a></div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div style="padding:0 16px 12px">{% include "partials/pagination.html" %}</div>
+</div>
+{% endblock %}
