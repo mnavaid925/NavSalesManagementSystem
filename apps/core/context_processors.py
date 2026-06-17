@@ -27,5 +27,5 @@ def site_context(request):
         "current_tenant": getattr(request, "tenant", None),
         "layout_defaults": LAYOUT_DEFAULTS,
         "DEBUG": settings.DEBUG,
-        "ASSET_VERSION": "2",  # bump to bust the browser cache on css/js (lesson L15)
+        "ASSET_VERSION": "3",  # bump to bust the browser cache on css/js (lesson L15)
     }
