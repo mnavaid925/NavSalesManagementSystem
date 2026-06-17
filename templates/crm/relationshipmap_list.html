@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}Relationship Mapping{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'crm:account_list' %}">Contact &amp; Account Management</a><i data-lucide="chevron-right" style="width:14px"></i><span>Relationships</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Relationship Mapping</h1>
+    <p class="page-subtitle">{{ total }} relationship{{ total|pluralize }} mapped</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'crm:relationshipmap_create' %}" class="btn btn-primary"><i data-lucide="plus"></i> Add Relationship</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <form method="get" style="display:flex;gap:10px;flex-wrap:wrap;width:100%;align-items:center">
+      <input type="search" name="q" value="{{ request.GET.q }}" class="form-input" placeholder="Search contacts…" style="max-width:220px">
+      <span class="list-meta" style="margin-inline-end:auto"></span>
+      <select name="relationship_type" class="form-select" style="max-width:170px" onchange="this.form.submit()">
+        <option value="">All types</option>
+        {% for value, label in type_choices %}
+          <option value="{{ value }}" {% if request.GET.relationship_type == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <select name="strength" class="form-select" style="max-width:160px" onchange="this.form.submit()">
+        <option value="">All strengths</option>
+        {% for value, label in strength_choices %}
+          <option value="{{ value }}" {% if request.GET.strength == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <select name="account" class="form-select" style="max-width:200px" onchange="this.form.submit()">
+        <option value="">All accounts</option>
+        {% for a in accounts %}
+          <option value="{{ a.pk }}" {% if request.GET.account == a.pk|stringformat:"d" %}selected{% endif %}>{{ a.name }}</option>
+        {% endfor %}
+      </select>
+      <button class="btn btn-outline" type="submit"><i data-lucide="filter"></i> Filter</button>
+    </form>
+  </div>
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr><th>From</th><th>To</th><th>Type</th><th>Strength</th><th>Account</th><th style="text-align:end">Actions</th></tr></thead>
+      <tbody>
+        {% for r in relationships %}
+          <tr>
+            <td><a href="{% url 'crm:relationshipmap_detail' r.pk %}" class="fw-600">{{ r.from_contact.full_name }}</a></td>
+            <td class="list-meta">{{ r.to_contact.full_name }}</td>
+            <td>
+              {% if r.relationship_type == 'reports_to' %}<span class="badge badge-info">Reports to</span>
+              {% elif r.relationship_type == 'influences' %}<span class="badge badge-info">Influences</span>
+              {% elif r.relationship_type == 'sponsor' %}<span class="badge badge-success">Sponsor</span>
+              {% elif r.relationship_type == 'blocker' %}<span class="badge badge-danger">Blocker</span>
+              {% elif r.relationship_type == 'peer' %}<span class="badge badge-muted">Peer</span>
+              {% else %}<span class="badge badge-muted">{{ r.get_relationship_type_display }}</span>{% endif %}
+            </td>
+            <td>
+              {% if r.strength == 'strong' %}<span class="badge badge-success">Strong</span>
+              {% elif r.strength == 'moderate' %}<span class="badge badge-warning">Moderate</span>
+              {% elif r.strength == 'weak' %}<span class="badge badge-muted">Weak</span>
+              {% else %}<span class="badge badge-muted">{{ r.get_strength_display }}</span>{% endif %}
+            </td>
+            <td class="list-meta">{% if r.account %}{{ r.account.name }}{% else %}—{% endif %}</td>
+            <td>
+              <div class="table-actions">
+                <a href="{% url 'crm:relationshipmap_detail' r.pk %}" class="btn-icon" title="View"><i data-lucide="eye"></i></a>
+                <a href="{% url 'crm:relationshipmap_edit' r.pk %}" class="btn-icon" title="Edit"><i data-lucide="pencil"></i></a>
+                <form method="post" action="{% url 'crm:relationshipmap_delete' r.pk %}" onsubmit="return confirm('Delete this relationship?')">
+                  {% csrf_token %}
+                  <button type="submit" class="btn-icon danger" title="Delete"><i data-lucide="trash-2"></i></button>
+                </form>
+              </div>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="6"><div class="empty-state"><div class="empty-icon"><i data-lucide="share-2"></i></div><h3>No relationships</h3><p>Map your first relationship between two contacts.</p><a href="{% url 'crm:relationshipmap_create' %}" class="btn btn-primary" style="margin-top:14px"><i data-lucide="plus"></i> Add Relationship</a></div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div style="padding:0 16px 12px">{% include "partials/pagination.html" %}</div>
+</div>
+{% endblock %}
