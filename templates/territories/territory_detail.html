@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+{% block title %}{{ obj.name }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'territories:territory_list' %}">Territory &amp; Quota</a><i data-lucide="chevron-right" style="width:14px"></i>
+  <a href="{% url 'territories:territory_list' %}">Territories</a><i data-lucide="chevron-right" style="width:14px"></i><span>{{ obj.name }}</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ obj.name }}</h1>
+    <p class="page-subtitle">{{ obj.get_territory_type_display }}{% if obj.code %} · {{ obj.code }}{% endif %}</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'territories:territory_list' %}" class="btn btn-outline"><i data-lucide="arrow-left"></i> Back</a>
+    <a href="{% url 'territories:territory_edit' obj.pk %}" class="btn btn-primary"><i data-lucide="pencil"></i> Edit</a>
+  </div>
+</div>
+
+<div class="detail-grid">
+  <div>
+    <div class="card"><div class="card-body">
+      <h3 style="font-size:15px;margin-bottom:12px">Details</h3>
+      <div class="form-group"><div class="form-label">Type</div>
+        <div class="fw-600">{{ obj.get_territory_type_display }}</div></div>
+      <div class="form-group"><div class="form-label">Status</div>
+        {% if obj.status == 'active' %}<span class="badge badge-success">Active</span>
+        {% elif obj.status == 'under_review' %}<span class="badge badge-warning">Under review</span>
+        {% elif obj.status == 'draft' %}<span class="badge badge-muted">Draft</span>
+        {% elif obj.status == 'archived' %}<span class="badge badge-muted">Archived</span>
+        {% else %}<span class="badge badge-muted">{{ obj.get_status_display }}</span>{% endif %}
+      </div>
+      <div class="form-group"><div class="form-label">Region</div>
+        <div>{{ obj.region|default:"—" }}</div></div>
+      <div class="form-group"><div class="form-label">Country</div>
+        <div>{{ obj.country|default:"—" }}</div></div>
+      <div class="form-group"><div class="form-label">Accounts</div>
+        <div>{{ obj.account_count }}</div></div>
+      <div class="form-group"><div class="form-label">Annual potential</div>
+        <div>${{ obj.annual_potential|floatformat:2 }}</div></div>
+      {% if obj.description %}
+        <div class="form-group"><div class="form-label">Description</div>
+          <div>{{ obj.description|linebreaksbr }}</div></div>
+      {% endif %}
+    </div></div>
+
+    <div class="card" style="margin-top:18px"><div class="card-header"><h3 class="card-title">Assignments</h3></div>
+      <div class="table-wrap">
+        <table class="table">
+          <thead><tr><th>Rep</th><th>Role</th><th>Status</th><th style="text-align:end">Workload</th></tr></thead>
+          <tbody>
+            {% for a in assignments %}
+              <tr>
+                <td><a href="{% url 'territories:territoryassignment_detail' a.pk %}" class="fw-600">{{ a.rep_name }}</a></td>
+                <td class="list-meta">{{ a.get_assignment_role_display }}</td>
+                <td>
+                  {% if a.status == 'active' %}<span class="badge badge-success">Active</span>
+                  {% elif a.status == 'proposed' %}<span class="badge badge-info">Proposed</span>
+                  {% elif a.status == 'rebalancing' %}<span class="badge badge-warning">Rebalancing</span>
+                  {% elif a.status == 'ended' %}<span class="badge badge-muted">Ended</span>
+                  {% else %}<span class="badge badge-muted">{{ a.get_status_display }}</span>{% endif %}
+                </td>
+                <td style="text-align:end">{{ a.workload_percent }}%</td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="4"><div class="empty-state"><div class="empty-icon"><i data-lucide="users"></i></div><h3>No assignments</h3><p>Reps assigned to this territory will appear here.</p></div></td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:18px"><div class="card-header"><h3 class="card-title">Quota plans</h3></div>
+      <div class="table-wrap">
+        <table class="table">
+          <thead><tr><th>Number</th><th>Period</th><th>Status</th><th style="text-align:end">Target</th></tr></thead>
+          <tbody>
+            {% for qp in quota_plans %}
+              <tr>
+                <td><a href="{% url 'territories:quotaplan_detail' qp.pk %}" class="fw-600">{{ qp.number|default:"—" }}</a></td>
+                <td class="list-meta">{{ qp.get_period_type_display }} · FY{{ qp.fiscal_year }}</td>
+                <td>
+                  {% if qp.status == 'approved' %}<span class="badge badge-success">Approved</span>
+                  {% elif qp.status == 'proposed' %}<span class="badge badge-info">Proposed</span>
+                  {% elif qp.status == 'locked' %}<span class="badge badge-warning">Locked</span>
+                  {% elif qp.status == 'draft' %}<span class="badge badge-muted">Draft</span>
+                  {% else %}<span class="badge badge-muted">{{ qp.get_status_display }}</span>{% endif %}
+                </td>
+                <td style="text-align:end">${{ qp.target_amount|floatformat:0 }}</td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="4"><div class="empty-state"><div class="empty-icon"><i data-lucide="target"></i></div><h3>No quota plans</h3><p>Quota plans for this territory will appear here.</p></div></td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:18px"><div class="card-header"><h3 class="card-title">Performance snapshots</h3></div>
+      <div class="table-wrap">
+        <table class="table">
+          <thead><tr><th>Period</th><th>Rating</th><th>Attainment</th><th style="text-align:end">Actual</th></tr></thead>
+          <tbody>
+            {% for s in snapshots %}
+              <tr>
+                <td><a href="{% url 'territories:territoryperformance_detail' s.pk %}" class="fw-600">{{ s.period_label|default:s.get_period_type_display }}</a></td>
+                <td>
+                  {% if s.rating == 'exceeding' %}<span class="badge badge-success">Exceeding</span>
+                  {% elif s.rating == 'on_track' %}<span class="badge badge-info">On track</span>
+                  {% elif s.rating == 'at_risk' %}<span class="badge badge-warning">At risk</span>
+                  {% elif s.rating == 'underperforming' %}<span class="badge badge-danger">Underperforming</span>
+                  {% else %}<span class="badge badge-muted">{{ s.get_rating_display }}</span>{% endif %}
+                </td>
+                <td class="fw-600">{{ s.attainment_percent|floatformat:1 }}%</td>
+                <td style="text-align:end">${{ s.actual_amount|floatformat:0 }}</td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="4"><div class="empty-state"><div class="empty-icon"><i data-lucide="bar-chart-3"></i></div><h3>No snapshots</h3><p>Performance snapshots for this territory will appear here.</p></div></td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="card"><div class="card-body">
+    <h3 style="font-size:15px;margin-bottom:12px">Actions</h3>
+    <a href="{% url 'territories:territory_edit' obj.pk %}" class="btn btn-outline btn-block" style="margin-bottom:10px"><i data-lucide="pencil"></i> Edit territory</a>
+    <form method="post" action="{% url 'territories:territory_delete' obj.pk %}" onsubmit="return confirm('Delete this territory?')">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger btn-block"><i data-lucide="trash-2"></i> Delete territory</button>
+    </form>
+    <hr class="divider">
+    <div class="list-meta">Created {{ obj.created_at|date:"d M Y" }}</div>
+  </div></div>
+</div>
+{% endblock %}
