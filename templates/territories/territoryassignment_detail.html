@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}{{ obj }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'territories:territory_list' %}">Territory &amp; Quota</a><i data-lucide="chevron-right" style="width:14px"></i>
+  <a href="{% url 'territories:territoryassignment_list' %}">Assignments</a><i data-lucide="chevron-right" style="width:14px"></i><span>{{ obj.rep_name }}</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ obj.rep_name }}</h1>
+    <p class="page-subtitle">{{ obj.get_assignment_role_display }} · {{ obj.territory.name }}</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'territories:territoryassignment_list' %}" class="btn btn-outline"><i data-lucide="arrow-left"></i> Back</a>
+    <a href="{% url 'territories:territoryassignment_edit' obj.pk %}" class="btn btn-primary"><i data-lucide="pencil"></i> Edit</a>
+  </div>
+</div>
+
+<div class="detail-grid">
+  <div>
+    <div class="card"><div class="card-body">
+      <h3 style="font-size:15px;margin-bottom:12px">Details</h3>
+      <div class="form-group"><div class="form-label">Rep</div>
+        <div class="fw-600">{{ obj.rep_name }}</div></div>
+      <div class="form-group"><div class="form-label">Email</div>
+        <div>{{ obj.rep_email|default:"—" }}</div></div>
+      <div class="form-group"><div class="form-label">Territory</div>
+        <div><a href="{% url 'territories:territory_detail' obj.territory.pk %}" class="fw-600">{{ obj.territory.name }}</a></div></div>
+      <div class="form-group"><div class="form-label">Role</div>
+        <div>{{ obj.get_assignment_role_display }}</div></div>
+      <div class="form-group"><div class="form-label">Status</div>
+        {% if obj.status == 'active' %}<span class="badge badge-success">Active</span>
+        {% elif obj.status == 'proposed' %}<span class="badge badge-info">Proposed</span>
+        {% elif obj.status == 'rebalancing' %}<span class="badge badge-warning">Rebalancing</span>
+        {% elif obj.status == 'ended' %}<span class="badge badge-muted">Ended</span>
+        {% else %}<span class="badge badge-muted">{{ obj.get_status_display }}</span>{% endif %}
+      </div>
+      <div class="form-group"><div class="form-label">Workload</div>
+        <div>{{ obj.workload_percent }}%</div></div>
+      <div class="form-group"><div class="form-label">Effective date</div>
+        <div>{% if obj.effective_date %}{{ obj.effective_date|date:"d M Y" }}{% else %}—{% endif %}</div></div>
+      <div class="form-group"><div class="form-label">End date</div>
+        <div>{% if obj.end_date %}{{ obj.end_date|date:"d M Y" }}{% else %}—{% endif %}</div></div>
+      {% if obj.notes %}
+        <div class="form-group"><div class="form-label">Notes</div>
+          <div>{{ obj.notes|linebreaksbr }}</div></div>
+      {% endif %}
+    </div></div>
+  </div>
+
+  <div class="card"><div class="card-body">
+    <h3 style="font-size:15px;margin-bottom:12px">Actions</h3>
+    <a href="{% url 'territories:territoryassignment_edit' obj.pk %}" class="btn btn-outline btn-block" style="margin-bottom:10px"><i data-lucide="pencil"></i> Edit assignment</a>
+    <form method="post" action="{% url 'territories:territoryassignment_delete' obj.pk %}" onsubmit="return confirm('Delete this assignment?')">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger btn-block"><i data-lucide="trash-2"></i> Delete assignment</button>
+    </form>
+    <hr class="divider">
+    <div class="list-meta">Created {{ obj.created_at|date:"d M Y" }}</div>
+  </div></div>
+</div>
+{% endblock %}
