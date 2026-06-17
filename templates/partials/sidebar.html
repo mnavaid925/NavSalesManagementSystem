@@ -1,0 +1,60 @@
+{% url 'dashboard:index' as dash_url %}
+{% url 'accounts:user_list' as users_url %}
+{% url 'accounts:invite_list' as invites_url %}
+{% url 'accounts:role_list' as roles_url %}
+{% url 'core:audit_log' as audit_url %}
+{% url 'accounts:profile' as profile_url %}
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <span class="brand-logo"><i data-lucide="trending-up"></i></span>
+    <span class="brand-name">{{ APP_NAME }}</span>
+  </div>
+
+  <nav class="sidebar-scroll">
+    <div class="nav-heading">Main Menu</div>
+    <a href="{{ dash_url }}" class="nav-link {% if current_path == dash_url %}active{% endif %}">
+      <i data-lucide="layout-dashboard"></i><span class="nav-label">Dashboard</span>
+    </a>
+
+    <div class="nav-heading">Modules</div>
+    {% for mod in nav_modules %}
+      <div class="nav-group">
+        <button type="button" class="nav-link" data-accordion>
+          <i data-lucide="{{ mod.icon }}"></i>
+          <span class="nav-label">{{ mod.name }}</span>
+          {% if mod.live_count %}<span class="nav-badge">{{ mod.live_count }}</span>{% endif %}
+          <i data-lucide="chevron-right" class="chev"></i>
+        </button>
+        <ul class="nav-sub">
+          {% for sub in mod.submodules %}
+            <li>
+              <a href="{{ sub.href }}"
+                 class="{% if not sub.is_live %}is-roadmap{% endif %}{% if current_path == sub.href %} active{% endif %}">
+                <span class="dot"></span>
+                <span class="nav-label">{{ sub.name }}</span>
+                {% if not sub.is_live %}<span class="soon-tag">soon</span>{% endif %}
+              </a>
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endfor %}
+
+    <div class="nav-heading">Workspace</div>
+    <a href="{{ users_url }}" class="nav-link {% if current_path == users_url %}active{% endif %}">
+      <i data-lucide="users"></i><span class="nav-label">Users</span>
+    </a>
+    <a href="{{ invites_url }}" class="nav-link {% if current_path == invites_url %}active{% endif %}">
+      <i data-lucide="mail-plus"></i><span class="nav-label">Invitations</span>
+    </a>
+    <a href="{{ roles_url }}" class="nav-link {% if current_path == roles_url %}active{% endif %}">
+      <i data-lucide="shield"></i><span class="nav-label">Roles</span>
+    </a>
+    <a href="{{ audit_url }}" class="nav-link {% if current_path == audit_url %}active{% endif %}">
+      <i data-lucide="scroll-text"></i><span class="nav-label">Audit Log</span>
+    </a>
+    <a href="{{ profile_url }}" class="nav-link {% if current_path == profile_url %}active{% endif %}">
+      <i data-lucide="user-circle"></i><span class="nav-label">My Profile</span>
+    </a>
+  </nav>
+</aside>
