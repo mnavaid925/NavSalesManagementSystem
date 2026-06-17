@@ -36,8 +36,10 @@
   New here? <a href="{% url 'accounts:register' %}" class="fw-600">Create a workspace</a>
 </p>
 
+{% if DEBUG %}
 <div class="muted-box" style="padding:12px 14px;margin-top:22px;font-size:12.5px">
   <div class="fw-600" style="margin-bottom:4px">Demo accounts</div>
   <div class="text-muted">Tenant admin: <span class="code-pill">admin_acme</span> / <span class="code-pill">password123</span></div>
 </div>
+{% endif %}
 {% endblock %}
