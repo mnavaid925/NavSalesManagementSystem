@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}{{ obj.title }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'quotes:quote_list' %}">Quote &amp; Proposal</a><i data-lucide="chevron-right" style="width:14px"></i>
+  <a href="{% url 'quotes:proposal_list' %}">Proposals</a><i data-lucide="chevron-right" style="width:14px"></i><span>{{ obj.title }}</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ obj.title }}</h1>
+    <p class="page-subtitle">{{ obj.get_template_display }} template{% if obj.quote %} · {{ obj.quote.number }}{% endif %}</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'quotes:proposal_list' %}" class="btn btn-outline"><i data-lucide="arrow-left"></i> Back</a>
+    <a href="{% url 'quotes:proposal_edit' obj.pk %}" class="btn btn-primary"><i data-lucide="pencil"></i> Edit</a>
+  </div>
+</div>
+
+<div class="detail-grid">
+  <div>
+    <div class="card"><div class="card-body">
+      <h3 style="font-size:15px;margin-bottom:12px">Details</h3>
+      <div class="form-group"><div class="form-label">Title</div>
+        <div class="fw-600">{{ obj.title }}</div></div>
+      <div class="form-group"><div class="form-label">Quote</div>
+        <div>{% if obj.quote %}<a href="{% url 'quotes:quote_detail' obj.quote.pk %}">{{ obj.quote.number }}</a>{% else %}—{% endif %}</div></div>
+      <div class="form-group"><div class="form-label">Template</div>
+        <div>{{ obj.get_template_display }}</div></div>
+      <div class="form-group"><div class="form-label">Status</div>
+        {% if obj.status == 'draft' %}<span class="badge badge-muted">Draft</span>
+        {% elif obj.status == 'in_review' %}<span class="badge badge-warning">In review</span>
+        {% elif obj.status == 'final' %}<span class="badge badge-success">Final</span>
+        {% elif obj.status == 'sent' %}<span class="badge badge-info">Sent</span>
+        {% else %}<span class="badge badge-muted">{{ obj.get_status_display }}</span>{% endif %}
+      </div>
+      <div class="form-group"><div class="form-label">Prepared by</div>
+        <div>{{ obj.prepared_by|default:"—" }}</div></div>
+      {% if obj.executive_summary %}<div class="form-group"><div class="form-label">Executive summary</div>
+        <div>{{ obj.executive_summary|linebreaksbr }}</div></div>{% endif %}
+      {% if obj.cover_letter %}<div class="form-group"><div class="form-label">Cover letter</div>
+        <div>{{ obj.cover_letter|linebreaksbr }}</div></div>{% endif %}
+      {% if obj.body %}<div class="form-group"><div class="form-label">Body</div>
+        <div>{{ obj.body|linebreaksbr }}</div></div>{% endif %}
+    </div></div>
+  </div>
+
+  <div class="card"><div class="card-body">
+    <h3 style="font-size:15px;margin-bottom:12px">Actions</h3>
+    <a href="{% url 'quotes:proposal_edit' obj.pk %}" class="btn btn-outline btn-block" style="margin-bottom:10px"><i data-lucide="pencil"></i> Edit proposal</a>
+    <form method="post" action="{% url 'quotes:proposal_delete' obj.pk %}" onsubmit="return confirm('Delete this proposal?')">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger btn-block"><i data-lucide="trash-2"></i> Delete proposal</button>
+    </form>
+    <hr class="divider">
+    <div class="list-meta">Created {{ obj.created_at|date:"d M Y" }}</div>
+    {% if obj.sent_at %}<div class="list-meta">Sent {{ obj.sent_at|date:"d M Y" }}</div>{% endif %}
+  </div></div>
+</div>
+{% endblock %}
