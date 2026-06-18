@@ -18,7 +18,7 @@
 <div class="card">
   <div class="card-header">
     <form method="get" style="display:flex;gap:10px;flex-wrap:wrap;width:100%;align-items:center">
-      <input type="text" name="q" value="{{ request.GET.q }}" placeholder="Search by rep…" class="form-input" style="max-width:240px">
+      <input type="search" name="q" value="{{ request.GET.q }}" placeholder="Search by rep…" class="form-input" style="max-width:240px">
       <span class="list-meta" style="margin-inline-end:auto"></span>
       <select name="reason" class="form-select" style="max-width:200px" onchange="this.form.submit()">
         <option value="">All reasons</option>
