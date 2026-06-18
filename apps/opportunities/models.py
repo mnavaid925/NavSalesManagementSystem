@@ -1,4 +1,4 @@
-from django.db import models
+from django.db import models, transaction
 from django.utils import timezone
 
 
@@ -113,16 +113,19 @@ class Opportunity(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.number and self.tenant_id:
-            # Per-tenant sequence with an existence guard (idempotent for seeds).
-            last = (Opportunity.objects.filter(tenant_id=self.tenant_id, number__startswith="OPP-")
-                    .order_by("-number").first())
-            seq = 1
-            if last and last.number:
-                try:
-                    seq = int(last.number.split("-")[1]) + 1
-                except (IndexError, ValueError):
-                    seq = Opportunity.objects.filter(tenant_id=self.tenant_id).count() + 1
-            self.number = f"OPP-{seq:05d}"
+            # Per-tenant sequence with a row lock to avoid a TOCTOU race on
+            # concurrent creates colliding on unique_together ('tenant', 'number').
+            with transaction.atomic():
+                last = (Opportunity.objects.select_for_update()
+                        .filter(tenant_id=self.tenant_id, number__startswith="OPP-")
+                        .order_by("-number").first())
+                seq = 1
+                if last and last.number:
+                    try:
+                        seq = int(last.number.split("-")[1]) + 1
+                    except (IndexError, ValueError):
+                        seq = Opportunity.objects.filter(tenant_id=self.tenant_id).count() + 1
+                self.number = f"OPP-{seq:05d}"
         # Sync close timestamp with terminal statuses (won/lost) — system-set.
         if self.status in (self.STATUS_WON, self.STATUS_LOST) and self.closed_at is None:
             self.closed_at = timezone.now()
@@ -173,6 +176,10 @@ class OpportunityActivity(models.Model):
 
     class Meta:
         ordering = ["-activity_date", "-created_at"]
+        indexes = [
+            models.Index(fields=["tenant", "opportunity"], name="oppact_tenant_opp_idx"),
+            models.Index(fields=["tenant", "activity_type"], name="oppact_tenant_type_idx"),
+        ]
 
     def __str__(self):
         return self.subject
@@ -216,6 +223,10 @@ class Competitor(models.Model):
 
     class Meta:
         ordering = ["name", "-created_at"]
+        indexes = [
+            models.Index(fields=["tenant", "opportunity"], name="competitor_tenant_opp_idx"),
+            models.Index(fields=["tenant", "status"], name="competitor_tenant_status_idx"),
+        ]
 
     def __str__(self):
         return self.name
@@ -262,6 +273,10 @@ class DealCollaborator(models.Model):
 
     class Meta:
         ordering = ["member_name", "-created_at"]
+        indexes = [
+            models.Index(fields=["tenant", "opportunity"], name="dealcollab_tenant_opp_idx"),
+            models.Index(fields=["tenant", "status"], name="dealcollab_tenant_status_idx"),
+        ]
 
     def __str__(self):
         return f"{self.member_name} ({self.get_team_role_display()})"
