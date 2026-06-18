@@ -30,7 +30,7 @@
         {% elif obj.status == 'scheduled' %}<span class="badge badge-info">Scheduled</span>
         {% elif obj.status == 'running' %}<span class="badge badge-success">Running</span>
         {% elif obj.status == 'paused' %}<span class="badge badge-warning">Paused</span>
-        {% elif obj.status == 'completed' %}<span class="badge badge-info">Completed</span>
+        {% elif obj.status == 'completed' %}<span class="badge badge-muted">Completed</span>
         {% else %}<span class="badge badge-muted">{{ obj.get_status_display }}</span>{% endif %}
       </div>
       <div class="form-group"><div class="form-label">Steps</div>
