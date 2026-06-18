@@ -46,6 +46,10 @@ class ContentAsset(models.Model):
 
     class Meta:
         ordering = ["-updated_at", "-id"]
+        indexes = [
+            models.Index(fields=["tenant", "status"], name="ca_tenant_status_idx"),
+            models.Index(fields=["tenant", "asset_type"], name="ca_tenant_type_idx"),
+        ]
 
     def __str__(self):
         return self.title
@@ -54,6 +58,7 @@ class ContentAsset(models.Model):
         if self.status == self.STATUS_PUBLISHED and self.published_at is None:
             self.published_at = timezone.now()
         if self.status != self.STATUS_PUBLISHED:
+            # Intentional: re-publishing resets the publish timestamp.
             self.published_at = None
         super().save(*args, **kwargs)
 
@@ -99,6 +104,10 @@ class Playbook(models.Model):
 
     class Meta:
         ordering = ["stage", "title"]
+        indexes = [
+            models.Index(fields=["tenant", "status"], name="pb_tenant_status_idx"),
+            models.Index(fields=["tenant", "stage"], name="pb_tenant_stage_idx"),
+        ]
 
     def __str__(self):
         return self.title
@@ -146,6 +155,11 @@ class TrainingRecord(models.Model):
 
     class Meta:
         ordering = ["-enrolled_on", "-id"]
+        indexes = [
+            models.Index(fields=["tenant", "status"], name="tr_tenant_status_idx"),
+            models.Index(fields=["tenant", "kind"], name="tr_tenant_kind_idx"),
+            models.Index(fields=["tenant", "enrolled_on"], name="tr_tenant_enrolled_idx"),
+        ]
 
     def __str__(self):
         return f"{self.rep_name} — {self.course_name}"
@@ -202,6 +216,11 @@ class CallRecording(models.Model):
 
     class Meta:
         ordering = ["-call_date", "-id"]
+        indexes = [
+            models.Index(fields=["tenant", "status"], name="cr_tenant_status_idx"),
+            models.Index(fields=["tenant", "call_type"], name="cr_tenant_calltype_idx"),
+            models.Index(fields=["tenant", "call_date"], name="cr_tenant_calldate_idx"),
+        ]
 
     def __str__(self):
         return self.title
@@ -252,6 +271,10 @@ class CompetitiveCard(models.Model):
 
     class Meta:
         ordering = ["competitor_name"]
+        indexes = [
+            models.Index(fields=["tenant", "status"], name="cc_tenant_status_idx"),
+            models.Index(fields=["tenant", "threat_level"], name="cc_tenant_threat_idx"),
+        ]
 
     def __str__(self):
         return self.competitor_name
