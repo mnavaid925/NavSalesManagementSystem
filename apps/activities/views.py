@@ -97,7 +97,7 @@ def activity_delete(request, pk):
 # ============================================================ sales tasks
 @login_required
 def salestask_list(request):
-    qs = SalesTask.objects.filter(tenant=request.tenant).select_related("activity")
+    qs = SalesTask.objects.filter(tenant=request.tenant)
     q = request.GET.get("q", "").strip()
     if q:
         qs = qs.filter(
@@ -239,7 +239,7 @@ def meeting_delete(request, pk):
 # ============================================================ email logs
 @login_required
 def emaillog_list(request):
-    qs = EmailLog.objects.filter(tenant=request.tenant).select_related("activity")
+    qs = EmailLog.objects.filter(tenant=request.tenant)
     q = request.GET.get("q", "").strip()
     if q:
         qs = qs.filter(
@@ -351,7 +351,7 @@ def salesplan_create(request):
 @login_required
 def salesplan_detail(request, pk):
     obj = get_object_or_404(SalesPlan, pk=pk, tenant=request.tenant)
-    return render(request, "activities/salesplan_detail.html", {"obj": obj, "page_title": obj.number})
+    return render(request, "activities/salesplan_detail.html", {"obj": obj, "page_title": obj.number or obj.title})
 
 
 @tenant_admin_required
