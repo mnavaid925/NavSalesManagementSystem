@@ -31,7 +31,7 @@
         {% elif obj.status == 'accepted' %}<span class="badge badge-success">Accepted</span>
         {% elif obj.status == 'rejected' %}<span class="badge badge-danger">Rejected</span>
         {% elif obj.status == 'expired' %}<span class="badge badge-muted">Expired</span>
-        {% elif obj.status == 'converted' %}<span class="badge badge-success">Converted</span>
+        {% elif obj.status == 'converted' %}<span class="badge badge-success">{{ obj.get_status_display }}</span>
         {% else %}<span class="badge badge-muted">{{ obj.get_status_display }}</span>{% endif %}
       </div>
       <div class="form-group"><div class="form-label">Account</div>
@@ -104,7 +104,7 @@
       <button type="submit" class="btn btn-danger btn-block"><i data-lucide="trash-2"></i> Delete quote</button>
     </form>
     <hr class="divider">
-    <div class="list-meta">{{ proposals.count }} proposal{{ proposals.count|pluralize }} linked</div>
+    <div class="list-meta">{{ proposals_count }} proposal{{ proposals_count|pluralize }} linked</div>
     <div class="list-meta">Created {{ obj.created_at|date:"d M Y" }}</div>
     {% if obj.sent_at %}<div class="list-meta">Sent {{ obj.sent_at|date:"d M Y" }}</div>{% endif %}
     {% if obj.converted_at %}<div class="list-meta">Converted {{ obj.converted_at|date:"d M Y" }}</div>{% endif %}
