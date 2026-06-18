@@ -99,6 +99,11 @@ class Forecast(models.Model):
     class Meta:
         ordering = ["-period_start", "-id"]
         unique_together = ("tenant", "number")
+        indexes = [
+            models.Index(fields=["tenant", "status"], name="fct_tenant_status_idx"),
+            models.Index(fields=["tenant", "period_type"], name="fct_tenant_period_idx"),
+            models.Index(fields=["tenant", "category"], name="fct_tenant_cat_idx"),
+        ]
 
     def __str__(self):
         return self.number or self.name
@@ -161,6 +166,10 @@ class Quota(models.Model):
 
     class Meta:
         ordering = ["-period_start", "owner_name"]
+        indexes = [
+            models.Index(fields=["tenant", "status"], name="quota_tenant_status_idx"),
+            models.Index(fields=["tenant", "period_type"], name="quota_tenant_period_idx"),
+        ]
 
     def __str__(self):
         return f"{self.owner_name} — {self.period_label or self.get_period_type_display()}"
@@ -212,6 +221,10 @@ class ForecastAdjustment(models.Model):
 
     class Meta:
         ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["tenant", "status"], name="fadj_tenant_status_idx"),
+            models.Index(fields=["tenant", "adjustment_type"], name="fadj_tenant_type_idx"),
+        ]
 
     def __str__(self):
         return f"{self.get_adjustment_type_display()} ({self.amount})"
@@ -219,8 +232,6 @@ class ForecastAdjustment(models.Model):
     def save(self, *args, **kwargs):
         if self.status == self.STATUS_APPROVED and self.approved_at is None:
             self.approved_at = timezone.now()
-        if self.status != self.STATUS_APPROVED:
-            self.approved_at = None
         super().save(*args, **kwargs)
 
 
@@ -259,6 +270,10 @@ class ForecastAccuracy(models.Model):
 
     class Meta:
         ordering = ["-analyzed_on", "-id"]
+        indexes = [
+            models.Index(fields=["tenant", "grade"], name="facc_tenant_grade_idx"),
+            models.Index(fields=["tenant", "analyzed_on"], name="facc_tenant_date_idx"),
+        ]
 
     def __str__(self):
         return f"{self.period_label or 'Period'} — {self.accuracy_pct}%"
