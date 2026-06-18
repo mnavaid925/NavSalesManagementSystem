@@ -8,7 +8,7 @@
 </div>
 <div class="page-header">
   <div>
-    <h1 class="page-title">Score {{ obj.score }} <span class="badge badge-info" style="vertical-align:middle">{{ obj.get_grade_display }}</span></h1>
+    <h1 class="page-title">Score {{ obj.score }} {% if obj.grade == 'A' %}<span class="badge badge-success" style="vertical-align:middle">{{ obj.get_grade_display }}</span>{% elif obj.grade == 'B' %}<span class="badge badge-info" style="vertical-align:middle">{{ obj.get_grade_display }}</span>{% elif obj.grade == 'C' %}<span class="badge badge-warning" style="vertical-align:middle">{{ obj.get_grade_display }}</span>{% elif obj.grade == 'D' %}<span class="badge badge-danger" style="vertical-align:middle">{{ obj.get_grade_display }}</span>{% else %}<span class="badge badge-muted" style="vertical-align:middle">{{ obj.get_grade_display }}</span>{% endif %}</h1>
     <p class="page-subtitle">{{ obj.lead.full_name }} · {{ obj.lead.number }}</p>
   </div>
   <div class="page-actions">
