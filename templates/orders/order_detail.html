@@ -78,7 +78,7 @@
         <table class="table">
           <thead><tr><th>Carrier</th><th>Tracking</th><th>Status</th><th style="text-align:end">Shipped</th></tr></thead>
           <tbody>
-            {% for f in fulfillments %}
+            {% for f in fulfillments|slice:":20" %}
               <tr>
                 <td><a href="{% url 'orders:fulfillment_detail' f.pk %}" class="fw-600">{{ f.get_carrier_display }}</a></td>
                 <td class="list-meta">{{ f.tracking_number|default:"—" }}</td>
@@ -87,7 +87,9 @@
                   {% elif f.status == 'shipped' %}<span class="badge badge-info">Shipped</span>
                   {% elif f.status == 'returned' %}<span class="badge badge-danger">Returned</span>
                   {% elif f.status == 'pending' %}<span class="badge badge-muted">Pending</span>
-                  {% else %}<span class="badge badge-warning">{{ f.get_status_display }}</span>{% endif %}
+                  {% elif f.status == 'packed' %}<span class="badge badge-warning">Packed</span>
+                  {% elif f.status == 'picking' %}<span class="badge badge-warning">Picking</span>
+                  {% else %}<span class="badge badge-muted">{{ f.get_status_display }}</span>{% endif %}
                 </td>
                 <td style="text-align:end" class="list-meta">{% if f.shipped_on %}{{ f.shipped_on|date:"d M Y" }}{% else %}—{% endif %}</td>
               </tr>
@@ -104,7 +106,7 @@
         <table class="table">
           <thead><tr><th>Type</th><th>Status</th><th style="text-align:end">Requested on</th></tr></thead>
           <tbody>
-            {% for a in amendments %}
+            {% for a in amendments|slice:":20" %}
               <tr>
                 <td><a href="{% url 'orders:orderamendment_detail' a.pk %}" class="fw-600">{{ a.get_amendment_type_display }}</a></td>
                 <td>
@@ -129,7 +131,7 @@
         <table class="table">
           <thead><tr><th>Period</th><th>Method</th><th>Status</th><th style="text-align:end">Amount</th></tr></thead>
           <tbody>
-            {% for r in schedules %}
+            {% for r in schedules|slice:":20" %}
               <tr>
                 <td><a href="{% url 'orders:revenueschedule_detail' r.pk %}" class="fw-600">{{ r.period_label|default:r.recognition_date }}</a></td>
                 <td class="list-meta">{{ r.get_method_display }}</td>
