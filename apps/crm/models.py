@@ -2,6 +2,11 @@ from django.db import models
 from django.utils import timezone
 
 
+def _current_year():
+    """Callable default so the fiscal year is resolved at row-creation time."""
+    return timezone.localdate().year
+
+
 class AccountTier(models.Model):
     """Account Segmentation & Tiering — a named tier/segment definition.
 
@@ -35,6 +40,9 @@ class AccountTier(models.Model):
 
     class Meta:
         ordering = ["rank", "name"]
+        indexes = [
+            models.Index(fields=["tenant", "segment"], name="crm_tier_tenant_segment_idx"),
+        ]
 
     def __str__(self):
         return self.name
@@ -99,6 +107,7 @@ class Account(models.Model):
         indexes = [
             models.Index(fields=["tenant", "status"], name="crm_acct_tenant_status_idx"),
             models.Index(fields=["tenant", "account_type"], name="crm_acct_tenant_type_idx"),
+            models.Index(fields=["tenant", "tier"], name="crm_acct_tenant_tier_idx"),
         ]
 
     def __str__(self):
@@ -164,6 +173,7 @@ class Contact(models.Model):
         ordering = ["last_name", "first_name", "-id"]
         indexes = [
             models.Index(fields=["tenant", "status"], name="crm_contact_tenant_status_idx"),
+            models.Index(fields=["tenant", "account"], name="crm_contact_tenant_account_idx"),
         ]
 
     def __str__(self):
@@ -224,6 +234,10 @@ class RelationshipMap(models.Model):
 
     class Meta:
         ordering = ["-created_at", "-id"]
+        indexes = [
+            models.Index(fields=["tenant", "account"], name="crm_relmap_tenant_account_idx"),
+            models.Index(fields=["tenant", "relationship_type"], name="crm_relmap_tenant_type_idx"),
+        ]
 
     def __str__(self):
         return f"{self.from_contact} → {self.to_contact} ({self.get_relationship_type_display()})"
@@ -265,7 +279,7 @@ class AccountPlan(models.Model):
     )
     number = models.CharField(max_length=20, blank=True)
     title = models.CharField(max_length=160)
-    fiscal_year = models.PositiveIntegerField(default=timezone.now().year)
+    fiscal_year = models.PositiveIntegerField(default=_current_year)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_DRAFT)
     priority = models.CharField(max_length=20, choices=PRIORITY_CHOICES, default=PRIORITY_MEDIUM)
     objective = models.TextField(blank=True)
@@ -283,6 +297,7 @@ class AccountPlan(models.Model):
         unique_together = ("tenant", "number")
         indexes = [
             models.Index(fields=["tenant", "status"], name="crm_plan_tenant_status_idx"),
+            models.Index(fields=["tenant", "account"], name="crm_plan_tenant_account_idx"),
         ]
 
     def __str__(self):
