@@ -60,6 +60,10 @@ class LeadSource(models.Model):
 
     class Meta:
         ordering = ["name"]
+        indexes = [
+            models.Index(fields=["tenant", "status"], name="leadsource_tenant_status_idx"),
+            models.Index(fields=["tenant", "source_type"], name="leadsource_tenant_type_idx"),
+        ]
 
     def __str__(self):
         return self.name
@@ -108,6 +112,10 @@ class NurtureCampaign(models.Model):
 
     class Meta:
         ordering = ["-created_at", "name"]
+        indexes = [
+            models.Index(fields=["tenant", "status"], name="nurtcampaign_tenant_status_idx"),
+            models.Index(fields=["tenant", "channel"], name="nurtcamp_tenant_channel_idx"),
+        ]
 
     def __str__(self):
         return self.name
