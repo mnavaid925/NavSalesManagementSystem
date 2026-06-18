@@ -1,7 +1,12 @@
 from decimal import Decimal
 
-from django.db import models
+from django.db import models, transaction
 from django.utils import timezone
+
+
+def _current_year():
+    """Callable default so the fiscal year is resolved at row-creation time."""
+    return timezone.localdate().year
 
 
 class Territory(models.Model):
@@ -47,6 +52,10 @@ class Territory(models.Model):
 
     class Meta:
         ordering = ["name", "-id"]
+        indexes = [
+            models.Index(fields=["tenant", "status"], name="terr_tenant_status_idx"),
+            models.Index(fields=["tenant", "territory_type"], name="terr_tenant_type_idx"),
+        ]
 
     def __str__(self):
         return self.name
@@ -94,6 +103,10 @@ class TerritoryAssignment(models.Model):
 
     class Meta:
         ordering = ["-effective_date", "-id"]
+        indexes = [
+            models.Index(fields=["tenant", "status"], name="ta_tenant_status_idx"),
+            models.Index(fields=["tenant", "territory"], name="ta_tenant_territory_idx"),
+        ]
 
     def __str__(self):
         return f"{self.rep_name} → {self.territory.name}"
@@ -130,7 +143,7 @@ class QuotaPlan(models.Model):
     number = models.CharField(max_length=20, blank=True)
     name = models.CharField(max_length=150)
     period_type = models.CharField(max_length=20, choices=PERIOD_CHOICES, default=PERIOD_QUARTERLY)
-    fiscal_year = models.PositiveIntegerField(default=timezone.now().year)
+    fiscal_year = models.PositiveIntegerField(default=_current_year)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_DRAFT)
     target_amount = models.DecimalField(max_digits=14, decimal_places=2, default=0)
     stretch_amount = models.DecimalField(max_digits=14, decimal_places=2, default=0)
@@ -144,22 +157,30 @@ class QuotaPlan(models.Model):
     class Meta:
         ordering = ["-fiscal_year", "-id"]
         unique_together = ("tenant", "number")
+        indexes = [
+            models.Index(fields=["tenant", "status"], name="qp_tenant_status_idx"),
+            models.Index(fields=["tenant", "territory"], name="qp_tenant_territory_idx"),
+            models.Index(fields=["tenant", "fiscal_year"], name="qp_tenant_fy_idx"),
+        ]
 
     def __str__(self):
         return self.number or self.name
 
     def save(self, *args, **kwargs):
         if not self.number and self.tenant_id:
-            # Per-tenant sequence with an existence guard (idempotent for seeds).
-            last = (QuotaPlan.objects.filter(tenant_id=self.tenant_id, number__startswith="QP-")
-                    .order_by("-number").first())
-            seq = 1
-            if last and last.number:
-                try:
-                    seq = int(last.number.split("-")[1]) + 1
-                except (IndexError, ValueError):
-                    seq = QuotaPlan.objects.filter(tenant_id=self.tenant_id).count() + 1
-            self.number = f"QP-{seq:05d}"
+            # Per-tenant sequence with a row lock to avoid a TOCTOU race on
+            # concurrent creates colliding on unique_together ('tenant', 'number').
+            with transaction.atomic():
+                last = (QuotaPlan.objects.select_for_update()
+                        .filter(tenant_id=self.tenant_id, number__startswith="QP-")
+                        .order_by("-number").first())
+                seq = 1
+                if last and last.number:
+                    try:
+                        seq = int(last.number.split("-")[1]) + 1
+                    except (IndexError, ValueError):
+                        seq = QuotaPlan.objects.filter(tenant_id=self.tenant_id).count() + 1
+                self.number = f"QP-{seq:05d}"
         if self.status == self.STATUS_APPROVED and self.approved_at is None:
             self.approved_at = timezone.now()
         super().save(*args, **kwargs)
@@ -208,6 +229,10 @@ class CoverageModel(models.Model):
 
     class Meta:
         ordering = ["name", "-id"]
+        indexes = [
+            models.Index(fields=["tenant", "status"], name="cm_tenant_status_idx"),
+            models.Index(fields=["tenant", "model_type"], name="cm_tenant_type_idx"),
+        ]
 
     def __str__(self):
         return self.name
@@ -254,6 +279,11 @@ class TerritoryPerformance(models.Model):
 
     class Meta:
         ordering = ["-period_end", "-id"]
+        indexes = [
+            models.Index(fields=["tenant", "territory"], name="tp_tenant_territory_idx"),
+            models.Index(fields=["tenant", "rating"], name="tp_tenant_rating_idx"),
+            models.Index(fields=["tenant", "period_end"], name="tp_tenant_period_idx"),
+        ]
 
     def __str__(self):
         return f"{self.territory.name} — {self.period_label or self.get_period_type_display()}"
