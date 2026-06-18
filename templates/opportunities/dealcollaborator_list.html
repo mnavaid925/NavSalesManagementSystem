@@ -18,8 +18,7 @@
 <div class="card">
   <div class="card-header">
     <form method="get" style="display:flex;gap:10px;flex-wrap:wrap;width:100%;align-items:center">
-      <input type="text" name="q" value="{{ request.GET.q }}" placeholder="Search team members…" class="form-input" style="max-width:240px">
-      <span class="list-meta" style="margin-inline-end:auto"></span>
+      <input type="search" name="q" value="{{ request.GET.q }}" placeholder="Search team members…" class="form-input" style="max-width:240px;margin-inline-end:auto">
       <select name="opportunity" class="form-select" style="max-width:200px" onchange="this.form.submit()">
         <option value="">All opportunities</option>
         {% for o in opportunities %}
