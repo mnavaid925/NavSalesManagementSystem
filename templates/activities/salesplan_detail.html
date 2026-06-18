@@ -1,10 +1,10 @@
 {% extends "base.html" %}
-{% block title %}{{ obj.number }}{% endblock %}
+{% block title %}{{ obj.number|default:obj.title }}{% endblock %}
 
 {% block content %}
 <div class="breadcrumb">
   <a href="{% url 'activities:activity_list' %}">Sales Activity</a><i data-lucide="chevron-right" style="width:14px"></i>
-  <a href="{% url 'activities:salesplan_list' %}">Sales Plans</a><i data-lucide="chevron-right" style="width:14px"></i><span>{{ obj.number }}</span>
+  <a href="{% url 'activities:salesplan_list' %}">Sales Plans</a><i data-lucide="chevron-right" style="width:14px"></i><span>{{ obj.number|default:obj.title }}</span>
 </div>
 <div class="page-header">
   <div>
@@ -30,7 +30,7 @@
       <div class="form-group"><div class="form-label">Status</div>
         {% if obj.status == 'active' %}<span class="badge badge-success">Active</span>
         {% elif obj.status == 'completed' %}<span class="badge badge-info">Completed</span>
-        {% elif obj.status == 'draft' %}<span class="badge badge-warning">Draft</span>
+        {% elif obj.status == 'draft' %}<span class="badge badge-muted">Draft</span>
         {% elif obj.status == 'archived' %}<span class="badge badge-muted">Archived</span>
         {% else %}<span class="badge badge-muted">{{ obj.get_status_display }}</span>{% endif %}
       </div>
