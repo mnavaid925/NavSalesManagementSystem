@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from django.db import models, transaction
 from django.utils import timezone
 
@@ -108,8 +110,12 @@ class Opportunity(models.Model):
 
     @property
     def weighted_amount(self):
-        """Expected value = amount x probability (used in forecasting rollups)."""
-        return (self.amount or 0) * self.probability / 100
+        """Expected value = amount x probability (used in forecasting rollups).
+
+        Values are coerced to Decimal so the property is correct even on an unsaved
+        instance whose fields are still strings (DecimalField only casts on DB read).
+        """
+        return Decimal(str(self.amount or 0)) * Decimal(str(self.probability or 0)) / Decimal("100")
 
     def save(self, *args, **kwargs):
         if not self.number and self.tenant_id:
