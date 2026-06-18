@@ -65,8 +65,8 @@ def commissionplan_create(request):
 @login_required
 def commissionplan_detail(request, pk):
     obj = get_object_or_404(CommissionPlan, pk=pk, tenant=request.tenant)
-    earnings = obj.earnings.all()[:20]
-    variations = obj.variations.all()[:20]
+    earnings = obj.earnings.filter(tenant=request.tenant)[:20]
+    variations = obj.variations.filter(tenant=request.tenant)[:20]
     return render(request, "compensation/commissionplan_detail.html",
                   {"obj": obj, "earnings": earnings, "variations": variations, "page_title": obj.name})
 
