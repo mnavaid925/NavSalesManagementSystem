@@ -1,4 +1,4 @@
-from django.db import models
+from django.db import models, transaction
 from django.utils import timezone
 
 
@@ -60,16 +60,23 @@ class Order(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.number and self.tenant_id:
-            # Per-tenant sequence with an existence guard (idempotent for seeds).
-            last = (Order.objects.filter(tenant_id=self.tenant_id, number__startswith="ORD-")
-                    .order_by("-number").first())
-            seq = 1
-            if last and last.number:
-                try:
-                    seq = int(last.number.split("-")[1]) + 1
-                except (IndexError, ValueError):
-                    seq = Order.objects.filter(tenant_id=self.tenant_id).count() + 1
-            self.number = f"ORD-{seq:05d}"
+            # Per-tenant sequence with a row lock to avoid duplicate numbers under
+            # concurrent creation (idempotent for seeds).
+            with transaction.atomic():
+                last = (Order.objects.select_for_update()
+                        .filter(tenant_id=self.tenant_id, number__startswith="ORD-")
+                        .order_by("-number").first())
+                seq = 1
+                if last and last.number:
+                    try:
+                        seq = int(last.number.split("-")[1]) + 1
+                    except (IndexError, ValueError):
+                        seq = Order.objects.filter(tenant_id=self.tenant_id).count() + 1
+                self.number = f"ORD-{seq:05d}"
+                if self.status == self.STATUS_CONFIRMED and self.confirmed_at is None:
+                    self.confirmed_at = timezone.now()
+                super().save(*args, **kwargs)
+                return
         if self.status == self.STATUS_CONFIRMED and self.confirmed_at is None:
             self.confirmed_at = timezone.now()
         super().save(*args, **kwargs)
@@ -91,6 +98,9 @@ class OrderLine(models.Model):
 
     class Meta:
         ordering = ["order", "id"]
+        indexes = [
+            models.Index(fields=["tenant", "order"], name="orderline_tenant_order_idx"),
+        ]
 
     def __str__(self):
         return f"{self.product_name} x{self.quantity}"
@@ -149,6 +159,10 @@ class Fulfillment(models.Model):
 
     class Meta:
         ordering = ["-created_at", "-id"]
+        indexes = [
+            models.Index(fields=["tenant", "status"], name="fulfil_tenant_status_idx"),
+            models.Index(fields=["tenant", "order"], name="fulfil_tenant_order_idx"),
+        ]
 
     def __str__(self):
         return f"{self.get_carrier_display()} — {self.tracking_number or self.get_status_display()}"
@@ -200,6 +214,10 @@ class OrderAmendment(models.Model):
 
     class Meta:
         ordering = ["-requested_on", "-id"]
+        indexes = [
+            models.Index(fields=["tenant", "status"], name="amend_tenant_status_idx"),
+            models.Index(fields=["tenant", "order"], name="amend_tenant_order_idx"),
+        ]
 
     def __str__(self):
         return f"{self.get_amendment_type_display()} ({self.get_status_display()})"
