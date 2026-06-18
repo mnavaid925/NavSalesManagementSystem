@@ -53,9 +53,9 @@ def territory_list(request):
 @login_required
 def territory_detail(request, pk):
     obj = get_object_or_404(Territory, pk=pk, tenant=request.tenant)
-    assignments = obj.assignments.all()[:20]
-    quota_plans = obj.quota_plans.all()[:20]
-    snapshots = obj.performance_snapshots.all()[:20]
+    assignments = obj.assignments.filter(tenant=request.tenant)[:20]
+    quota_plans = obj.quota_plans.filter(tenant=request.tenant)[:20]
+    snapshots = obj.performance_snapshots.filter(tenant=request.tenant)[:20]
     return render(request, "territories/territory_detail.html", {
         "obj": obj, "page_title": obj.name,
         "assignments": assignments, "quota_plans": quota_plans, "snapshots": snapshots,
