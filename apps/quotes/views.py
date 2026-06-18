@@ -49,13 +49,18 @@ def quote_list(request):
 
 @login_required
 def quote_detail(request, pk):
-    obj = get_object_or_404(Quote, pk=pk, tenant=request.tenant)
+    obj = get_object_or_404(
+        Quote.objects.prefetch_related("line_items", "versions", "proposals"),
+        pk=pk, tenant=request.tenant,
+    )
     line_items = obj.line_items.all()
     versions = obj.versions.all()
     proposals = obj.proposals.all()
+    proposals_count = len(proposals)  # reads the prefetch cache — no extra COUNT query
     return render(request, "quotes/quote_detail.html", {
         "obj": obj, "line_items": line_items, "versions": versions,
-        "proposals": proposals, "page_title": str(obj),
+        "proposals": proposals, "proposals_count": proposals_count,
+        "page_title": str(obj),
     })
 
 
