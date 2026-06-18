@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
+from django.views.decorators.http import require_POST
 
 from apps.core.decorators import tenant_admin_required
 from apps.core.utils import log_action
@@ -82,13 +83,13 @@ def pipelinestage_edit(request, pk):
 
 
 @tenant_admin_required
+@require_POST
 def pipelinestage_delete(request, pk):
     obj = get_object_or_404(PipelineStage, pk=pk, tenant=request.tenant)
-    if request.method == "POST":
-        label = obj.name
-        log_action(request, "delete", instance=obj)
-        obj.delete()
-        messages.success(request, f"Pipeline stage “{label}” deleted.")
+    label = obj.name
+    log_action(request, "delete", instance=obj)
+    obj.delete()
+    messages.success(request, f"Pipeline stage “{label}” deleted.")
     return redirect("opportunities:pipelinestage_list")
 
 
@@ -164,13 +165,13 @@ def opportunity_edit(request, pk):
 
 
 @tenant_admin_required
+@require_POST
 def opportunity_delete(request, pk):
     obj = get_object_or_404(Opportunity, pk=pk, tenant=request.tenant)
-    if request.method == "POST":
-        label = obj.number
-        log_action(request, "delete", instance=obj)
-        obj.delete()
-        messages.success(request, f"Opportunity {label} deleted.")
+    label = obj.number
+    log_action(request, "delete", instance=obj)
+    obj.delete()
+    messages.success(request, f"Opportunity {label} deleted.")
     return redirect("opportunities:opportunity_list")
 
 
@@ -197,7 +198,7 @@ def opportunityactivity_list(request):
         "activities": page_obj.object_list,
         "type_choices": OpportunityActivity.TYPE_CHOICES,
         "outcome_choices": OpportunityActivity.OUTCOME_CHOICES,
-        "opportunities": Opportunity.objects.filter(tenant=request.tenant),
+        "opportunities": Opportunity.objects.filter(tenant=request.tenant).only("id", "number", "name"),
         "total": paginator.count,
     })
 
@@ -240,12 +241,12 @@ def opportunityactivity_edit(request, pk):
 
 
 @tenant_admin_required
+@require_POST
 def opportunityactivity_delete(request, pk):
     obj = get_object_or_404(OpportunityActivity, pk=pk, tenant=request.tenant)
-    if request.method == "POST":
-        log_action(request, "delete", instance=obj)
-        obj.delete()
-        messages.success(request, "Activity deleted.")
+    log_action(request, "delete", instance=obj)
+    obj.delete()
+    messages.success(request, "Activity deleted.")
     return redirect("opportunities:opportunityactivity_list")
 
 
@@ -272,7 +273,7 @@ def competitor_list(request):
         "competitors": page_obj.object_list,
         "threat_choices": Competitor.THREAT_CHOICES,
         "status_choices": Competitor.STATUS_CHOICES,
-        "opportunities": Opportunity.objects.filter(tenant=request.tenant),
+        "opportunities": Opportunity.objects.filter(tenant=request.tenant).only("id", "number", "name"),
         "total": paginator.count,
     })
 
@@ -315,13 +316,13 @@ def competitor_edit(request, pk):
 
 
 @tenant_admin_required
+@require_POST
 def competitor_delete(request, pk):
     obj = get_object_or_404(Competitor, pk=pk, tenant=request.tenant)
-    if request.method == "POST":
-        label = obj.name
-        log_action(request, "delete", instance=obj)
-        obj.delete()
-        messages.success(request, f"Competitor “{label}” deleted.")
+    label = obj.name
+    log_action(request, "delete", instance=obj)
+    obj.delete()
+    messages.success(request, f"Competitor “{label}” deleted.")
     return redirect("opportunities:competitor_list")
 
 
@@ -348,7 +349,7 @@ def dealcollaborator_list(request):
         "collaborators": page_obj.object_list,
         "role_choices": DealCollaborator.ROLE_CHOICES,
         "status_choices": DealCollaborator.STATUS_CHOICES,
-        "opportunities": Opportunity.objects.filter(tenant=request.tenant),
+        "opportunities": Opportunity.objects.filter(tenant=request.tenant).only("id", "number", "name"),
         "total": paginator.count,
     })
 
@@ -391,11 +392,11 @@ def dealcollaborator_edit(request, pk):
 
 
 @tenant_admin_required
+@require_POST
 def dealcollaborator_delete(request, pk):
     obj = get_object_or_404(DealCollaborator, pk=pk, tenant=request.tenant)
-    if request.method == "POST":
-        label = obj.member_name
-        log_action(request, "delete", instance=obj)
-        obj.delete()
-        messages.success(request, f"Collaborator “{label}” removed.")
+    label = obj.member_name
+    log_action(request, "delete", instance=obj)
+    obj.delete()
+    messages.success(request, f"Collaborator “{label}” removed.")
     return redirect("opportunities:dealcollaborator_list")
