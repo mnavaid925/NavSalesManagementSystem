@@ -36,6 +36,11 @@ def forecastcategory_list(request):
     commitment = request.GET.get("commitment", "")
     if commitment:
         qs = qs.filter(commitment=commitment)
+    active = request.GET.get("active", "")
+    if active == "active":
+        qs = qs.filter(is_active=True)
+    elif active == "inactive":
+        qs = qs.filter(is_active=False)
     paginator, page_obj = _page(request, qs)
     return render(request, "forecasting/forecastcategory_list.html", {
         "page_title": "Forecast Categories & Commitments", "page_obj": page_obj,
@@ -135,7 +140,7 @@ def forecast_create(request):
 @login_required
 def forecast_detail(request, pk):
     obj = get_object_or_404(Forecast.objects.select_related("category"), pk=pk, tenant=request.tenant)
-    adjustments = obj.adjustments.all()[:20]
+    adjustments = obj.adjustments.filter(tenant=request.tenant)[:20]
     return render(request, "forecasting/forecast_detail.html",
                   {"obj": obj, "adjustments": adjustments, "page_title": obj.number or obj.name})
 
