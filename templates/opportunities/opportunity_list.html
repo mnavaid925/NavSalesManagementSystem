@@ -18,8 +18,7 @@
 <div class="card">
   <div class="card-header">
     <form method="get" style="display:flex;gap:10px;flex-wrap:wrap;width:100%;align-items:center">
-      <input type="text" name="q" value="{{ request.GET.q }}" placeholder="Search deals, accounts, owners…" class="form-input" style="max-width:260px">
-      <span class="list-meta" style="margin-inline-end:auto"></span>
+      <input type="search" name="q" value="{{ request.GET.q }}" placeholder="Search deals, accounts, owners…" class="form-input" style="max-width:260px;margin-inline-end:auto">
       <select name="stage" class="form-select" style="max-width:170px" onchange="this.form.submit()">
         <option value="">All stages</option>
         {% for s in stages %}
