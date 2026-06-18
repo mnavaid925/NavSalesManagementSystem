@@ -49,7 +49,7 @@
             <td>
               {% if plan.status == 'active' %}<span class="badge badge-success">Active</span>
               {% elif plan.status == 'completed' %}<span class="badge badge-info">Completed</span>
-              {% elif plan.status == 'draft' %}<span class="badge badge-warning">Draft</span>
+              {% elif plan.status == 'draft' %}<span class="badge badge-muted">Draft</span>
               {% elif plan.status == 'archived' %}<span class="badge badge-muted">Archived</span>
               {% else %}<span class="badge badge-muted">{{ plan.get_status_display }}</span>{% endif %}
             </td>
