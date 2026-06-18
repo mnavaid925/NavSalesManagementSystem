@@ -50,7 +50,7 @@
               {% elif c.status == 'scheduled' %}<span class="badge badge-info">Scheduled</span>
               {% elif c.status == 'running' %}<span class="badge badge-success">Running</span>
               {% elif c.status == 'paused' %}<span class="badge badge-warning">Paused</span>
-              {% elif c.status == 'completed' %}<span class="badge badge-info">Completed</span>
+              {% elif c.status == 'completed' %}<span class="badge badge-muted">Completed</span>
               {% else %}<span class="badge badge-muted">{{ c.get_status_display }}</span>{% endif %}
             </td>
             <td class="fw-600">{{ c.step_count }}</td>
