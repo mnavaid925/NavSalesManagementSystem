@@ -54,7 +54,7 @@
               {% elif quote.status == 'accepted' %}<span class="badge badge-success">Accepted</span>
               {% elif quote.status == 'rejected' %}<span class="badge badge-danger">Rejected</span>
               {% elif quote.status == 'expired' %}<span class="badge badge-muted">Expired</span>
-              {% elif quote.status == 'converted' %}<span class="badge badge-success">Converted</span>
+              {% elif quote.status == 'converted' %}<span class="badge badge-success">{{ quote.get_status_display }}</span>
               {% else %}<span class="badge badge-muted">{{ quote.get_status_display }}</span>{% endif %}
             </td>
             <td>{{ quote.currency }}</td>
