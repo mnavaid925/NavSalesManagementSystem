@@ -1,4 +1,4 @@
-from django.db import models
+from django.db import models, transaction
 from django.utils import timezone
 
 
@@ -44,6 +44,11 @@ class CommissionPlan(models.Model):
 
     class Meta:
         ordering = ["-effective_from", "name"]
+        indexes = [
+            models.Index(fields=["tenant", "status"], name="cplan_tenant_status_idx"),
+            models.Index(fields=["tenant", "plan_type"], name="cplan_tenant_type_idx"),
+            models.Index(fields=["tenant", "effective_from"], name="cplan_tenant_effdate_idx"),
+        ]
 
     def __str__(self):
         return self.name
@@ -83,24 +88,42 @@ class Earning(models.Model):
     class Meta:
         ordering = ["-earned_on", "-id"]
         unique_together = ("tenant", "number")
+        indexes = [
+            models.Index(fields=["tenant", "status"], name="earn_tenant_status_idx"),
+            models.Index(fields=["tenant", "plan"], name="earn_tenant_plan_idx"),
+            models.Index(fields=["tenant", "earned_on"], name="earn_tenant_earndate_idx"),
+        ]
 
     def __str__(self):
         return self.number or f"Earning #{self.pk}"
 
     def save(self, *args, **kwargs):
         if not self.number and self.tenant_id:
-            # Per-tenant sequence with an existence guard (idempotent for seeds).
-            last = (Earning.objects.filter(tenant_id=self.tenant_id, number__startswith="EARN-")
-                    .order_by("-number").first())
-            seq = 1
-            if last and last.number:
-                try:
-                    seq = int(last.number.split("-")[1]) + 1
-                except (IndexError, ValueError):
-                    seq = Earning.objects.filter(tenant_id=self.tenant_id).count() + 1
-            self.number = f"EARN-{seq:05d}"
+            # Per-tenant sequence with a row lock to avoid duplicate numbers under
+            # concurrent creation (idempotent for seeds).
+            with transaction.atomic():
+                last = (Earning.objects.select_for_update()
+                        .filter(tenant_id=self.tenant_id, number__startswith="EARN-")
+                        .order_by("-number").first())
+                seq = 1
+                if last and last.number:
+                    try:
+                        seq = int(last.number.split("-")[1]) + 1
+                    except (IndexError, ValueError):
+                        seq = (Earning.objects
+                               .filter(tenant_id=self.tenant_id, number__startswith="EARN-")
+                               .count() + 1)
+                self.number = f"EARN-{seq:05d}"
+                if self.status in (self.STATUS_APPROVED, self.STATUS_PAID) and self.approved_at is None:
+                    self.approved_at = timezone.now()
+                if self.status not in (self.STATUS_APPROVED, self.STATUS_PAID):
+                    self.approved_at = None
+                super().save(*args, **kwargs)
+                return
         if self.status in (self.STATUS_APPROVED, self.STATUS_PAID) and self.approved_at is None:
             self.approved_at = timezone.now()
+        if self.status not in (self.STATUS_APPROVED, self.STATUS_PAID):
+            self.approved_at = None
         super().save(*args, **kwargs)
 
 
@@ -148,6 +171,11 @@ class Clawback(models.Model):
 
     class Meta:
         ordering = ["-effective_on", "-id"]
+        indexes = [
+            models.Index(fields=["tenant", "status"], name="claw_tenant_status_idx"),
+            models.Index(fields=["tenant", "reason"], name="claw_tenant_reason_idx"),
+            models.Index(fields=["tenant", "effective_on"], name="claw_tenant_effdate_idx"),
+        ]
 
     def __str__(self):
         return f"{self.get_reason_display()} — {self.rep_name}"
@@ -209,6 +237,11 @@ class GlobalPlanVariation(models.Model):
 
     class Meta:
         ordering = ["region", "currency"]
+        indexes = [
+            models.Index(fields=["tenant", "status"], name="gpv_tenant_status_idx"),
+            models.Index(fields=["tenant", "currency"], name="gpv_tenant_currency_idx"),
+            models.Index(fields=["tenant", "plan"], name="gpv_tenant_plan_idx"),
+        ]
 
     def __str__(self):
         return f"{self.region} ({self.currency})"
@@ -261,22 +294,36 @@ class Payout(models.Model):
     class Meta:
         ordering = ["-scheduled_on", "-id"]
         unique_together = ("tenant", "number")
+        indexes = [
+            models.Index(fields=["tenant", "status"], name="pay_tenant_status_idx"),
+            models.Index(fields=["tenant", "method"], name="pay_tenant_method_idx"),
+            models.Index(fields=["tenant", "scheduled_on"], name="pay_tenant_scheddate_idx"),
+        ]
 
     def __str__(self):
         return self.number or f"Payout #{self.pk}"
 
     def save(self, *args, **kwargs):
         if not self.number and self.tenant_id:
-            # Per-tenant sequence with an existence guard (idempotent for seeds).
-            last = (Payout.objects.filter(tenant_id=self.tenant_id, number__startswith="PAY-")
-                    .order_by("-number").first())
-            seq = 1
-            if last and last.number:
-                try:
-                    seq = int(last.number.split("-")[1]) + 1
-                except (IndexError, ValueError):
-                    seq = Payout.objects.filter(tenant_id=self.tenant_id).count() + 1
-            self.number = f"PAY-{seq:05d}"
+            # Per-tenant sequence with a row lock to avoid duplicate numbers under
+            # concurrent creation (idempotent for seeds).
+            with transaction.atomic():
+                last = (Payout.objects.select_for_update()
+                        .filter(tenant_id=self.tenant_id, number__startswith="PAY-")
+                        .order_by("-number").first())
+                seq = 1
+                if last and last.number:
+                    try:
+                        seq = int(last.number.split("-")[1]) + 1
+                    except (IndexError, ValueError):
+                        seq = (Payout.objects
+                               .filter(tenant_id=self.tenant_id, number__startswith="PAY-")
+                               .count() + 1)
+                self.number = f"PAY-{seq:05d}"
+                if self.status == self.STATUS_PAID and self.paid_at is None:
+                    self.paid_at = timezone.now()
+                super().save(*args, **kwargs)
+                return
         if self.status == self.STATUS_PAID and self.paid_at is None:
             self.paid_at = timezone.now()
         super().save(*args, **kwargs)
