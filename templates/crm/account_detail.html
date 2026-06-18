@@ -97,7 +97,14 @@
               <tr>
                 <td><a href="{% url 'crm:accountplan_detail' p.pk %}" class="fw-600">{{ p.title }}</a><div class="list-meta">{{ p.number }}</div></td>
                 <td class="list-meta">{{ p.fiscal_year }}</td>
-                <td class="list-meta">{{ p.get_status_display }}</td>
+                <td>
+                  {% if p.status == 'draft' %}<span class="badge badge-muted">Draft</span>
+                  {% elif p.status == 'active' %}<span class="badge badge-info">Active</span>
+                  {% elif p.status == 'on_track' %}<span class="badge badge-success">On track</span>
+                  {% elif p.status == 'at_risk' %}<span class="badge badge-danger">At risk</span>
+                  {% elif p.status == 'completed' %}<span class="badge badge-success">Completed</span>
+                  {% else %}<span class="badge badge-muted">{{ p.get_status_display }}</span>{% endif %}
+                </td>
               </tr>
             {% empty %}
               <tr><td colspan="3"><div class="empty-state"><div class="empty-icon"><i data-lucide="target"></i></div><h3>No account plans</h3><p>Growth plans for this account will appear here.</p></div></td></tr>
