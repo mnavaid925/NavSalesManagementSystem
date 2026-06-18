@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from django.db import models
 from django.utils import timezone
 
@@ -176,8 +178,10 @@ class Quota(models.Model):
 
     @property
     def attainment_pct(self):
-        if self.target_amount and self.target_amount > 0:
-            return round((self.attained_amount / self.target_amount) * 100, 1)
+        # Coerce to Decimal so this is safe on unsaved instances (string fields).
+        target = Decimal(str(self.target_amount or 0))
+        if target > 0:
+            return round((Decimal(str(self.attained_amount or 0)) / target) * 100, 1)
         return 0
 
 
@@ -279,6 +283,7 @@ class ForecastAccuracy(models.Model):
         return f"{self.period_label or 'Period'} — {self.accuracy_pct}%"
 
     def save(self, *args, **kwargs):
-        # Variance is always derived in code (kept off the form).
-        self.variance_amount = self.actual_amount - self.forecasted_amount
+        # Variance is always derived in code (kept off the form). Coerce to Decimal so
+        # the subtraction is safe even when fields are still strings (pre-DB-read).
+        self.variance_amount = Decimal(str(self.actual_amount or 0)) - Decimal(str(self.forecasted_amount or 0))
         super().save(*args, **kwargs)
