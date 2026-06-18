@@ -127,8 +127,11 @@ class QuoteLineItem(models.Model):
 
     @property
     def computed_total(self):
-        gross = (self.quantity or Decimal("0")) * (self.unit_price or Decimal("0"))
-        discount = gross * (self.discount_percent or Decimal("0")) / Decimal("100")
+        # Coerce to Decimal so this is safe on unsaved instances (string fields).
+        qty = Decimal(str(self.quantity or 0))
+        price = Decimal(str(self.unit_price or 0))
+        gross = qty * price
+        discount = gross * Decimal(str(self.discount_percent or 0)) / Decimal("100")
         return gross - discount
 
     def save(self, *args, **kwargs):
