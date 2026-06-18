@@ -33,7 +33,7 @@
         {% if obj.status == 'draft' %}<span class="badge badge-muted">Draft</span>
         {% elif obj.status == 'submitted' %}<span class="badge badge-info">Submitted</span>
         {% elif obj.status == 'approved' %}<span class="badge badge-success">Approved</span>
-        {% elif obj.status == 'closed' %}<span class="badge badge-success">Closed</span>
+        {% elif obj.status == 'closed' %}<span class="badge badge-muted">Closed</span>
         {% else %}<span class="badge badge-muted">{{ obj.get_status_display }}</span>{% endif %}
       </div>
       <div class="form-group"><div class="form-label">Period</div>
