@@ -18,7 +18,7 @@
 <div class="card">
   <div class="card-header">
     <form method="get" style="display:flex;gap:10px;flex-wrap:wrap;width:100%;align-items:center">
-      <input type="text" name="q" value="{{ request.GET.q }}" placeholder="Search forecasts…" class="form-input" style="max-width:220px">
+      <input type="search" name="q" value="{{ request.GET.q }}" placeholder="Search forecasts…" class="form-input" style="max-width:220px">
       <span class="list-meta" style="margin-inline-end:auto"></span>
       <select name="category" class="form-select" style="max-width:170px" onchange="this.form.submit()">
         <option value="">All categories</option>
@@ -59,7 +59,7 @@
               {% if f.status == 'draft' %}<span class="badge badge-muted">Draft</span>
               {% elif f.status == 'submitted' %}<span class="badge badge-info">Submitted</span>
               {% elif f.status == 'approved' %}<span class="badge badge-success">Approved</span>
-              {% elif f.status == 'closed' %}<span class="badge badge-success">Closed</span>
+              {% elif f.status == 'closed' %}<span class="badge badge-muted">Closed</span>
               {% else %}<span class="badge badge-muted">{{ f.get_status_display }}</span>{% endif %}
             </td>
             <td>
