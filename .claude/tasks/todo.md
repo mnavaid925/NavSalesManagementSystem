@@ -129,3 +129,33 @@ The full per-module 7-agent review sequence (code/explorer/frontend/perf/qa/secu
 into build+integrate+verify; deeper review can run later per module via `/sqa-review <module>`.
 
 Commits: one file per commit (274 files), PowerShell-safe, never pushed (user commits manually).
+
+## Mandatory review sequence (steps 2–8, modules 1–10) — DONE
+Ran via the `review-sms-modules-1-10` Workflow (50 agents): 30 reviewers (code/explorer/frontend/perf/qa/
+security × 5 module-pairs) → aggregate findings per module → 10 apply agents (fixes in mandated order,
+each owns only its module) → 10 test-writers (mirror `apps/tenants/tests`). Then I verified + committed
+each file individually (user asked for step-by-step commits this round).
+
+**Applied fixes (55 source files + 8 new `0002` migrations):**
+- Real bugs: `crm`/`territories` `fiscal_year` default frozen at server-start → callable `_current_year`;
+  `forecasting` `ForecastAdjustment.save()` destroying `approved_at` on un-approve → stopped; auto-number
+  TOCTOU races → `select_for_update()` + `transaction.atomic()` (opportunities/orders/territories/activities/
+  compensation).
+- Perf (closes the earlier N+1 follow-up): composite `(tenant, …)` indexes across modules; `quotes`/`orders`
+  `prefetch_related` + cached counts; `opportunities` `.only()` dropdowns; removed unused `select_related`.
+- Frontend: badges → exact choice values + `{% else %}{{ obj.get_*_display }}` fallback; `type=search`.
+- Security: `@require_POST` on opportunities deletes; defence-in-depth `tenant=` on reverse-FK detail
+  querysets. Reviewers correctly **skipped** unsafe suggestions (shared `theme.css`, breaking the by-design
+  no-tenant convention, inconsistent button-gating vs the `apps/tenants` baseline).
+- Decimal-coercion latent `TypeError`s flagged by test-writers (weighted_amount, attainment_pct, variance,
+  computed_total, attainment) → fixed at the root (cast to `Decimal`), logic-only, no migration.
+
+**Tests:** 60 new files (`apps/<slug>/tests/` × 10) — models, forms, views/CRUD, multi-tenant IDOR→404,
+list isolation, CSRF/permission. ~2228 module tests, all green.
+
+**Verification (mine, independent):** `makemigrations --check` in sync; 8 migrations applied to `nav_sms`;
+`manage.py check` clean; URL sweep **250/250** (IDOR 404s intact, no regressions); full `pytest` **exit 0**
+(~2570 incl. foundation).
+
+**Commits:** one file per commit, **120 commits** (116 apply+test files + 4 Decimal fixes), PowerShell-safe,
+never pushed.
