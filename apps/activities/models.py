@@ -1,4 +1,4 @@
-from django.db import models
+from django.db import models, transaction
 from django.utils import timezone
 
 
@@ -327,14 +327,17 @@ class SalesPlan(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.number and self.tenant_id:
-            # Per-tenant sequence with an existence guard (idempotent for seeds).
-            last = (SalesPlan.objects.filter(tenant_id=self.tenant_id, number__startswith="PLAN-")
-                    .order_by("-number").first())
-            seq = 1
-            if last and last.number:
-                try:
-                    seq = int(last.number.split("-")[1]) + 1
-                except (IndexError, ValueError):
-                    seq = SalesPlan.objects.filter(tenant_id=self.tenant_id).count() + 1
-            self.number = f"PLAN-{seq:05d}"
+            # Per-tenant sequence with a row lock to avoid a TOCTOU race on
+            # concurrent creates colliding on unique_together ('tenant', 'number').
+            with transaction.atomic():
+                last = (SalesPlan.objects.select_for_update()
+                        .filter(tenant_id=self.tenant_id, number__startswith="PLAN-")
+                        .order_by("-number").first())
+                seq = 1
+                if last and last.number:
+                    try:
+                        seq = int(last.number.split("-")[1]) + 1
+                    except (IndexError, ValueError):
+                        seq = SalesPlan.objects.filter(tenant_id=self.tenant_id).count() + 1
+                self.number = f"PLAN-{seq:05d}"
         super().save(*args, **kwargs)
