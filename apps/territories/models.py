@@ -289,8 +289,10 @@ class TerritoryPerformance(models.Model):
         return f"{self.territory.name} — {self.period_label or self.get_period_type_display()}"
 
     def save(self, *args, **kwargs):
-        if self.quota_amount and self.quota_amount > 0:
+        # Coerce to Decimal so this is safe on unsaved instances (string fields).
+        quota = Decimal(str(self.quota_amount or 0))
+        if quota > 0:
             self.attainment_percent = (
-                (self.actual_amount / self.quota_amount) * Decimal("100")
+                (Decimal(str(self.actual_amount or 0)) / quota) * Decimal("100")
             ).quantize(Decimal("0.01"))
         super().save(*args, **kwargs)
