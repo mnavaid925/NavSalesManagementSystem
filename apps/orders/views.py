@@ -47,11 +47,14 @@ def order_list(request):
 
 @login_required
 def order_detail(request, pk):
-    obj = get_object_or_404(Order, pk=pk, tenant=request.tenant)
+    obj = get_object_or_404(
+        Order.objects.prefetch_related("lines", "fulfillments", "amendments", "revenue_schedules"),
+        pk=pk, tenant=request.tenant,
+    )
     lines = obj.lines.all()
-    fulfillments = obj.fulfillments.all()[:20]
-    amendments = obj.amendments.all()[:20]
-    schedules = obj.revenue_schedules.all()[:20]
+    fulfillments = obj.fulfillments.all()
+    amendments = obj.amendments.all()
+    schedules = obj.revenue_schedules.all()
     return render(request, "orders/order_detail.html", {
         "obj": obj, "page_title": str(obj), "lines": lines,
         "fulfillments": fulfillments, "amendments": amendments, "schedules": schedules,
@@ -133,7 +136,7 @@ def orderline_create(request):
         obj.save()
         log_action(request, "create", instance=obj)
         messages.success(request, "Line item added.")
-        return redirect("orders:orderline_list")
+        return redirect("orders:orderline_detail", pk=obj.pk)
     return render(request, "orders/orderline_form.html",
                   {"form": form, "page_title": "Add Line Item", "mode": "create"})
 
@@ -200,7 +203,7 @@ def fulfillment_create(request):
         obj.save()
         log_action(request, "create", instance=obj)
         messages.success(request, "Fulfillment recorded.")
-        return redirect("orders:fulfillment_list")
+        return redirect("orders:fulfillment_detail", pk=obj.pk)
     return render(request, "orders/fulfillment_form.html",
                   {"form": form, "page_title": "Add Fulfillment", "mode": "create"})
 
@@ -242,11 +245,15 @@ def orderamendment_list(request):
     amendment_type = request.GET.get("amendment_type", "")
     if amendment_type:
         qs = qs.filter(amendment_type=amendment_type)
+    order = request.GET.get("order", "")
+    if order:
+        qs = qs.filter(order_id=order)
     paginator, page_obj = _page(request, qs)
     return render(request, "orders/orderamendment_list.html", {
         "page_title": "Order Amendments & Cancellations", "page_obj": page_obj,
         "amendments": page_obj.object_list,
         "status_choices": OrderAmendment.STATUS_CHOICES, "type_choices": OrderAmendment.TYPE_CHOICES,
+        "orders": Order.objects.filter(tenant=request.tenant),
         "total": paginator.count,
     })
 
@@ -268,7 +275,7 @@ def orderamendment_create(request):
         obj.save()
         log_action(request, "create", instance=obj)
         messages.success(request, "Amendment logged.")
-        return redirect("orders:orderamendment_list")
+        return redirect("orders:orderamendment_detail", pk=obj.pk)
     return render(request, "orders/orderamendment_form.html",
                   {"form": form, "page_title": "Add Amendment", "mode": "create"})
 
@@ -336,7 +343,7 @@ def revenueschedule_create(request):
         obj.save()
         log_action(request, "create", instance=obj)
         messages.success(request, "Revenue schedule created.")
-        return redirect("orders:revenueschedule_list")
+        return redirect("orders:revenueschedule_detail", pk=obj.pk)
     return render(request, "orders/revenueschedule_form.html",
                   {"form": form, "page_title": "Add Revenue Schedule", "mode": "create"})
 
