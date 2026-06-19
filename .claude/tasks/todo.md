@@ -1,161 +1,52 @@
-# Build: Foundation + Module 0 (Sales Management System)
+# Build Modules 11–20 (Customer Success → System Administration)
 
-Greenfield Django 5.1 + Tailwind/HTMX multi-tenant app. Backend built solo (single DB writer);
-page templates fanned out via Workflow; closing review via the mandatory agent sequence.
-Plan: `C:\Users\user\.claude\plans\valiant-yawning-map.md`.
+Approach: parallel agent **Workflow** (≤35 agents) building each module from the
+`apps/compensation` (Module 10) reference. Single-writer migrate/seed/verify done inline.
 
-## Phase A — Bootstrap — DONE
-- [x] venv (py 3.11), pip install (Django 5.1, PyMySQL, Faker, python-dotenv, pytest, pytest-django) → requirements.txt
-- [x] Create `nav_sms` DB (utf8mb4), `.env` + `.env.example`, pytest.ini, manage.py
-- [x] config/: `__init__.py` (PyMySQL + MariaDB 10.4 shim), settings.py, settings_test.py, urls.py, wsgi/asgi
+## Modules
+- [ ] 11 `success` — Customer Success & Account Management (HealthScore, Renewal[REN-], OnboardingPlan, Advocacy, QBR)
+- [ ] 12 `analytics` — Sales Analytics & Intelligence (WinLossAnalysis, SalesVelocity, ConversionFunnel, RepScorecard, Benchmark)
+- [ ] 13 `marketing` — Marketing Alignment & Attribution (CampaignInfluence, MQLHandoff[MQL-], CampaignPerformance, ContentEngagement, MarketingEvent[EVT-])
+- [ ] 14 `partners` — Partner & Channel Management (Partner, DealRegistration[DR-], PartnerCollateral, PartnerPerformance, ChannelConflict[CC-])
+- [ ] 15 `contracts` — Contract & Subscription Management (Contract[CTR-], ContractClause, RenewalSchedule, UsageRecord, ContractObligation)
+- [ ] 16 `mobile` — Mobile Sales (MobileDevice, FieldVisit[FV-], MobileQuote[MQ-], CallActivity, MobileAlert)
+- [ ] 17 `automation` — Workflow & Process Automation (ProcessFlow, AssignmentRule, ApprovalWorkflow, AlertRule, EnrichmentRule)
+- [ ] 18 `integrations` — Integration & API Hub (Connector, SyncJob[SYNC-], SyncLog, Webhook, ApiKey)
+- [ ] 19 `masterdata` — Master Data & Configuration (ProductCatalog, CustomField, MethodologyConfig, PriceBook, LocalizationSetting)
+- [ ] 20 `administration` — System Administration & Security (SecurityPolicy, DataPrivacyRule, ComplianceItem, BackupJob[BKP-], SystemHealthMetric)
 
-## Phase B — Core — DONE
-- [x] Tenant, AuditLog models; TenantMiddleware; navigation.py (21 modules catalog + LIVE_LINKS)
-- [x] context_processors (nav/tenant/layout), utils.log_action, roadmap + audit_log views, admin
+## Phases
+- [ ] Phase 1 — Build workflow: 10 agents, one per module, write `apps/<slug>/*` + `templates/<slug>/*` only (NO shared edits, NO migrations).
+- [ ] Phase 2 — File-count check (L21): assert 15 templates + backend files per module before wiring.
+- [ ] Phase 3 — Wire-up inline (L12/L24, after files exist): settings INSTALLED_APPS, config/urls includes, navigation LIVE_LINKS (47 new keys).
+- [ ] Phase 4 — makemigrations + migrate + seed ×10 + 2nd seed (idempotency) + manage.py check. Fix errors inline.
+- [ ] Phase 5 — Inline smoke test: all new urls 200/302 as admin_acme, content + comment-leak assertions, cross-tenant IDOR 404.
+- [ ] Phase 6 — Specialist review workflow (security/perf/code/frontend per L18); apply critical fixes.
+- [ ] Phase 7 — README roadmap update + per-file PowerShell commit snippet.
 
-## Phase C — Accounts (auth + users) — DONE
-- [x] Custom User + Role + UserInvite; email-or-username backend
-- [x] login / register (tenant onboarding) / forgot+reset / invite-accept
-- [x] user + role + invite CRUD, profile, change password (all tenant-scoped, tenant-admin gated)
+## Baked-in lessons
+L7 pin every context var · L9 pagination partial · L10 guard FK display · L11 `.isdigit()` before int FK filter ·
+L12/L24 wire-up after files exist · L20 EXCLUDE secret/key from ModelForm (Webhook.secret, ApiKey.key) ·
+L21 verify file counts post-workflow · L22 no editable DateTimeField on forms (system `*_at` off form; DateInput only for user DateField) ·
+Decimal: no computed Decimal @property arithmetic — store computed values as fields.
 
-## Phase D — Dashboard — DONE
-- [x] KPI cards + revenue chart + sales gauge + recent invoices, wired to live tenant data; empty-state for no-tenant
+## Review (outcome)
 
-## Phase E — Layout & customizer — DONE
-- [x] theme.css (blue/white + dark + RTL + all layout variants), layout.js (customizer + localStorage), base.html, base_auth.html, partials
+**Status: Modules 11–20 built, wired, migrated, seeded, verified, reviewed & fixed. ✅**
 
-## Phase F — Module 0 (tenants) — DONE
-- [x] 6 models (OnboardingStep, Subscription, Invoice, EncryptionKey, BrandingSetting, HealthMetric) → 5 sub-module pages, full CRUD
-- [x] EncryptionKey stores prefix+hash only, secret excluded from form, masked in templates (L20); system `*_at` off forms (L22)
+- Build workflow: 10 agents, all returned 15 templates + 11 backend files. Disk check confirmed (L21).
+- Wire-up (single writer, after files existed — L12/L24): settings (10 apps), urls (10 includes), navigation (47 LIVE_LINKS). `manage.py check` clean.
+- Migrations: 10× `0001_initial` generated + applied to `nav_sms`. Seeders run twice → idempotent (no dup rows).
+- Smoke test (`temp/smoke_11_20.py`): 50 models × list/create/detail/edit/delete = 250 GETs → **0 status failures, 0 comment leaks, 0 IDOR leaks**; detail pages contain record identifier (L8); sidebar 5/5 live for all 10 modules; auto-numbers + secret masking (off-form, L20) verified.
+- Adversarial review workflow (10 reviewers + verifiers): 1 confirmed module-specific defect →
+  - `automation` `EnrichmentRuleForm`: removed run-history counters `records_processed`, `success_rate` (system-set).
+  - Cross-module sweep (L28) found the parallel defect missed by the per-module reviewer: `integrations` `SyncJobForm` `records_synced` → removed.
+  - App-wide patterns (badge-color reuse; editable `roi`/`net_amount`/`commission_amount`) correctly NOT fixed per-module (faithful clones of the compensation reference — L18).
+- Post-fix: `manage.py check` clean, smoke re-run ALL PASS, full `pytest` suite green.
+- README updated (0–20 complete, seeding commands, live tables, structure).
 
-## Phase G — Migrate + seed — DONE
-- [x] makemigrations (Django auto-split accounts 0001/0002 to break the core↔accounts FK cycle); migrate clean to nav_sms
-- [x] seed_demo (2 tenants, roles, admins, team, invites) + seed_tenants (Module 0 data); idempotent on 2nd run (counts stable)
-
-## Phase E/F — Page templates (Workflow fan-out) — DONE
-- [x] 9-agent Workflow `sms-templates-fanout` wrote tenants/accounts/auth page templates (mirroring the reference trio)
-- [x] Reference set hand-written: base, partials, dashboard, login, register, roadmap, audit_log, onboarding trio + overview
-- [x] 50 templates total; all compile; 0 comment leaks
-
-## Phase H — Verification + mandatory review sequence — DONE
-- [x] manage.py check 0 issues; temp/smoke.py 54 checks / 0 failures (200/302, IDOR→404, no comment leaks, content + secret-leak assertions)
-- [x] Live browser verify: dashboard (live KPIs + Chart.js), dark mode, Module 0 CRUD, customizer; mobile grid collapse confirmed via computed styles
-- [x] code-reviewer → explorer → frontend-reviewer → performance-reviewer → qa-smoke-tester → security-reviewer → test-writer (one at a time, committed after each)
-- [x] pytest 342 passed; README updated
-
-## Review
-Foundation + Module 0 delivered end-to-end: multi-tenant Django 5.1 + Tailwind/HTMX, blue/white dashboard, full
-layout customizer, auth (login/register/forgot/reset/invite), user/role/invite/profile management, and Module 0
-(Tenant & Subscription Management — 6 models / 5 sub-modules, full CRUD). MariaDB 10.4 shim (L4/L23) lets Django 5.1
-run on XAMPP. Sidebar lists all 21 modules (1–20 as roadmap placeholders).
-
-**Mandatory review sequence outcomes (applied + committed per file):**
-- code-reviewer: fixed a runtime blocker (`timezone.timedelta` → `datetime.timedelta` in invite_resend), atomic
-  registration, seed skip bug, sidebar-cache DEBUG bypass.
-- explorer: 0 contract mismatches (URLs/context/LIVE_LINKS/fields all consistent).
-- frontend-reviewer: responsive grid classes (mobile collapse), removed a dead search box, htmx icon re-init, asset version bump.
-- performance-reviewer: killed role_list N+1 (annotate), collapsed dashboard counts into 2 aggregates, added composite indexes.
-- qa-smoke-tester: 87/87 green; added explicit ordering on annotated role_list.
-- security-reviewer: one-time key reveal via session (not flash msg) [L25], hex-color validation [L26], tenant-admin
-  gating on Module-0 writes [L27], fail-closed SECRET_KEY + HSTS, demo creds gated on DEBUG. Deferred login rate-limiting
-  (django-axes) to production (documented in README).
-- test-writer: 342 pytest tests (models, forms, views/CRUD, multi-tenant IDOR→404, authz, one-time reveal) — all pass.
-
-**Verification:** `manage.py check` 0 issues · migrations clean · seeders idempotent · pytest 342/0 · smoke 54/0 · live browser confirmed.
-Commits: one file per commit, never pushed (user pushes manually).
-
----
-
-# Build Modules 1–10 (Workflow orchestration)
-
-Goal: build modules 1–10 end-to-end matching Module 0 (`apps/tenants`). Orchestrated with the
-Workflow tool (user cap: 25 agents). Each module tenant-scoped, intra-app FKs only (no cross-module
-FKs) so the 10 build agents are fully independent.
-
-| # | name | slug | models |
-|---|---|---|---|
-| 1 | Lead Management | `leads` | Lead, LeadSource, LeadScore, NurtureCampaign, LeadConversion |
-| 2 | Opportunity & Pipeline | `opportunities` | Opportunity, PipelineStage, OpportunityActivity, Competitor, DealCollaborator |
-| 3 | Contact & Account | `crm` | Account, Contact, RelationshipMap, AccountTier, AccountPlan |
-| 4 | Sales Forecasting | `forecasting` | ForecastCategory, Forecast, Quota, ForecastAdjustment, ForecastAccuracy |
-| 5 | Quote & Proposal | `quotes` | Quote, QuoteLineItem, PricingRule, Proposal, QuoteVersion |
-| 6 | Order Management | `orders` | Order, OrderLine, Fulfillment, OrderAmendment, RevenueSchedule |
-| 7 | Territory & Quota | `territories` | Territory, TerritoryAssignment, QuotaPlan, CoverageModel, TerritoryPerformance |
-| 8 | Sales Activity & Task | `activities` | Activity, SalesTask, Meeting, EmailLog, SalesPlan |
-| 9 | Sales Enablement | `enablement` | ContentAsset, Playbook, TrainingRecord, CallRecording, CompetitiveCard |
-| 10 | Incentive Compensation | `compensation` | CommissionPlan, Earning, Clawback, GlobalPlanVariation, Payout |
-
-Phases: **Build** (10 parallel agents → code + manifest, no shared-file edits, no migrations) →
-**Integrate** (1 serial agent = single DB writer: wire settings/urls/navigation, makemigrations →
-migrate → seed_demo → seed_<slug> ×2 → check, fix at source) → **Verify** (10 parallel agents:
-smoke each module's URLs as admin_acme, assert 200/302, scan comment leaks) → **Post-workflow (me):**
-review, fix remaining failures, re-verify, emit one-file-per-commit snippet, update README.
-
-Note: the per-module 7-agent review sequence is compressed under the 25-agent cap; build+integrate+
-verify covers correctness, deeper review available later via `/sqa-review`.
-
-## Checklist
-- [x] Build (10 modules)  - [x] Integrate  - [x] Verify  - [x] Fix + re-verify (none needed)  - [x] README  - [x] Commit snippet
-
-## Review (modules 1–10)
-Delivered modules 1–10 via the `build-sms-modules-1-10` Workflow (21 agents: 10 build → 1 integrate →
-10 verify), all mirroring the Module 0 (`apps/tenants`) conventions.
-
-**Build:** 50 tenant-scoped models across 10 apps (`leads`, `opportunities`, `crm`, `forecasting`,
-`quotes`, `orders`, `territories`, `activities`, `enablement`, `compensation`), each with slug-prefixed
-unique `related_name`s, intra-app FKs only (no cross-module FKs), named indexes, per-tenant auto-numbers
-(LEAD-/OPP-/QUO-/ORD-/EARN-/PAY-… via `save()` with existence guards), system timestamps kept off forms,
-full CRUD function-based views (`@login_required` reads, `@tenant_admin_required` writes, `log_action`
-audit), `StyledFormMixin` ModelForms with tenant-scoped FK querysets, admin registration, and the
-list/detail/form template trio per model (design-system classes, GET filters reflecting `request.GET`,
-Actions column, pagination, empty-state). 274 files.
-
-**Integrate (single DB writer):** wired all 10 apps into `INSTALLED_APPS`, `config/urls.py`, and 50
-`LIVE_LINKS` entries in `apps/core/navigation.py`; `makemigrations` → 10 `0001_initial` → `migrate`
-clean to `nav_sms`; `seed_demo` + all 10 `seed_<slug>` ran and were **idempotent** on the 2nd pass
-(byte-identical counts). Zero source fixes were required.
-
-**Verification (independent gate, `temp/verify_all_1_10.py`):**
-- Sidebar: modules 1–10 each **5/5 sub-modules Live** (every `LIVE_LINKS` key matches `MODULE_CATALOG`
-  and every url_name reverses).
-- URL sweep as `admin_acme`: **250/250** URLs 200/302 (list/create/detail/edit + GET-delete→302 no-mutation).
-- **50/50** list pages: no `{# / {% comment` leaks.
-- **10/10** cross-tenant IDOR checks → 404 (tenant isolation holds).
-- `manage.py check`: 0 issues.
-
-**Known follow-up (out of scope under the 25-agent cap):** FK-bearing list views (e.g. `lead_list`,
-`opportunity_list`) don't yet `select_related()` their FKs — a minor N+1 polish, not a correctness bug.
-The full per-module 7-agent review sequence (code/explorer/frontend/perf/qa/security/test) was compressed
-into build+integrate+verify; deeper review can run later per module via `/sqa-review <module>`.
-
-Commits: one file per commit (274 files), PowerShell-safe, never pushed (user commits manually).
-
-## Mandatory review sequence (steps 2–8, modules 1–10) — DONE
-Ran via the `review-sms-modules-1-10` Workflow (50 agents): 30 reviewers (code/explorer/frontend/perf/qa/
-security × 5 module-pairs) → aggregate findings per module → 10 apply agents (fixes in mandated order,
-each owns only its module) → 10 test-writers (mirror `apps/tenants/tests`). Then I verified + committed
-each file individually (user asked for step-by-step commits this round).
-
-**Applied fixes (55 source files + 8 new `0002` migrations):**
-- Real bugs: `crm`/`territories` `fiscal_year` default frozen at server-start → callable `_current_year`;
-  `forecasting` `ForecastAdjustment.save()` destroying `approved_at` on un-approve → stopped; auto-number
-  TOCTOU races → `select_for_update()` + `transaction.atomic()` (opportunities/orders/territories/activities/
-  compensation).
-- Perf (closes the earlier N+1 follow-up): composite `(tenant, …)` indexes across modules; `quotes`/`orders`
-  `prefetch_related` + cached counts; `opportunities` `.only()` dropdowns; removed unused `select_related`.
-- Frontend: badges → exact choice values + `{% else %}{{ obj.get_*_display }}` fallback; `type=search`.
-- Security: `@require_POST` on opportunities deletes; defence-in-depth `tenant=` on reverse-FK detail
-  querysets. Reviewers correctly **skipped** unsafe suggestions (shared `theme.css`, breaking the by-design
-  no-tenant convention, inconsistent button-gating vs the `apps/tenants` baseline).
-- Decimal-coercion latent `TypeError`s flagged by test-writers (weighted_amount, attainment_pct, variance,
-  computed_total, attainment) → fixed at the root (cast to `Decimal`), logic-only, no migration.
-
-**Tests:** 60 new files (`apps/<slug>/tests/` × 10) — models, forms, views/CRUD, multi-tenant IDOR→404,
-list isolation, CSRF/permission. ~2228 module tests, all green.
-
-**Verification (mine, independent):** `makemigrations --check` in sync; 8 migrations applied to `nav_sms`;
-`manage.py check` clean; URL sweep **250/250** (IDOR 404s intact, no regressions); full `pytest` **exit 0**
-(~2570 incl. foundation).
-
-**Commits:** one file per commit, **120 commits** (116 apply+test files + 4 Decimal fixes), PowerShell-safe,
-never pushed.
+### Outstanding
+- **test-writer step (CLAUDE.md sequence step 8) NOT done** — the test-writer workflow failed on a session limit, and
+  re-running it (10 agents) would exceed the user's 35-agent cap. Follow-up: write `apps/<slug>/tests/` for all 10
+  modules mirroring `apps/compensation/tests/` (models/forms/views/security + multi-tenant IDOR) once budget/limits allow.
+- Commit: user commits manually (one file per commit) from the provided PowerShell snippet.
