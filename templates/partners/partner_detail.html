@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+{% block title %}{{ obj.name }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'partners:partner_list' %}">Partner & Channel</a><i data-lucide="chevron-right" style="width:14px"></i>
+  <a href="{% url 'partners:partner_list' %}">Partners</a><i data-lucide="chevron-right" style="width:14px"></i><span>{{ obj.name }}</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ obj.name }}</h1>
+    <p class="page-subtitle">{{ obj.get_partner_type_display }} · {{ obj.get_tier_display }} tier</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'partners:partner_list' %}" class="btn btn-outline"><i data-lucide="arrow-left"></i> Back</a>
+    <a href="{% url 'partners:partner_edit' obj.pk %}" class="btn btn-primary"><i data-lucide="pencil"></i> Edit</a>
+  </div>
+</div>
+
+<div class="detail-grid">
+  <div>
+    <div class="card"><div class="card-body">
+      <h3 style="font-size:15px;margin-bottom:12px">Details</h3>
+      <div class="form-grid">
+        <div class="form-group"><div class="form-label">Partner name</div>
+          <div class="fw-600">{{ obj.name }}</div></div>
+        <div class="form-group"><div class="form-label">Type</div>
+          <div>{{ obj.get_partner_type_display }}</div></div>
+        <div class="form-group"><div class="form-label">Tier</div>
+          {% if obj.tier == 'platinum' %}<span class="badge badge-info">Platinum</span>
+          {% elif obj.tier == 'gold' %}<span class="badge badge-warning">Gold</span>
+          {% elif obj.tier == 'silver' %}<span class="badge badge-muted">Silver</span>
+          {% elif obj.tier == 'registered' %}<span class="badge badge-muted">Registered</span>
+          {% else %}<span class="badge badge-muted">{{ obj.get_tier_display }}</span>{% endif %}
+        </div>
+        <div class="form-group"><div class="form-label">Status</div>
+          {% if obj.status == 'active' %}<span class="badge badge-success">Active</span>
+          {% elif obj.status == 'onboarding' %}<span class="badge badge-info">Onboarding</span>
+          {% elif obj.status == 'prospect' %}<span class="badge badge-warning">Prospect</span>
+          {% elif obj.status == 'suspended' %}<span class="badge badge-danger">Suspended</span>
+          {% elif obj.status == 'churned' %}<span class="badge badge-muted">Churned</span>
+          {% else %}<span class="badge badge-muted">{{ obj.get_status_display }}</span>{% endif %}
+        </div>
+        <div class="form-group"><div class="form-label">Region</div>
+          <div>{{ obj.region|default:"—" }}</div></div>
+        <div class="form-group"><div class="form-label">Contact name</div>
+          <div>{{ obj.contact_name|default:"—" }}</div></div>
+        <div class="form-group"><div class="form-label">Contact email</div>
+          <div>{{ obj.contact_email|default:"—" }}</div></div>
+        <div class="form-group"><div class="form-label">Onboarded on</div>
+          <div>{% if obj.onboarded_on %}{{ obj.onboarded_on|date:"d M Y" }}{% else %}—{% endif %}</div></div>
+      </div>
+      {% if obj.notes %}<div class="form-group"><div class="form-label">Notes</div>
+        <div>{{ obj.notes|linebreaksbr }}</div></div>{% endif %}
+    </div></div>
+
+    <div class="card" style="margin-top:18px"><div class="card-header"><h3 class="card-title">Deal registrations</h3></div>
+      <div class="table-wrap">
+        <table class="table">
+          <thead><tr><th>Number</th><th>Deal</th><th>Status</th><th style="text-align:end">Amount</th></tr></thead>
+          <tbody>
+            {% for d in deals %}
+              <tr>
+                <td><a href="{% url 'partners:dealregistration_detail' d.pk %}" class="fw-600">{{ d.number }}</a></td>
+                <td class="list-meta">{{ d.deal_name }}</td>
+                <td>
+                  {% if d.status == 'won' %}<span class="badge badge-success">Won</span>
+                  {% elif d.status == 'approved' %}<span class="badge badge-info">Approved</span>
+                  {% elif d.status == 'submitted' %}<span class="badge badge-warning">Submitted</span>
+                  {% elif d.status == 'rejected' %}<span class="badge badge-danger">Rejected</span>
+                  {% elif d.status == 'expired' %}<span class="badge badge-muted">Expired</span>
+                  {% else %}<span class="badge badge-muted">{{ d.get_status_display }}</span>{% endif %}
+                </td>
+                <td style="text-align:end">${{ d.amount|floatformat:2 }}</td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="4"><div class="empty-state"><div class="empty-icon"><i data-lucide="file-check"></i></div><h3>No deals</h3><p>Deals registered by this partner will appear here.</p></div></td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:18px"><div class="card-header"><h3 class="card-title">Performance</h3></div>
+      <div class="table-wrap">
+        <table class="table">
+          <thead><tr><th>Period</th><th>Deals</th><th>Attainment</th><th style="text-align:end">Revenue</th></tr></thead>
+          <tbody>
+            {% for p in performances %}
+              <tr>
+                <td><a href="{% url 'partners:partnerperformance_detail' p.pk %}" class="fw-600">{{ p.period_label }}</a></td>
+                <td class="list-meta">{{ p.deals_closed }}</td>
+                <td>{{ p.attainment|floatformat:2 }}%</td>
+                <td style="text-align:end">${{ p.revenue|floatformat:2 }}</td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="4"><div class="empty-state"><div class="empty-icon"><i data-lucide="trending-up"></i></div><h3>No performance records</h3><p>Tracked metrics for this partner will appear here.</p></div></td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="card"><div class="card-body">
+    <h3 style="font-size:15px;margin-bottom:12px">Actions</h3>
+    <a href="{% url 'partners:partner_edit' obj.pk %}" class="btn btn-outline btn-block" style="margin-bottom:10px"><i data-lucide="pencil"></i> Edit partner</a>
+    <form method="post" action="{% url 'partners:partner_delete' obj.pk %}" onsubmit="return confirm('Delete this partner?')">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger btn-block"><i data-lucide="trash-2"></i> Delete partner</button>
+    </form>
+    <hr class="divider">
+    <div class="list-meta">Created {{ obj.created_at|date:"d M Y" }}</div>
+  </div></div>
+</div>
+{% endblock %}
