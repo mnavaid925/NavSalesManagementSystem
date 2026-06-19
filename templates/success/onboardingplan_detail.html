@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}{{ obj.plan_name }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'success:healthscore_list' %}">Customer Success</a><i data-lucide="chevron-right" style="width:14px"></i>
+  <a href="{% url 'success:onboardingplan_list' %}">Onboarding</a><i data-lucide="chevron-right" style="width:14px"></i><span>{{ obj.plan_name }}</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ obj.plan_name }}</h1>
+    <p class="page-subtitle">{{ obj.account_name }} · {{ obj.progress_pct }}% complete</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'success:onboardingplan_list' %}" class="btn btn-outline"><i data-lucide="arrow-left"></i> Back</a>
+    <a href="{% url 'success:onboardingplan_edit' obj.pk %}" class="btn btn-primary"><i data-lucide="pencil"></i> Edit</a>
+  </div>
+</div>
+
+<div class="detail-grid">
+  <div>
+    <div class="card"><div class="card-body">
+      <h3 style="font-size:15px;margin-bottom:12px">Details</h3>
+      <div class="form-grid">
+        <div class="form-group"><div class="form-label">Plan name</div>
+          <div class="fw-600">{{ obj.plan_name }}</div></div>
+        <div class="form-group"><div class="form-label">Account</div>
+          <div>{{ obj.account_name }}</div></div>
+        <div class="form-group"><div class="form-label">Owner</div>
+          <div>{{ obj.owner|default:"—" }}</div></div>
+        <div class="form-group"><div class="form-label">Status</div>
+          {% if obj.status == 'completed' %}<span class="badge badge-success">Completed</span>
+          {% elif obj.status == 'in_progress' %}<span class="badge badge-info">In progress</span>
+          {% elif obj.status == 'not_started' %}<span class="badge badge-muted">Not started</span>
+          {% elif obj.status == 'blocked' %}<span class="badge badge-danger">Blocked</span>
+          {% else %}<span class="badge badge-muted">{{ obj.get_status_display }}</span>{% endif %}
+        </div>
+        <div class="form-group"><div class="form-label">Progress</div>
+          <div class="fw-600">{{ obj.progress_pct }}%</div></div>
+        <div class="form-group"><div class="form-label">Start date</div>
+          <div>{% if obj.start_date %}{{ obj.start_date|date:"d M Y" }}{% else %}—{% endif %}</div></div>
+        <div class="form-group"><div class="form-label">Target go-live</div>
+          <div>{% if obj.target_go_live %}{{ obj.target_go_live|date:"d M Y" }}{% else %}—{% endif %}</div></div>
+      </div>
+      {% if obj.notes %}<div class="form-group"><div class="form-label">Notes</div>
+        <div>{{ obj.notes|linebreaksbr }}</div></div>{% endif %}
+    </div></div>
+  </div>
+
+  <div class="card"><div class="card-body">
+    <h3 style="font-size:15px;margin-bottom:12px">Actions</h3>
+    <a href="{% url 'success:onboardingplan_edit' obj.pk %}" class="btn btn-outline btn-block" style="margin-bottom:10px"><i data-lucide="pencil"></i> Edit plan</a>
+    <form method="post" action="{% url 'success:onboardingplan_delete' obj.pk %}" onsubmit="return confirm('Delete this onboarding plan?')">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger btn-block"><i data-lucide="trash-2"></i> Delete plan</button>
+    </form>
+    <hr class="divider">
+    <div class="list-meta">Created {{ obj.created_at|date:"d M Y" }}</div>
+  </div></div>
+</div>
+{% endblock %}
