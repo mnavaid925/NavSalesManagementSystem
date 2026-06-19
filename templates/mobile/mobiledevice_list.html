@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}Mobile CRM Access{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'mobile:mobiledevice_list' %}">Mobile Sales</a><i data-lucide="chevron-right" style="width:14px"></i><span>Devices</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Mobile CRM Access</h1>
+    <p class="page-subtitle">{{ total }} device{{ total|pluralize }} on record</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'mobile:mobiledevice_create' %}" class="btn btn-primary"><i data-lucide="plus"></i> Add Device</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <form method="get" style="display:flex;gap:10px;flex-wrap:wrap;width:100%;align-items:center">
+      <input type="search" name="q" value="{{ request.GET.q }}" placeholder="Search devices…" class="form-input" style="max-width:240px">
+      <span class="list-meta" style="margin-inline-end:auto"></span>
+      <select name="platform" class="form-select" style="max-width:180px" onchange="this.form.submit()">
+        <option value="">All platforms</option>
+        {% for value, label in platform_choices %}
+          <option value="{{ value }}" {% if request.GET.platform == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <select name="status" class="form-select" style="max-width:180px" onchange="this.form.submit()">
+        <option value="">All statuses</option>
+        {% for value, label in status_choices %}
+          <option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <button class="btn btn-outline" type="submit"><i data-lucide="filter"></i> Filter</button>
+    </form>
+  </div>
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr><th>Device</th><th>User</th><th>Platform</th><th>Status</th><th>Push</th><th style="text-align:end">Actions</th></tr></thead>
+      <tbody>
+        {% for device in mobiledevices %}
+          <tr>
+            <td>
+              <a href="{% url 'mobile:mobiledevice_detail' device.pk %}" class="fw-600">{{ device.device_name }}</a>
+              {% if device.app_version %}<div class="list-meta">v{{ device.app_version }}</div>{% endif %}
+            </td>
+            <td>{{ device.user_name }}</td>
+            <td>
+              {% if device.platform == 'ios' %}<span class="badge badge-info">iOS</span>
+              {% elif device.platform == 'android' %}<span class="badge badge-info">Android</span>
+              {% elif device.platform == 'web' %}<span class="badge badge-muted">Web</span>
+              {% else %}<span class="badge badge-muted">{{ device.get_platform_display }}</span>{% endif %}
+            </td>
+            <td>
+              {% if device.status == 'active' %}<span class="badge badge-success">Active</span>
+              {% elif device.status == 'inactive' %}<span class="badge badge-muted">Inactive</span>
+              {% elif device.status == 'lost' %}<span class="badge badge-warning">Lost</span>
+              {% elif device.status == 'wiped' %}<span class="badge badge-danger">Wiped</span>
+              {% else %}<span class="badge badge-muted">{{ device.get_status_display }}</span>{% endif %}
+            </td>
+            <td class="list-meta">{% if device.push_enabled %}Enabled{% else %}Off{% endif %}</td>
+            <td>
+              <div class="table-actions">
+                <a href="{% url 'mobile:mobiledevice_detail' device.pk %}" class="btn-icon" title="View"><i data-lucide="eye"></i></a>
+                <a href="{% url 'mobile:mobiledevice_edit' device.pk %}" class="btn-icon" title="Edit"><i data-lucide="pencil"></i></a>
+                <form method="post" action="{% url 'mobile:mobiledevice_delete' device.pk %}" onsubmit="return confirm('Delete this device?')">
+                  {% csrf_token %}
+                  <button type="submit" class="btn-icon danger" title="Delete"><i data-lucide="trash-2"></i></button>
+                </form>
+              </div>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="6"><div class="empty-state"><div class="empty-icon"><i data-lucide="smartphone"></i></div><h3>No devices</h3><p>Register your first mobile device to grant CRM access.</p><a href="{% url 'mobile:mobiledevice_create' %}" class="btn btn-primary" style="margin-top:14px"><i data-lucide="plus"></i> Add Device</a></div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div style="padding:0 16px 12px">{% include "partials/pagination.html" %}</div>
+</div>
+{% endblock %}
