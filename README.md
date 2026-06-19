@@ -4,7 +4,7 @@ A multi-tenant **Sales Management System** built with **Django 5.1** (backend) a
 **Tailwind CSS + HTMX** (frontend). Clean, fully responsive blue/white dashboard with a
 full layout customizer (dark mode, RTL, sidebar variants, boxed/fluid, and more).
 
-This repository currently ships the **foundation + Modules 0–10**:
+This repository currently ships the **foundation + Modules 0–20 (all complete)**:
 
 - Multi-tenant core (isolated workspaces, tenant middleware, audit log)
 - Authentication — login, self-service registration (tenant onboarding), forgot/reset password, invitation acceptance
@@ -13,12 +13,15 @@ This repository currently ships the **foundation + Modules 0–10**:
 - **Module 0 — Tenant & Subscription Management** (5 sub-modules, full CRUD)
 - **Modules 1–10** — Leads, Opportunities & Pipeline, Contacts & Accounts (CRM), Forecasting, Quotes &
   Proposals, Orders, Territories & Quotas, Sales Activities & Tasks, Sales Enablement, and Incentive
-  Compensation — each 5 sub-modules, ~5 tenant-scoped models, full CRUD (list/search/filter/paginate +
+  Compensation
+- **Modules 11–20** — Customer Success, Sales Analytics & Intelligence, Marketing Alignment &
+  Attribution, Partner & Channel Management, Contract & Subscription Management, Mobile Sales, Workflow &
+  Process Automation, Integration & API Hub, Master Data & Configuration, and System Administration & Security
+- Every module: 5 sub-modules, ~5 tenant-scoped models, full CRUD (list/search/filter/paginate +
   detail + create + edit + delete) and an idempotent seeder
 - Migrations, idempotent seeders (fake data via Faker), and the `.env`-driven MySQL config
 
-Modules 11–20 from [`SalesManagementSystem.md`](SalesManagementSystem.md) appear in the sidebar as
-**roadmap placeholders** and are delivered one at a time.
+All 21 modules (0–20) from [`SalesManagementSystem.md`](SalesManagementSystem.md) resolve as **Live** in the sidebar.
 
 ---
 
@@ -74,6 +77,17 @@ venv\Scripts\python.exe manage.py seed_territories
 venv\Scripts\python.exe manage.py seed_activities
 venv\Scripts\python.exe manage.py seed_enablement
 venv\Scripts\python.exe manage.py seed_compensation
+# Modules 11-20 (each idempotent; run after seed_demo):
+venv\Scripts\python.exe manage.py seed_success
+venv\Scripts\python.exe manage.py seed_analytics
+venv\Scripts\python.exe manage.py seed_marketing
+venv\Scripts\python.exe manage.py seed_partners
+venv\Scripts\python.exe manage.py seed_contracts
+venv\Scripts\python.exe manage.py seed_mobile
+venv\Scripts\python.exe manage.py seed_automation
+venv\Scripts\python.exe manage.py seed_integrations
+venv\Scripts\python.exe manage.py seed_masterdata
+venv\Scripts\python.exe manage.py seed_administration
 
 # 6. Run
 venv\Scripts\python.exe manage.py runserver
@@ -120,16 +134,16 @@ Open <http://127.0.0.1:8000/> → you'll be redirected to the login page.
 | 8 | Sales Activity & Task Management | ✅ **Complete** |
 | 9 | Sales Enablement | ✅ **Complete** |
 | 10 | Incentive Compensation Management | ✅ **Complete** |
-| 11 | Customer Success & Account Management | 🔜 Roadmap |
-| 12 | Sales Analytics & Intelligence | 🔜 Roadmap |
-| 13 | Marketing Alignment & Attribution | 🔜 Roadmap |
-| 14 | Partner & Channel Management | 🔜 Roadmap |
-| 15 | Contract & Subscription Management | 🔜 Roadmap |
-| 16 | Mobile Sales | 🔜 Roadmap |
-| 17 | Workflow & Process Automation | 🔜 Roadmap |
-| 18 | Integration & API Hub | 🔜 Roadmap |
-| 19 | Master Data & Configuration | 🔜 Roadmap |
-| 20 | System Administration & Security | 🔜 Roadmap |
+| 11 | Customer Success & Account Management | ✅ **Complete** |
+| 12 | Sales Analytics & Intelligence | ✅ **Complete** |
+| 13 | Marketing Alignment & Attribution | ✅ **Complete** |
+| 14 | Partner & Channel Management | ✅ **Complete** |
+| 15 | Contract & Subscription Management | ✅ **Complete** |
+| 16 | Mobile Sales | ✅ **Complete** |
+| 17 | Workflow & Process Automation | ✅ **Complete** |
+| 18 | Integration & API Hub | ✅ **Complete** |
+| 19 | Master Data & Configuration | ✅ **Complete** |
+| 20 | System Administration & Security | ✅ **Complete** |
 
 ### Module 0 sub-modules (live)
 
@@ -159,6 +173,21 @@ idempotent `seed_<slug>` command. All 5 sub-modules of every module resolve as *
 | 9 | Sales Enablement | `apps/enablement` — `/enablement/` |
 | 10 | Incentive Compensation Management | `apps/compensation` — `/compensation/` |
 
+### Modules 11–20 (live)
+
+| # | Module | App / base URL |
+|---|--------|----------------|
+| 11 | Customer Success & Account Management | `apps/success` — `/success/` |
+| 12 | Sales Analytics & Intelligence | `apps/analytics` — `/analytics/` |
+| 13 | Marketing Alignment & Attribution | `apps/marketing` — `/marketing/` |
+| 14 | Partner & Channel Management | `apps/partners` — `/partners/` |
+| 15 | Contract & Subscription Management | `apps/contracts` — `/contracts/` |
+| 16 | Mobile Sales | `apps/mobile` — `/mobile/` |
+| 17 | Workflow & Process Automation | `apps/automation` — `/automation/` |
+| 18 | Integration & API Hub | `apps/integrations` — `/integrations/` |
+| 19 | Master Data & Configuration | `apps/masterdata` — `/masterdata/` |
+| 20 | System Administration & Security | `apps/administration` — `/administration/` |
+
 ---
 
 ## Project structure
@@ -171,6 +200,8 @@ apps/dashboard/ the overview dashboard
 apps/tenants/  Module 0 — Tenant & Subscription Management
 apps/leads/ opportunities/ crm/ forecasting/ quotes/ orders/
 apps/territories/ activities/ enablement/ compensation/   Modules 1-10
+apps/success/ analytics/ marketing/ partners/ contracts/  Modules 11-15
+apps/mobile/ automation/ integrations/ masterdata/ administration/  Modules 16-20
 templates/     base + auth layouts, partials, per-module pages
 static/        css/theme.css, js/layout.js
 ```
