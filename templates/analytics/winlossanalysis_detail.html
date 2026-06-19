@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}{{ obj.deal_name }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'analytics:winlossanalysis_list' %}">Sales Analytics</a><i data-lucide="chevron-right" style="width:14px"></i>
+  <a href="{% url 'analytics:winlossanalysis_list' %}">Win/Loss Analysis</a><i data-lucide="chevron-right" style="width:14px"></i><span>{{ obj.deal_name }}</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ obj.deal_name }}</h1>
+    <p class="page-subtitle">{{ obj.rep_name }} · ${{ obj.amount|floatformat:2 }}</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'analytics:winlossanalysis_list' %}" class="btn btn-outline"><i data-lucide="arrow-left"></i> Back</a>
+    <a href="{% url 'analytics:winlossanalysis_edit' obj.pk %}" class="btn btn-primary"><i data-lucide="pencil"></i> Edit</a>
+  </div>
+</div>
+
+<div class="detail-grid">
+  <div>
+    <div class="card"><div class="card-body">
+      <h3 style="font-size:15px;margin-bottom:12px">Details</h3>
+      <div class="form-grid">
+        <div class="form-group"><div class="form-label">Deal</div>
+          <div class="fw-600">{{ obj.deal_name }}</div></div>
+        <div class="form-group"><div class="form-label">Rep</div>
+          <div>{{ obj.rep_name }}</div></div>
+        <div class="form-group"><div class="form-label">Outcome</div>
+          {% if obj.outcome == 'won' %}<span class="badge badge-success">Won</span>
+          {% elif obj.outcome == 'lost' %}<span class="badge badge-danger">Lost</span>
+          {% elif obj.outcome == 'no_decision' %}<span class="badge badge-muted">No decision</span>
+          {% else %}<span class="badge badge-muted">{{ obj.get_outcome_display }}</span>{% endif %}
+        </div>
+        <div class="form-group"><div class="form-label">Reason category</div>
+          <div>{{ obj.get_reason_category_display }}</div></div>
+        <div class="form-group"><div class="form-label">Amount</div>
+          <div class="fw-600">${{ obj.amount|floatformat:2 }}</div></div>
+        <div class="form-group"><div class="form-label">Competitor</div>
+          <div>{{ obj.competitor|default:"—" }}</div></div>
+        <div class="form-group"><div class="form-label">Closed on</div>
+          <div>{% if obj.closed_on %}{{ obj.closed_on|date:"d M Y" }}{% else %}—{% endif %}</div></div>
+      </div>
+      {% if obj.notes %}<div class="form-group"><div class="form-label">Notes</div>
+        <div>{{ obj.notes|linebreaksbr }}</div></div>{% endif %}
+    </div></div>
+  </div>
+
+  <div class="card"><div class="card-body">
+    <h3 style="font-size:15px;margin-bottom:12px">Actions</h3>
+    <a href="{% url 'analytics:winlossanalysis_edit' obj.pk %}" class="btn btn-outline btn-block" style="margin-bottom:10px"><i data-lucide="pencil"></i> Edit record</a>
+    <form method="post" action="{% url 'analytics:winlossanalysis_delete' obj.pk %}" onsubmit="return confirm('Delete this win/loss record?')">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger btn-block"><i data-lucide="trash-2"></i> Delete record</button>
+    </form>
+    <hr class="divider">
+    <div class="list-meta">Created {{ obj.created_at|date:"d M Y" }}</div>
+  </div></div>
+</div>
+{% endblock %}
