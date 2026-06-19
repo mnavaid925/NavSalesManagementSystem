@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}{{ obj.title }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'contracts:contract_list' %}">Contracts</a><i data-lucide="chevron-right" style="width:14px"></i>
+  <a href="{% url 'contracts:contractclause_list' %}">Clauses</a><i data-lucide="chevron-right" style="width:14px"></i><span>{{ obj.title }}</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ obj.title }}</h1>
+    <p class="page-subtitle">{{ obj.get_clause_type_display }}</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'contracts:contractclause_list' %}" class="btn btn-outline"><i data-lucide="arrow-left"></i> Back</a>
+    <a href="{% url 'contracts:contractclause_edit' obj.pk %}" class="btn btn-primary"><i data-lucide="pencil"></i> Edit</a>
+  </div>
+</div>
+
+<div class="detail-grid">
+  <div>
+    <div class="card"><div class="card-body">
+      <h3 style="font-size:15px;margin-bottom:12px">Details</h3>
+      <div class="form-grid">
+        <div class="form-group"><div class="form-label">Title</div>
+          <div class="fw-600">{{ obj.title }}</div></div>
+        <div class="form-group"><div class="form-label">Contract</div>
+          <div>{% if obj.contract %}<a href="{% url 'contracts:contract_detail' obj.contract.pk %}">{{ obj.contract.number }} — {{ obj.contract.title }}</a>{% else %}—{% endif %}</div></div>
+        <div class="form-group"><div class="form-label">Type</div>
+          <div>{{ obj.get_clause_type_display }}</div></div>
+        <div class="form-group"><div class="form-label">Status</div>
+          {% if obj.status == 'approved' %}<span class="badge badge-success">Approved</span>
+          {% elif obj.status == 'standard' %}<span class="badge badge-info">Standard</span>
+          {% elif obj.status == 'redlined' %}<span class="badge badge-warning">Redlined</span>
+          {% elif obj.status == 'rejected' %}<span class="badge badge-danger">Rejected</span>
+          {% else %}<span class="badge badge-muted">{{ obj.get_status_display }}</span>{% endif %}
+        </div>
+        <div class="form-group"><div class="form-label">Risk level</div>
+          {% if obj.risk_level == 'low' %}<span class="badge badge-success">Low</span>
+          {% elif obj.risk_level == 'medium' %}<span class="badge badge-warning">Medium</span>
+          {% elif obj.risk_level == 'high' %}<span class="badge badge-danger">High</span>
+          {% else %}<span class="badge badge-muted">{{ obj.get_risk_level_display }}</span>{% endif %}
+        </div>
+      </div>
+      {% if obj.body %}<div class="form-group"><div class="form-label">Body</div>
+        <div>{{ obj.body|linebreaksbr }}</div></div>{% endif %}
+      {% if obj.notes %}<div class="form-group"><div class="form-label">Notes</div>
+        <div>{{ obj.notes|linebreaksbr }}</div></div>{% endif %}
+    </div></div>
+  </div>
+
+  <div class="card"><div class="card-body">
+    <h3 style="font-size:15px;margin-bottom:12px">Actions</h3>
+    <a href="{% url 'contracts:contractclause_edit' obj.pk %}" class="btn btn-outline btn-block" style="margin-bottom:10px"><i data-lucide="pencil"></i> Edit clause</a>
+    <form method="post" action="{% url 'contracts:contractclause_delete' obj.pk %}" onsubmit="return confirm('Delete this clause?')">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger btn-block"><i data-lucide="trash-2"></i> Delete clause</button>
+    </form>
+    <hr class="divider">
+    <div class="list-meta">Created {{ obj.created_at|date:"d M Y" }}</div>
+  </div></div>
+</div>
+{% endblock %}
