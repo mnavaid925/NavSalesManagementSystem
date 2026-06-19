@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}System Health &amp; Performance{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'administration:securitypolicy_list' %}">System Administration</a><i data-lucide="chevron-right" style="width:14px"></i><span>System Health</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">System Health &amp; Performance</h1>
+    <p class="page-subtitle">{{ total }} metric{{ total|pluralize }} on record</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'administration:systemhealthmetric_create' %}" class="btn btn-primary"><i data-lucide="plus"></i> Add Metric</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <form method="get" style="display:flex;gap:10px;flex-wrap:wrap;width:100%;align-items:center">
+      <input type="search" name="q" value="{{ request.GET.q }}" placeholder="Search metrics…" class="form-input" style="max-width:240px">
+      <span class="list-meta" style="margin-inline-end:auto"></span>
+      <select name="category" class="form-select" style="max-width:180px" onchange="this.form.submit()">
+        <option value="">All categories</option>
+        {% for value, label in category_choices %}
+          <option value="{{ value }}" {% if request.GET.category == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <select name="status" class="form-select" style="max-width:180px" onchange="this.form.submit()">
+        <option value="">All statuses</option>
+        {% for value, label in status_choices %}
+          <option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <button class="btn btn-outline" type="submit"><i data-lucide="filter"></i> Filter</button>
+    </form>
+  </div>
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr><th>Metric</th><th>Category</th><th>Status</th><th>Recorded on</th><th style="text-align:end">Value</th><th style="text-align:end">Threshold</th><th style="text-align:end">Actions</th></tr></thead>
+      <tbody>
+        {% for metric in systemhealthmetrics %}
+          <tr>
+            <td><a href="{% url 'administration:systemhealthmetric_detail' metric.pk %}" class="fw-600">{{ metric.metric_name }}</a></td>
+            <td class="list-meta">{{ metric.get_category_display }}</td>
+            <td>
+              {% if metric.status == 'healthy' %}<span class="badge badge-success">Healthy</span>
+              {% elif metric.status == 'warning' %}<span class="badge badge-warning">Warning</span>
+              {% elif metric.status == 'critical' %}<span class="badge badge-danger">Critical</span>
+              {% elif metric.status == 'unknown' %}<span class="badge badge-muted">Unknown</span>
+              {% else %}<span class="badge badge-muted">{{ metric.get_status_display }}</span>{% endif %}
+            </td>
+            <td class="list-meta">{% if metric.recorded_on %}{{ metric.recorded_on|date:"d M Y" }}{% else %}—{% endif %}</td>
+            <td style="text-align:end" class="fw-600">{{ metric.value|floatformat:2 }} {{ metric.get_unit_display }}</td>
+            <td style="text-align:end" class="list-meta">{{ metric.threshold|floatformat:2 }}</td>
+            <td>
+              <div class="table-actions">
+                <a href="{% url 'administration:systemhealthmetric_detail' metric.pk %}" class="btn-icon" title="View"><i data-lucide="eye"></i></a>
+                <a href="{% url 'administration:systemhealthmetric_edit' metric.pk %}" class="btn-icon" title="Edit"><i data-lucide="pencil"></i></a>
+                <form method="post" action="{% url 'administration:systemhealthmetric_delete' metric.pk %}" onsubmit="return confirm('Delete this health metric?')">
+                  {% csrf_token %}
+                  <button type="submit" class="btn-icon danger" title="Delete"><i data-lucide="trash-2"></i></button>
+                </form>
+              </div>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="7"><div class="empty-state"><div class="empty-icon"><i data-lucide="activity"></i></div><h3>No health metrics</h3><p>Record your first metric to monitor system performance.</p><a href="{% url 'administration:systemhealthmetric_create' %}" class="btn btn-primary" style="margin-top:14px"><i data-lucide="plus"></i> Add Metric</a></div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div style="padding:0 16px 12px">{% include "partials/pagination.html" %}</div>
+</div>
+{% endblock %}
