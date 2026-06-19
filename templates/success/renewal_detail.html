@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}{{ obj.number }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'success:healthscore_list' %}">Customer Success</a><i data-lucide="chevron-right" style="width:14px"></i>
+  <a href="{% url 'success:renewal_list' %}">Renewals</a><i data-lucide="chevron-right" style="width:14px"></i><span>{{ obj.number }}</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ obj.number }}</h1>
+    <p class="page-subtitle">{{ obj.account_name }} · ${{ obj.arr_proposed|floatformat:2 }} proposed ARR</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'success:renewal_list' %}" class="btn btn-outline"><i data-lucide="arrow-left"></i> Back</a>
+    <a href="{% url 'success:renewal_edit' obj.pk %}" class="btn btn-primary"><i data-lucide="pencil"></i> Edit</a>
+  </div>
+</div>
+
+<div class="detail-grid">
+  <div>
+    <div class="card"><div class="card-body">
+      <h3 style="font-size:15px;margin-bottom:12px">Details</h3>
+      <div class="form-grid">
+        <div class="form-group"><div class="form-label">Number</div>
+          <div class="fw-600">{{ obj.number }}</div></div>
+        <div class="form-group"><div class="form-label">Account</div>
+          <div>{{ obj.account_name }}</div></div>
+        <div class="form-group"><div class="form-label">Owner</div>
+          <div>{{ obj.owner|default:"—" }}</div></div>
+        <div class="form-group"><div class="form-label">Type</div>
+          {% if obj.renewal_type == 'renewal' %}<span class="badge badge-info">Renewal</span>
+          {% elif obj.renewal_type == 'upsell' %}<span class="badge badge-success">Upsell</span>
+          {% elif obj.renewal_type == 'cross_sell' %}<span class="badge badge-success">Cross-sell</span>
+          {% elif obj.renewal_type == 'expansion' %}<span class="badge badge-success">Expansion</span>
+          {% else %}<span class="badge badge-muted">{{ obj.get_renewal_type_display }}</span>{% endif %}
+        </div>
+        <div class="form-group"><div class="form-label">Status</div>
+          {% if obj.status == 'won' %}<span class="badge badge-success">Won</span>
+          {% elif obj.status == 'committed' %}<span class="badge badge-info">Committed</span>
+          {% elif obj.status == 'open' %}<span class="badge badge-warning">Open</span>
+          {% elif obj.status == 'at_risk' %}<span class="badge badge-warning">At risk</span>
+          {% elif obj.status == 'lost' %}<span class="badge badge-danger">Lost</span>
+          {% else %}<span class="badge badge-muted">{{ obj.get_status_display }}</span>{% endif %}
+        </div>
+        <div class="form-group"><div class="form-label">Current ARR</div>
+          <div>${{ obj.arr_current|floatformat:2 }}</div></div>
+        <div class="form-group"><div class="form-label">Proposed ARR</div>
+          <div class="fw-600">${{ obj.arr_proposed|floatformat:2 }}</div></div>
+        <div class="form-group"><div class="form-label">Probability</div>
+          <div>{{ obj.probability }}%</div></div>
+        <div class="form-group"><div class="form-label">Renewal date</div>
+          <div>{% if obj.renewal_date %}{{ obj.renewal_date|date:"d M Y" }}{% else %}—{% endif %}</div></div>
+      </div>
+      {% if obj.notes %}<div class="form-group"><div class="form-label">Notes</div>
+        <div>{{ obj.notes|linebreaksbr }}</div></div>{% endif %}
+    </div></div>
+  </div>
+
+  <div class="card"><div class="card-body">
+    <h3 style="font-size:15px;margin-bottom:12px">Actions</h3>
+    <a href="{% url 'success:renewal_edit' obj.pk %}" class="btn btn-outline btn-block" style="margin-bottom:10px"><i data-lucide="pencil"></i> Edit renewal</a>
+    <form method="post" action="{% url 'success:renewal_delete' obj.pk %}" onsubmit="return confirm('Delete this renewal?')">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger btn-block"><i data-lucide="trash-2"></i> Delete renewal</button>
+    </form>
+    <hr class="divider">
+    <div class="list-meta">Created {{ obj.created_at|date:"d M Y" }}</div>
+  </div></div>
+</div>
+{% endblock %}
