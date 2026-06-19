@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block title %}Deal Registration & Protection{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'partners:partner_list' %}">Partner & Channel</a><i data-lucide="chevron-right" style="width:14px"></i><span>Deal Registrations</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Deal Registration & Protection</h1>
+    <p class="page-subtitle">{{ total }} deal{{ total|pluralize }} on record</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'partners:dealregistration_create' %}" class="btn btn-primary"><i data-lucide="plus"></i> Add Deal</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <form method="get" style="display:flex;gap:10px;flex-wrap:wrap;width:100%;align-items:center">
+      <input type="search" name="q" value="{{ request.GET.q }}" placeholder="Search deals…" class="form-input" style="max-width:240px">
+      <span class="list-meta" style="margin-inline-end:auto"></span>
+      <select name="partner" class="form-select" style="max-width:200px" onchange="this.form.submit()">
+        <option value="">All partners</option>
+        {% for p in partners %}
+          <option value="{{ p.pk }}" {% if request.GET.partner == p.pk|stringformat:"d" %}selected{% endif %}>{{ p.name }}</option>
+        {% endfor %}
+      </select>
+      <select name="status" class="form-select" style="max-width:180px" onchange="this.form.submit()">
+        <option value="">All statuses</option>
+        {% for value, label in status_choices %}
+          <option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <button class="btn btn-outline" type="submit"><i data-lucide="filter"></i> Filter</button>
+    </form>
+  </div>
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr><th>Number</th><th>Deal</th><th>Partner</th><th>Status</th><th>Registered</th><th style="text-align:end">Amount</th><th style="text-align:end">Actions</th></tr></thead>
+      <tbody>
+        {% for deal in dealregistrations %}
+          <tr>
+            <td>
+              <a href="{% url 'partners:dealregistration_detail' deal.pk %}" class="fw-600">{{ deal.number }}</a>
+              {% if deal.customer_name %}<div class="list-meta">{{ deal.customer_name }}</div>{% endif %}
+            </td>
+            <td>{{ deal.deal_name }}</td>
+            <td class="list-meta">{% if deal.partner %}{{ deal.partner.name }}{% else %}—{% endif %}</td>
+            <td>
+              {% if deal.status == 'won' %}<span class="badge badge-success">Won</span>
+              {% elif deal.status == 'approved' %}<span class="badge badge-info">Approved</span>
+              {% elif deal.status == 'submitted' %}<span class="badge badge-warning">Submitted</span>
+              {% elif deal.status == 'rejected' %}<span class="badge badge-danger">Rejected</span>
+              {% elif deal.status == 'expired' %}<span class="badge badge-muted">Expired</span>
+              {% else %}<span class="badge badge-muted">{{ deal.get_status_display }}</span>{% endif %}
+            </td>
+            <td class="list-meta">{% if deal.registered_on %}{{ deal.registered_on|date:"d M Y" }}{% else %}—{% endif %}</td>
+            <td style="text-align:end" class="fw-600">${{ deal.amount|floatformat:2 }}</td>
+            <td>
+              <div class="table-actions">
+                <a href="{% url 'partners:dealregistration_detail' deal.pk %}" class="btn-icon" title="View"><i data-lucide="eye"></i></a>
+                <a href="{% url 'partners:dealregistration_edit' deal.pk %}" class="btn-icon" title="Edit"><i data-lucide="pencil"></i></a>
+                <form method="post" action="{% url 'partners:dealregistration_delete' deal.pk %}" onsubmit="return confirm('Delete this deal registration?')">
+                  {% csrf_token %}
+                  <button type="submit" class="btn-icon danger" title="Delete"><i data-lucide="trash-2"></i></button>
+                </form>
+              </div>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="7"><div class="empty-state"><div class="empty-icon"><i data-lucide="file-check"></i></div><h3>No deal registrations</h3><p>Register your first partner deal to protect it.</p><a href="{% url 'partners:dealregistration_create' %}" class="btn btn-primary" style="margin-top:14px"><i data-lucide="plus"></i> Add Deal</a></div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div style="padding:0 16px 12px">{% include "partials/pagination.html" %}</div>
+</div>
+{% endblock %}
