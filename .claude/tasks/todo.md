@@ -45,8 +45,18 @@ Decimal: no computed Decimal @property arithmetic — store computed values as f
 - Post-fix: `manage.py check` clean, smoke re-run ALL PASS, full `pytest` suite green.
 - README updated (0–20 complete, seeding commands, live tables, structure).
 
+### Per-module mandatory sequence (CLAUDE.md steps 2–8)
+
+**Module 11 `success` — COMPLETE ✅** (run one agent at a time, commits between):
+- code-reviewer: no module-specific changes (findings were faithful-clone app-wide patterns — L18).
+- explorer: wiring complete (INSTALLED_APPS, urls, 5 LIVE_LINKS, namespace, seeder); only gap was missing tests (step 8).
+- frontend-reviewer: no changes (one flagged `<th>` misalignment was a false positive — already correct; aria-label gap is clone-wide).
+- performance-reviewer: **1 fix applied** — added `adv_tenant_acct_idx (tenant, account_name)` to `Advocacy` (only model whose default-ordering column lacked a composite index) + migration `0002`.
+- qa-smoke-tester: 94 checks / ~70 requests, 0 failures — 200/302, no comment leaks, IDOR 404, delete POST-only, REN- numbering OK.
+- security-reviewer: 0 Critical/High; all 3 Medium/Low findings are faithful-clone patterns (delete-on-GET no-op, Renewal.save() — note the suggested save() "fix" was a regression that releases the lock before INSERT; not applied).
+- test-writer: **`apps/success/tests/` created** (conftest + models/forms/views/security) — **257 passed**. Full project suite: 2827 collected, all green; `manage.py check` clean.
+
 ### Outstanding
-- **test-writer step (CLAUDE.md sequence step 8) NOT done** — the test-writer workflow failed on a session limit, and
-  re-running it (10 agents) would exceed the user's 35-agent cap. Follow-up: write `apps/<slug>/tests/` for all 10
-  modules mirroring `apps/compensation/tests/` (models/forms/views/security + multi-tenant IDOR) once budget/limits allow.
-- Commit: user commits manually (one file per commit) from the provided PowerShell snippet.
+- **test-writer step for Modules 12–20** still pending — write `apps/<slug>/tests/` for the remaining 9 modules
+  mirroring `apps/compensation/tests/` (models/forms/views/security + multi-tenant IDOR), one module at a time.
+- Commit: user commits manually (one file per commit) — Module 11's commits are already made locally; user pushes.
