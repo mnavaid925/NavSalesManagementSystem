@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}{{ obj.account_name }} — {{ obj.period_label }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'success:healthscore_list' %}">Customer Success</a><i data-lucide="chevron-right" style="width:14px"></i>
+  <a href="{% url 'success:qbr_list' %}">QBRs</a><i data-lucide="chevron-right" style="width:14px"></i><span>{{ obj.account_name }}</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ obj.account_name }}</h1>
+    <p class="page-subtitle">{{ obj.period_label }} · {{ obj.get_status_display }}</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'success:qbr_list' %}" class="btn btn-outline"><i data-lucide="arrow-left"></i> Back</a>
+    <a href="{% url 'success:qbr_edit' obj.pk %}" class="btn btn-primary"><i data-lucide="pencil"></i> Edit</a>
+  </div>
+</div>
+
+<div class="detail-grid">
+  <div>
+    <div class="card"><div class="card-body">
+      <h3 style="font-size:15px;margin-bottom:12px">Details</h3>
+      <div class="form-grid">
+        <div class="form-group"><div class="form-label">Account</div>
+          <div class="fw-600">{{ obj.account_name }}</div></div>
+        <div class="form-group"><div class="form-label">Period</div>
+          <div>{{ obj.period_label }}</div></div>
+        <div class="form-group"><div class="form-label">Owner</div>
+          <div>{{ obj.owner|default:"—" }}</div></div>
+        <div class="form-group"><div class="form-label">Status</div>
+          {% if obj.status == 'completed' %}<span class="badge badge-success">Completed</span>
+          {% elif obj.status == 'scheduled' %}<span class="badge badge-info">Scheduled</span>
+          {% elif obj.status == 'canceled' %}<span class="badge badge-muted">Canceled</span>
+          {% else %}<span class="badge badge-muted">{{ obj.get_status_display }}</span>{% endif %}
+        </div>
+        <div class="form-group"><div class="form-label">Sentiment</div>
+          {% if obj.sentiment == 'positive' %}<span class="badge badge-success">Positive</span>
+          {% elif obj.sentiment == 'neutral' %}<span class="badge badge-muted">Neutral</span>
+          {% elif obj.sentiment == 'negative' %}<span class="badge badge-danger">Negative</span>
+          {% else %}<span class="badge badge-muted">{{ obj.get_sentiment_display }}</span>{% endif %}
+        </div>
+        <div class="form-group"><div class="form-label">Scheduled on</div>
+          <div>{% if obj.scheduled_on %}{{ obj.scheduled_on|date:"d M Y" }}{% else %}—{% endif %}</div></div>
+      </div>
+      {% if obj.health_summary %}<div class="form-group"><div class="form-label">Health summary</div>
+        <div>{{ obj.health_summary|linebreaksbr }}</div></div>{% endif %}
+      {% if obj.notes %}<div class="form-group"><div class="form-label">Notes</div>
+        <div>{{ obj.notes|linebreaksbr }}</div></div>{% endif %}
+    </div></div>
+  </div>
+
+  <div class="card"><div class="card-body">
+    <h3 style="font-size:15px;margin-bottom:12px">Actions</h3>
+    <a href="{% url 'success:qbr_edit' obj.pk %}" class="btn btn-outline btn-block" style="margin-bottom:10px"><i data-lucide="pencil"></i> Edit QBR</a>
+    <form method="post" action="{% url 'success:qbr_delete' obj.pk %}" onsubmit="return confirm('Delete this QBR?')">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger btn-block"><i data-lucide="trash-2"></i> Delete QBR</button>
+    </form>
+    <hr class="divider">
+    <div class="list-meta">Created {{ obj.created_at|date:"d M Y" }}</div>
+  </div></div>
+</div>
+{% endblock %}
