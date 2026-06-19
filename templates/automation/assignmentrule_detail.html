@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}{{ obj.name }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'automation:processflow_list' %}">Workflow &amp; Automation</a><i data-lucide="chevron-right" style="width:14px"></i>
+  <a href="{% url 'automation:assignmentrule_list' %}">Assignment Rules</a><i data-lucide="chevron-right" style="width:14px"></i><span>{{ obj.name }}</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ obj.name }}</h1>
+    <p class="page-subtitle">{{ obj.get_entity_display }} · {{ obj.get_assign_strategy_display }}</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'automation:assignmentrule_list' %}" class="btn btn-outline"><i data-lucide="arrow-left"></i> Back</a>
+    <a href="{% url 'automation:assignmentrule_edit' obj.pk %}" class="btn btn-primary"><i data-lucide="pencil"></i> Edit</a>
+  </div>
+</div>
+
+<div class="detail-grid">
+  <div>
+    <div class="card"><div class="card-body">
+      <h3 style="font-size:15px;margin-bottom:12px">Details</h3>
+      <div class="form-grid">
+        <div class="form-group"><div class="form-label">Name</div>
+          <div class="fw-600">{{ obj.name }}</div></div>
+        <div class="form-group"><div class="form-label">Entity</div>
+          <div>{{ obj.get_entity_display }}</div></div>
+        <div class="form-group"><div class="form-label">Strategy</div>
+          <div>{{ obj.get_assign_strategy_display }}</div></div>
+        <div class="form-group"><div class="form-label">Status</div>
+          {% if obj.status == 'active' %}<span class="badge badge-success">Active</span>
+          {% elif obj.status == 'inactive' %}<span class="badge badge-muted">Inactive</span>
+          {% elif obj.status == 'draft' %}<span class="badge badge-warning">Draft</span>
+          {% else %}<span class="badge badge-muted">{{ obj.get_status_display }}</span>{% endif %}
+        </div>
+        <div class="form-group"><div class="form-label">Priority</div>
+          <div>{{ obj.priority }}</div></div>
+      </div>
+      {% if obj.criteria %}<div class="form-group"><div class="form-label">Criteria</div>
+        <div>{{ obj.criteria|linebreaksbr }}</div></div>{% endif %}
+      {% if obj.assignee_pool %}<div class="form-group"><div class="form-label">Assignee pool</div>
+        <div>{{ obj.assignee_pool|linebreaksbr }}</div></div>{% endif %}
+      {% if obj.notes %}<div class="form-group"><div class="form-label">Notes</div>
+        <div>{{ obj.notes|linebreaksbr }}</div></div>{% endif %}
+    </div></div>
+  </div>
+
+  <div class="card"><div class="card-body">
+    <h3 style="font-size:15px;margin-bottom:12px">Actions</h3>
+    <a href="{% url 'automation:assignmentrule_edit' obj.pk %}" class="btn btn-outline btn-block" style="margin-bottom:10px"><i data-lucide="pencil"></i> Edit assignment rule</a>
+    <form method="post" action="{% url 'automation:assignmentrule_delete' obj.pk %}" onsubmit="return confirm('Delete this assignment rule?')">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger btn-block"><i data-lucide="trash-2"></i> Delete assignment rule</button>
+    </form>
+    <hr class="divider">
+    <div class="list-meta">Created {{ obj.created_at|date:"d M Y" }}</div>
+  </div></div>
+</div>
+{% endblock %}
