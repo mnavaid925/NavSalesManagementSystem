@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}{{ obj }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'integrations:connector_list' %}">Integration &amp; API Hub</a><i data-lucide="chevron-right" style="width:14px"></i>
+  <a href="{% url 'integrations:synclog_list' %}">Logs</a><i data-lucide="chevron-right" style="width:14px"></i><span>{{ obj.get_level_display }} log #{{ obj.pk }}</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ obj.get_level_display }} log #{{ obj.pk }}</h1>
+    <p class="page-subtitle">{% if obj.occurred_at %}{{ obj.occurred_at|date:"d M Y H:i" }}{% else %}—{% endif %} · {{ obj.records_affected }} record{{ obj.records_affected|pluralize }} affected</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'integrations:synclog_list' %}" class="btn btn-outline"><i data-lucide="arrow-left"></i> Back</a>
+    <a href="{% url 'integrations:synclog_edit' obj.pk %}" class="btn btn-primary"><i data-lucide="pencil"></i> Edit</a>
+  </div>
+</div>
+
+<div class="detail-grid">
+  <div>
+    <div class="card"><div class="card-body">
+      <h3 style="font-size:15px;margin-bottom:12px">Details</h3>
+      <div class="form-grid">
+        <div class="form-group"><div class="form-label">Level</div>
+          {% if obj.level == 'success' %}<span class="badge badge-success">Success</span>
+          {% elif obj.level == 'info' %}<span class="badge badge-info">Info</span>
+          {% elif obj.level == 'warning' %}<span class="badge badge-warning">Warning</span>
+          {% elif obj.level == 'error' %}<span class="badge badge-danger">Error</span>
+          {% else %}<span class="badge badge-muted">{{ obj.get_level_display }}</span>{% endif %}
+        </div>
+        <div class="form-group"><div class="form-label">Sync job</div>
+          <div>{% if obj.job %}<a href="{% url 'integrations:syncjob_detail' obj.job.pk %}">{{ obj.job.number }}</a>{% else %}—{% endif %}</div></div>
+        <div class="form-group"><div class="form-label">Records affected</div>
+          <div class="fw-600">{{ obj.records_affected }}</div></div>
+        <div class="form-group"><div class="form-label">Duration (ms)</div>
+          <div>{{ obj.duration_ms }}</div></div>
+        <div class="form-group"><div class="form-label">Occurred at</div>
+          <div>{% if obj.occurred_at %}{{ obj.occurred_at|date:"d M Y H:i" }}{% else %}—{% endif %}</div></div>
+      </div>
+      {% if obj.message %}<div class="form-group"><div class="form-label">Message</div>
+        <div>{{ obj.message|linebreaksbr }}</div></div>{% endif %}
+    </div></div>
+  </div>
+
+  <div class="card"><div class="card-body">
+    <h3 style="font-size:15px;margin-bottom:12px">Actions</h3>
+    <a href="{% url 'integrations:synclog_edit' obj.pk %}" class="btn btn-outline btn-block" style="margin-bottom:10px"><i data-lucide="pencil"></i> Edit log entry</a>
+    <form method="post" action="{% url 'integrations:synclog_delete' obj.pk %}" onsubmit="return confirm('Delete this log entry?')">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger btn-block"><i data-lucide="trash-2"></i> Delete log entry</button>
+    </form>
+    <hr class="divider">
+    <div class="list-meta">Created {{ obj.created_at|date:"d M Y" }}</div>
+  </div></div>
+</div>
+{% endblock %}
