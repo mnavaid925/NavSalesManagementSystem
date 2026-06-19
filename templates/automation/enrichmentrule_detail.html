@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}{{ obj.name }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'automation:processflow_list' %}">Workflow &amp; Automation</a><i data-lucide="chevron-right" style="width:14px"></i>
+  <a href="{% url 'automation:enrichmentrule_list' %}">Enrichment Rules</a><i data-lucide="chevron-right" style="width:14px"></i><span>{{ obj.name }}</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ obj.name }}</h1>
+    <p class="page-subtitle">{{ obj.get_data_source_display }} · {{ obj.get_operation_display }}</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'automation:enrichmentrule_list' %}" class="btn btn-outline"><i data-lucide="arrow-left"></i> Back</a>
+    <a href="{% url 'automation:enrichmentrule_edit' obj.pk %}" class="btn btn-primary"><i data-lucide="pencil"></i> Edit</a>
+  </div>
+</div>
+
+<div class="detail-grid">
+  <div>
+    <div class="card"><div class="card-body">
+      <h3 style="font-size:15px;margin-bottom:12px">Details</h3>
+      <div class="form-grid">
+        <div class="form-group"><div class="form-label">Name</div>
+          <div class="fw-600">{{ obj.name }}</div></div>
+        <div class="form-group"><div class="form-label">Data source</div>
+          <div>{{ obj.get_data_source_display }}</div></div>
+        <div class="form-group"><div class="form-label">Operation</div>
+          <div>{{ obj.get_operation_display }}</div></div>
+        <div class="form-group"><div class="form-label">Status</div>
+          {% if obj.status == 'active' %}<span class="badge badge-success">Active</span>
+          {% elif obj.status == 'inactive' %}<span class="badge badge-muted">Inactive</span>
+          {% elif obj.status == 'draft' %}<span class="badge badge-warning">Draft</span>
+          {% else %}<span class="badge badge-muted">{{ obj.get_status_display }}</span>{% endif %}
+        </div>
+        <div class="form-group"><div class="form-label">Target field</div>
+          <div>{{ obj.target_field|default:"—" }}</div></div>
+        <div class="form-group"><div class="form-label">Records processed</div>
+          <div>{{ obj.records_processed }}</div></div>
+        <div class="form-group"><div class="form-label">Success rate</div>
+          <div class="fw-600">{{ obj.success_rate|floatformat:2 }}%</div></div>
+        <div class="form-group"><div class="form-label">Last run</div>
+          <div>{% if obj.last_run %}{{ obj.last_run|date:"d M Y H:i" }}{% else %}—{% endif %}</div></div>
+      </div>
+      {% if obj.notes %}<div class="form-group"><div class="form-label">Notes</div>
+        <div>{{ obj.notes|linebreaksbr }}</div></div>{% endif %}
+    </div></div>
+  </div>
+
+  <div class="card"><div class="card-body">
+    <h3 style="font-size:15px;margin-bottom:12px">Actions</h3>
+    <a href="{% url 'automation:enrichmentrule_edit' obj.pk %}" class="btn btn-outline btn-block" style="margin-bottom:10px"><i data-lucide="pencil"></i> Edit enrichment rule</a>
+    <form method="post" action="{% url 'automation:enrichmentrule_delete' obj.pk %}" onsubmit="return confirm('Delete this enrichment rule?')">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger btn-block"><i data-lucide="trash-2"></i> Delete enrichment rule</button>
+    </form>
+    <hr class="divider">
+    <div class="list-meta">Created {{ obj.created_at|date:"d M Y" }}</div>
+  </div></div>
+</div>
+{% endblock %}
