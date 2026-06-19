@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}{{ obj.name }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'masterdata:productcatalog_list' %}">Master Data</a><i data-lucide="chevron-right" style="width:14px"></i>
+  <a href="{% url 'masterdata:customfield_list' %}">Custom Fields</a><i data-lucide="chevron-right" style="width:14px"></i><span>{{ obj.name }}</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ obj.name }}</h1>
+    <p class="page-subtitle">{{ obj.get_object_type_display }} · {{ obj.get_field_type_display }}</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'masterdata:customfield_list' %}" class="btn btn-outline"><i data-lucide="arrow-left"></i> Back</a>
+    <a href="{% url 'masterdata:customfield_edit' obj.pk %}" class="btn btn-primary"><i data-lucide="pencil"></i> Edit</a>
+  </div>
+</div>
+
+<div class="detail-grid">
+  <div>
+    <div class="card"><div class="card-body">
+      <h3 style="font-size:15px;margin-bottom:12px">Details</h3>
+      <div class="form-grid">
+        <div class="form-group"><div class="form-label">Field name</div>
+          <div class="fw-600">{{ obj.name }}</div></div>
+        <div class="form-group"><div class="form-label">Field key</div>
+          <div>{{ obj.field_key|default:"—" }}</div></div>
+        <div class="form-group"><div class="form-label">Object type</div>
+          <div>{{ obj.get_object_type_display }}</div></div>
+        <div class="form-group"><div class="form-label">Field type</div>
+          <div>{{ obj.get_field_type_display }}</div></div>
+        <div class="form-group"><div class="form-label">Status</div>
+          {% if obj.status == 'active' %}<span class="badge badge-success">Active</span>
+          {% elif obj.status == 'inactive' %}<span class="badge badge-muted">Inactive</span>
+          {% elif obj.status == 'draft' %}<span class="badge badge-muted">Draft</span>
+          {% else %}<span class="badge badge-muted">{{ obj.get_status_display }}</span>{% endif %}
+        </div>
+        <div class="form-group"><div class="form-label">Required</div>
+          <div>{% if obj.required %}<span class="badge badge-warning">Required</span>{% else %}<span class="badge badge-muted">Optional</span>{% endif %}</div></div>
+        <div class="form-group"><div class="form-label">Default value</div>
+          <div>{{ obj.default_value|default:"—" }}</div></div>
+        <div class="form-group"><div class="form-label">Help text</div>
+          <div>{{ obj.help_text|default:"—" }}</div></div>
+      </div>
+      {% if obj.notes %}<div class="form-group"><div class="form-label">Notes</div>
+        <div>{{ obj.notes|linebreaksbr }}</div></div>{% endif %}
+    </div></div>
+  </div>
+
+  <div class="card"><div class="card-body">
+    <h3 style="font-size:15px;margin-bottom:12px">Actions</h3>
+    <a href="{% url 'masterdata:customfield_edit' obj.pk %}" class="btn btn-outline btn-block" style="margin-bottom:10px"><i data-lucide="pencil"></i> Edit field</a>
+    <form method="post" action="{% url 'masterdata:customfield_delete' obj.pk %}" onsubmit="return confirm('Delete this custom field?')">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger btn-block"><i data-lucide="trash-2"></i> Delete field</button>
+    </form>
+    <hr class="divider">
+    <div class="list-meta">Created {{ obj.created_at|date:"d M Y" }}</div>
+  </div></div>
+</div>
+{% endblock %}
