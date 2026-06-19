@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}{{ obj.number }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'partners:partner_list' %}">Partner & Channel</a><i data-lucide="chevron-right" style="width:14px"></i>
+  <a href="{% url 'partners:channelconflict_list' %}">Conflicts</a><i data-lucide="chevron-right" style="width:14px"></i><span>{{ obj.number }}</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ obj.number }}</h1>
+    <p class="page-subtitle">{{ obj.get_conflict_type_display }} · {{ obj.get_severity_display }} severity</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'partners:channelconflict_list' %}" class="btn btn-outline"><i data-lucide="arrow-left"></i> Back</a>
+    <a href="{% url 'partners:channelconflict_edit' obj.pk %}" class="btn btn-primary"><i data-lucide="pencil"></i> Edit</a>
+  </div>
+</div>
+
+<div class="detail-grid">
+  <div>
+    <div class="card"><div class="card-body">
+      <h3 style="font-size:15px;margin-bottom:12px">Details</h3>
+      <div class="form-grid">
+        <div class="form-group"><div class="form-label">Number</div>
+          <div class="fw-600">{{ obj.number }}</div></div>
+        <div class="form-group"><div class="form-label">Type</div>
+          <div>{{ obj.get_conflict_type_display }}</div></div>
+        <div class="form-group"><div class="form-label">Severity</div>
+          {% if obj.severity == 'critical' %}<span class="badge badge-danger">Critical</span>
+          {% elif obj.severity == 'high' %}<span class="badge badge-warning">High</span>
+          {% elif obj.severity == 'medium' %}<span class="badge badge-info">Medium</span>
+          {% elif obj.severity == 'low' %}<span class="badge badge-muted">Low</span>
+          {% else %}<span class="badge badge-muted">{{ obj.get_severity_display }}</span>{% endif %}
+        </div>
+        <div class="form-group"><div class="form-label">Status</div>
+          {% if obj.status == 'resolved' %}<span class="badge badge-success">Resolved</span>
+          {% elif obj.status == 'closed' %}<span class="badge badge-muted">Closed</span>
+          {% elif obj.status == 'investigating' %}<span class="badge badge-info">Investigating</span>
+          {% elif obj.status == 'open' %}<span class="badge badge-warning">Open</span>
+          {% elif obj.status == 'escalated' %}<span class="badge badge-danger">Escalated</span>
+          {% else %}<span class="badge badge-muted">{{ obj.get_status_display }}</span>{% endif %}
+        </div>
+        <div class="form-group"><div class="form-label">Partner</div>
+          <div>{% if obj.partner %}<a href="{% url 'partners:partner_detail' obj.partner.pk %}">{{ obj.partner.name }}</a>{% else %}—{% endif %}</div></div>
+        <div class="form-group"><div class="form-label">Account</div>
+          <div>{{ obj.account_name|default:"—" }}</div></div>
+        <div class="form-group"><div class="form-label">Reported on</div>
+          <div>{% if obj.reported_on %}{{ obj.reported_on|date:"d M Y" }}{% else %}—{% endif %}</div></div>
+      </div>
+      {% if obj.resolution %}<div class="form-group"><div class="form-label">Resolution</div>
+        <div>{{ obj.resolution|linebreaksbr }}</div></div>{% endif %}
+      {% if obj.notes %}<div class="form-group"><div class="form-label">Notes</div>
+        <div>{{ obj.notes|linebreaksbr }}</div></div>{% endif %}
+    </div></div>
+  </div>
+
+  <div class="card"><div class="card-body">
+    <h3 style="font-size:15px;margin-bottom:12px">Actions</h3>
+    <a href="{% url 'partners:channelconflict_edit' obj.pk %}" class="btn btn-outline btn-block" style="margin-bottom:10px"><i data-lucide="pencil"></i> Edit conflict</a>
+    <form method="post" action="{% url 'partners:channelconflict_delete' obj.pk %}" onsubmit="return confirm('Delete this conflict?')">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger btn-block"><i data-lucide="trash-2"></i> Delete conflict</button>
+    </form>
+    <hr class="divider">
+    <div class="list-meta">Created {{ obj.created_at|date:"d M Y" }}</div>
+  </div></div>
+</div>
+{% endblock %}
