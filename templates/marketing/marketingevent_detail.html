@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}{{ obj.number }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'marketing:campaigninfluence_list' %}">Marketing Alignment</a><i data-lucide="chevron-right" style="width:14px"></i>
+  <a href="{% url 'marketing:marketingevent_list' %}">Events</a><i data-lucide="chevron-right" style="width:14px"></i><span>{{ obj.number }}</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ obj.number }}</h1>
+    <p class="page-subtitle">{{ obj.name }} · {{ obj.get_event_type_display }}</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'marketing:marketingevent_list' %}" class="btn btn-outline"><i data-lucide="arrow-left"></i> Back</a>
+    <a href="{% url 'marketing:marketingevent_edit' obj.pk %}" class="btn btn-primary"><i data-lucide="pencil"></i> Edit</a>
+  </div>
+</div>
+
+<div class="detail-grid">
+  <div>
+    <div class="card"><div class="card-body">
+      <h3 style="font-size:15px;margin-bottom:12px">Details</h3>
+      <div class="form-grid">
+        <div class="form-group"><div class="form-label">Number</div>
+          <div class="fw-600">{{ obj.number }}</div></div>
+        <div class="form-group"><div class="form-label">Name</div>
+          <div>{{ obj.name }}</div></div>
+        <div class="form-group"><div class="form-label">Type</div>
+          <div>{{ obj.get_event_type_display }}</div></div>
+        <div class="form-group"><div class="form-label">Status</div>
+          {% if obj.status == 'live' %}<span class="badge badge-success">Live</span>
+          {% elif obj.status == 'registration_open' %}<span class="badge badge-info">Registration open</span>
+          {% elif obj.status == 'planned' %}<span class="badge badge-warning">Planned</span>
+          {% elif obj.status == 'completed' %}<span class="badge badge-muted">Completed</span>
+          {% elif obj.status == 'canceled' %}<span class="badge badge-danger">Canceled</span>
+          {% else %}<span class="badge badge-muted">{{ obj.get_status_display }}</span>{% endif %}
+        </div>
+        <div class="form-group"><div class="form-label">Event date</div>
+          <div>{% if obj.event_date %}{{ obj.event_date|date:"d M Y" }}{% else %}—{% endif %}</div></div>
+        <div class="form-group"><div class="form-label">Location</div>
+          <div>{{ obj.location|default:"—" }}</div></div>
+        <div class="form-group"><div class="form-label">Registrations</div>
+          <div>{{ obj.registrations }}</div></div>
+        <div class="form-group"><div class="form-label">Attendees</div>
+          <div>{{ obj.attendees }}</div></div>
+        <div class="form-group"><div class="form-label">Leads captured</div>
+          <div class="fw-600">{{ obj.leads_captured }}</div></div>
+      </div>
+      {% if obj.notes %}<div class="form-group"><div class="form-label">Notes</div>
+        <div>{{ obj.notes|linebreaksbr }}</div></div>{% endif %}
+    </div></div>
+  </div>
+
+  <div class="card"><div class="card-body">
+    <h3 style="font-size:15px;margin-bottom:12px">Actions</h3>
+    <a href="{% url 'marketing:marketingevent_edit' obj.pk %}" class="btn btn-outline btn-block" style="margin-bottom:10px"><i data-lucide="pencil"></i> Edit event</a>
+    <form method="post" action="{% url 'marketing:marketingevent_delete' obj.pk %}" onsubmit="return confirm('Delete this event?')">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger btn-block"><i data-lucide="trash-2"></i> Delete event</button>
+    </form>
+    <hr class="divider">
+    <div class="list-meta">Created {{ obj.created_at|date:"d M Y" }}</div>
+  </div></div>
+</div>
+{% endblock %}
