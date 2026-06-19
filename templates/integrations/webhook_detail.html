@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}{{ obj.name }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'integrations:connector_list' %}">Integration &amp; API Hub</a><i data-lucide="chevron-right" style="width:14px"></i>
+  <a href="{% url 'integrations:webhook_list' %}">Webhooks</a><i data-lucide="chevron-right" style="width:14px"></i><span>{{ obj.name }}</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ obj.name }}</h1>
+    <p class="page-subtitle">{{ obj.get_event_type_display }} · {{ obj.get_http_method_display }}</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'integrations:webhook_list' %}" class="btn btn-outline"><i data-lucide="arrow-left"></i> Back</a>
+    <a href="{% url 'integrations:webhook_edit' obj.pk %}" class="btn btn-primary"><i data-lucide="pencil"></i> Edit</a>
+  </div>
+</div>
+
+<div class="detail-grid">
+  <div>
+    <div class="card"><div class="card-body">
+      <h3 style="font-size:15px;margin-bottom:12px">Details</h3>
+      <div class="form-grid">
+        <div class="form-group"><div class="form-label">Name</div>
+          <div class="fw-600">{{ obj.name }}</div></div>
+        <div class="form-group"><div class="form-label">Target URL</div>
+          <div>{{ obj.target_url|default:"—" }}</div></div>
+        <div class="form-group"><div class="form-label">Event</div>
+          <div>{{ obj.get_event_type_display }}</div></div>
+        <div class="form-group"><div class="form-label">HTTP method</div>
+          <div>{{ obj.get_http_method_display }}</div></div>
+        <div class="form-group"><div class="form-label">Status</div>
+          {% if obj.status == 'active' %}<span class="badge badge-success">Active</span>
+          {% elif obj.status == 'inactive' %}<span class="badge badge-muted">Inactive</span>
+          {% elif obj.status == 'failed' %}<span class="badge badge-danger">Failed</span>
+          {% else %}<span class="badge badge-muted">{{ obj.get_status_display }}</span>{% endif %}
+        </div>
+        {% comment %} Secret is masked — never reveal the raw signing secret in the UI. {% endcomment %}
+        <div class="form-group"><div class="form-label">Signing secret</div>
+          <div>{{ obj.masked|default:"—" }}</div></div>
+        <div class="form-group"><div class="form-label">Failure count</div>
+          <div class="fw-600">{{ obj.failure_count }}</div></div>
+        <div class="form-group"><div class="form-label">Last triggered</div>
+          <div>{% if obj.last_triggered %}{{ obj.last_triggered|date:"d M Y H:i" }}{% else %}—{% endif %}</div></div>
+      </div>
+      {% if obj.notes %}<div class="form-group"><div class="form-label">Notes</div>
+        <div>{{ obj.notes|linebreaksbr }}</div></div>{% endif %}
+    </div></div>
+  </div>
+
+  <div class="card"><div class="card-body">
+    <h3 style="font-size:15px;margin-bottom:12px">Actions</h3>
+    <a href="{% url 'integrations:webhook_edit' obj.pk %}" class="btn btn-outline btn-block" style="margin-bottom:10px"><i data-lucide="pencil"></i> Edit webhook</a>
+    <form method="post" action="{% url 'integrations:webhook_delete' obj.pk %}" onsubmit="return confirm('Delete this webhook?')">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger btn-block"><i data-lucide="trash-2"></i> Delete webhook</button>
+    </form>
+    <hr class="divider">
+    <div class="list-meta">Created {{ obj.created_at|date:"d M Y" }}</div>
+  </div></div>
+</div>
+{% endblock %}
