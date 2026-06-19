@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}{{ obj.stage_name }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'analytics:winlossanalysis_list' %}">Sales Analytics</a><i data-lucide="chevron-right" style="width:14px"></i>
+  <a href="{% url 'analytics:conversionfunnel_list' %}">Conversion Funnel</a><i data-lucide="chevron-right" style="width:14px"></i><span>{{ obj.stage_name }}</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ obj.stage_name }}</h1>
+    <p class="page-subtitle">{{ obj.period_label }} · {{ obj.conversion_rate|floatformat:2 }}% conversion</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'analytics:conversionfunnel_list' %}" class="btn btn-outline"><i data-lucide="arrow-left"></i> Back</a>
+    <a href="{% url 'analytics:conversionfunnel_edit' obj.pk %}" class="btn btn-primary"><i data-lucide="pencil"></i> Edit</a>
+  </div>
+</div>
+
+<div class="detail-grid">
+  <div>
+    <div class="card"><div class="card-body">
+      <h3 style="font-size:15px;margin-bottom:12px">Details</h3>
+      <div class="form-grid">
+        <div class="form-group"><div class="form-label">Stage</div>
+          <div class="fw-600">{{ obj.stage_name }}</div></div>
+        <div class="form-group"><div class="form-label">Segment</div>
+          {% if obj.segment == 'enterprise' %}<span class="badge badge-info">Enterprise</span>
+          {% elif obj.segment == 'midmarket' %}<span class="badge badge-info">Mid-market</span>
+          {% elif obj.segment == 'smb' %}<span class="badge badge-muted">SMB</span>
+          {% elif obj.segment == 'all' %}<span class="badge badge-success">All segments</span>
+          {% else %}<span class="badge badge-muted">{{ obj.get_segment_display }}</span>{% endif %}
+        </div>
+        <div class="form-group"><div class="form-label">Period</div>
+          <div>{{ obj.period_label }}</div></div>
+        <div class="form-group"><div class="form-label">Entered count</div>
+          <div>{{ obj.entered_count }}</div></div>
+        <div class="form-group"><div class="form-label">Converted count</div>
+          <div>{{ obj.converted_count }}</div></div>
+        <div class="form-group"><div class="form-label">Conversion rate</div>
+          <div class="fw-600">{{ obj.conversion_rate|floatformat:2 }}%</div></div>
+        <div class="form-group"><div class="form-label">Avg days in stage</div>
+          <div>{{ obj.avg_days_in_stage }}</div></div>
+        <div class="form-group"><div class="form-label">Recorded on</div>
+          <div>{% if obj.recorded_on %}{{ obj.recorded_on|date:"d M Y" }}{% else %}—{% endif %}</div></div>
+      </div>
+    </div></div>
+  </div>
+
+  <div class="card"><div class="card-body">
+    <h3 style="font-size:15px;margin-bottom:12px">Actions</h3>
+    <a href="{% url 'analytics:conversionfunnel_edit' obj.pk %}" class="btn btn-outline btn-block" style="margin-bottom:10px"><i data-lucide="pencil"></i> Edit stage</a>
+    <form method="post" action="{% url 'analytics:conversionfunnel_delete' obj.pk %}" onsubmit="return confirm('Delete this funnel stage?')">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger btn-block"><i data-lucide="trash-2"></i> Delete stage</button>
+    </form>
+    <hr class="divider">
+    <div class="list-meta">Created {{ obj.created_at|date:"d M Y" }}</div>
+  </div></div>
+</div>
+{% endblock %}
