@@ -209,6 +209,9 @@ class Advocacy(models.Model):
         indexes = [
             models.Index(fields=["tenant", "status"], name="adv_tenant_status_idx"),
             models.Index(fields=["tenant", "advocacy_type"], name="adv_tenant_type_idx"),
+            # Backs the default ordering (account_name) for the unfiltered list,
+            # matching the per-model ordering-column index used by the other four models.
+            models.Index(fields=["tenant", "account_name"], name="adv_tenant_acct_idx"),
         ]
 
     def __str__(self):
