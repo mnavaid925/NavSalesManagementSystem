@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}{{ obj.period_label }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'partners:partner_list' %}">Partner & Channel</a><i data-lucide="chevron-right" style="width:14px"></i>
+  <a href="{% url 'partners:partnerperformance_list' %}">Performance</a><i data-lucide="chevron-right" style="width:14px"></i><span>{{ obj.period_label }}</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ obj.period_label }}</h1>
+    <p class="page-subtitle">{% if obj.partner %}{{ obj.partner.name }}{% else %}Unassigned{% endif %} · {{ obj.attainment|floatformat:2 }}% attainment</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'partners:partnerperformance_list' %}" class="btn btn-outline"><i data-lucide="arrow-left"></i> Back</a>
+    <a href="{% url 'partners:partnerperformance_edit' obj.pk %}" class="btn btn-primary"><i data-lucide="pencil"></i> Edit</a>
+  </div>
+</div>
+
+<div class="detail-grid">
+  <div>
+    <div class="card"><div class="card-body">
+      <h3 style="font-size:15px;margin-bottom:12px">Details</h3>
+      <div class="form-grid">
+        <div class="form-group"><div class="form-label">Period</div>
+          <div class="fw-600">{{ obj.period_label }}</div></div>
+        <div class="form-group"><div class="form-label">Partner</div>
+          <div>{% if obj.partner %}<a href="{% url 'partners:partner_detail' obj.partner.pk %}">{{ obj.partner.name }}</a>{% else %}—{% endif %}</div></div>
+        <div class="form-group"><div class="form-label">Revenue</div>
+          <div class="fw-600">${{ obj.revenue|floatformat:2 }}</div></div>
+        <div class="form-group"><div class="form-label">Deals closed</div>
+          <div>{{ obj.deals_closed }}</div></div>
+        <div class="form-group"><div class="form-label">Quota</div>
+          <div>${{ obj.quota|floatformat:2 }}</div></div>
+        <div class="form-group"><div class="form-label">Attainment</div>
+          <div>{{ obj.attainment|floatformat:2 }}%</div></div>
+        <div class="form-group"><div class="form-label">Certifications</div>
+          <div>{{ obj.certification_count }}</div></div>
+        <div class="form-group"><div class="form-label">Satisfaction score</div>
+          <div>{{ obj.satisfaction_score|floatformat:2 }}</div></div>
+        <div class="form-group"><div class="form-label">Recorded on</div>
+          <div>{% if obj.recorded_on %}{{ obj.recorded_on|date:"d M Y" }}{% else %}—{% endif %}</div></div>
+      </div>
+    </div></div>
+  </div>
+
+  <div class="card"><div class="card-body">
+    <h3 style="font-size:15px;margin-bottom:12px">Actions</h3>
+    <a href="{% url 'partners:partnerperformance_edit' obj.pk %}" class="btn btn-outline btn-block" style="margin-bottom:10px"><i data-lucide="pencil"></i> Edit record</a>
+    <form method="post" action="{% url 'partners:partnerperformance_delete' obj.pk %}" onsubmit="return confirm('Delete this performance record?')">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger btn-block"><i data-lucide="trash-2"></i> Delete record</button>
+    </form>
+    <hr class="divider">
+    <div class="list-meta">Created {{ obj.created_at|date:"d M Y" }}</div>
+  </div></div>
+</div>
+{% endblock %}
