@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block title %}Custom Fields & Objects{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'masterdata:productcatalog_list' %}">Master Data</a><i data-lucide="chevron-right" style="width:14px"></i><span>Custom Fields</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Custom Fields & Objects</h1>
+    <p class="page-subtitle">{{ total }} custom field{{ total|pluralize }} defined</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'masterdata:customfield_create' %}" class="btn btn-primary"><i data-lucide="plus"></i> Add Custom Field</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <form method="get" style="display:flex;gap:10px;flex-wrap:wrap;width:100%;align-items:center">
+      <input type="search" name="q" value="{{ request.GET.q }}" placeholder="Search fields…" class="form-input" style="max-width:220px">
+      <span class="list-meta" style="margin-inline-end:auto"></span>
+      <select name="object_type" class="form-select" style="max-width:170px" onchange="this.form.submit()">
+        <option value="">All objects</option>
+        {% for value, label in object_type_choices %}
+          <option value="{{ value }}" {% if request.GET.object_type == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <select name="field_type" class="form-select" style="max-width:160px" onchange="this.form.submit()">
+        <option value="">All types</option>
+        {% for value, label in field_type_choices %}
+          <option value="{{ value }}" {% if request.GET.field_type == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <select name="status" class="form-select" style="max-width:160px" onchange="this.form.submit()">
+        <option value="">All statuses</option>
+        {% for value, label in status_choices %}
+          <option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <button class="btn btn-outline" type="submit"><i data-lucide="filter"></i> Filter</button>
+    </form>
+  </div>
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr><th>Field</th><th>Object</th><th>Type</th><th>Status</th><th>Required</th><th style="text-align:end">Actions</th></tr></thead>
+      <tbody>
+        {% for field in customfields %}
+          <tr>
+            <td>
+              <a href="{% url 'masterdata:customfield_detail' field.pk %}" class="fw-600">{{ field.name }}</a>
+              {% if field.field_key %}<div class="list-meta">{{ field.field_key }}</div>{% endif %}
+            </td>
+            <td class="list-meta">{{ field.get_object_type_display }}</td>
+            <td class="list-meta">{{ field.get_field_type_display }}</td>
+            <td>
+              {% if field.status == 'active' %}<span class="badge badge-success">Active</span>
+              {% elif field.status == 'inactive' %}<span class="badge badge-muted">Inactive</span>
+              {% elif field.status == 'draft' %}<span class="badge badge-muted">Draft</span>
+              {% else %}<span class="badge badge-muted">{{ field.get_status_display }}</span>{% endif %}
+            </td>
+            <td>
+              {% if field.required %}<span class="badge badge-warning">Required</span>
+              {% else %}<span class="badge badge-muted">Optional</span>{% endif %}
+            </td>
+            <td>
+              <div class="table-actions">
+                <a href="{% url 'masterdata:customfield_detail' field.pk %}" class="btn-icon" title="View"><i data-lucide="eye"></i></a>
+                <a href="{% url 'masterdata:customfield_edit' field.pk %}" class="btn-icon" title="Edit"><i data-lucide="pencil"></i></a>
+                <form method="post" action="{% url 'masterdata:customfield_delete' field.pk %}" onsubmit="return confirm('Delete this custom field?')">
+                  {% csrf_token %}
+                  <button type="submit" class="btn-icon danger" title="Delete"><i data-lucide="trash-2"></i></button>
+                </form>
+              </div>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="6"><div class="empty-state"><div class="empty-icon"><i data-lucide="list-plus"></i></div><h3>No custom fields</h3><p>Define your first custom field to extend a CRM object.</p><a href="{% url 'masterdata:customfield_create' %}" class="btn btn-primary" style="margin-top:14px"><i data-lucide="plus"></i> Add Custom Field</a></div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div style="padding:0 16px 12px">{% include "partials/pagination.html" %}</div>
+</div>
+{% endblock %}
