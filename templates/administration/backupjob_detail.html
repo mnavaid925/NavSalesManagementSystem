@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}{{ obj.number }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'administration:securitypolicy_list' %}">System Administration</a><i data-lucide="chevron-right" style="width:14px"></i>
+  <a href="{% url 'administration:backupjob_list' %}">Backups</a><i data-lucide="chevron-right" style="width:14px"></i><span>{{ obj.number }}</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ obj.number }}</h1>
+    <p class="page-subtitle">{{ obj.name }} · {{ obj.get_backup_type_display }}</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'administration:backupjob_list' %}" class="btn btn-outline"><i data-lucide="arrow-left"></i> Back</a>
+    <a href="{% url 'administration:backupjob_edit' obj.pk %}" class="btn btn-primary"><i data-lucide="pencil"></i> Edit</a>
+  </div>
+</div>
+
+<div class="detail-grid">
+  <div>
+    <div class="card"><div class="card-body">
+      <h3 style="font-size:15px;margin-bottom:12px">Details</h3>
+      <div class="form-grid">
+        <div class="form-group"><div class="form-label">Number</div>
+          <div class="fw-600">{{ obj.number }}</div></div>
+        <div class="form-group"><div class="form-label">Name</div>
+          <div>{{ obj.name }}</div></div>
+        <div class="form-group"><div class="form-label">Type</div>
+          <div>{{ obj.get_backup_type_display }}</div></div>
+        <div class="form-group"><div class="form-label">Status</div>
+          {% if obj.status == 'success' %}<span class="badge badge-success">Success</span>
+          {% elif obj.status == 'scheduled' %}<span class="badge badge-info">Scheduled</span>
+          {% elif obj.status == 'running' %}<span class="badge badge-warning">Running</span>
+          {% elif obj.status == 'failed' %}<span class="badge badge-danger">Failed</span>
+          {% elif obj.status == 'canceled' %}<span class="badge badge-muted">Canceled</span>
+          {% else %}<span class="badge badge-muted">{{ obj.get_status_display }}</span>{% endif %}
+        </div>
+        <div class="form-group"><div class="form-label">Storage location</div>
+          <div>{{ obj.storage_location|default:"—" }}</div></div>
+        <div class="form-group"><div class="form-label">Size (MB)</div>
+          <div class="fw-600">{{ obj.size_mb|floatformat:2 }}</div></div>
+        <div class="form-group"><div class="form-label">Retention</div>
+          <div>{{ obj.retention_days }} days</div></div>
+        <div class="form-group"><div class="form-label">Scheduled on</div>
+          <div>{% if obj.scheduled_on %}{{ obj.scheduled_on|date:"d M Y" }}{% else %}—{% endif %}</div></div>
+        <div class="form-group"><div class="form-label">Started at</div>
+          <div>{% if obj.started_at %}{{ obj.started_at|date:"d M Y H:i" }}{% else %}—{% endif %}</div></div>
+        <div class="form-group"><div class="form-label">Completed at</div>
+          <div>{% if obj.completed_at %}{{ obj.completed_at|date:"d M Y H:i" }}{% else %}—{% endif %}</div></div>
+      </div>
+      {% if obj.notes %}<div class="form-group"><div class="form-label">Notes</div>
+        <div>{{ obj.notes|linebreaksbr }}</div></div>{% endif %}
+    </div></div>
+  </div>
+
+  <div class="card"><div class="card-body">
+    <h3 style="font-size:15px;margin-bottom:12px">Actions</h3>
+    <a href="{% url 'administration:backupjob_edit' obj.pk %}" class="btn btn-outline btn-block" style="margin-bottom:10px"><i data-lucide="pencil"></i> Edit backup job</a>
+    <form method="post" action="{% url 'administration:backupjob_delete' obj.pk %}" onsubmit="return confirm('Delete this backup job?')">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger btn-block"><i data-lucide="trash-2"></i> Delete backup job</button>
+    </form>
+    <hr class="divider">
+    <div class="list-meta">Created {{ obj.created_at|date:"d M Y" }}</div>
+  </div></div>
+</div>
+{% endblock %}
