@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}Field Sales Tools{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'mobile:mobiledevice_list' %}">Mobile Sales</a><i data-lucide="chevron-right" style="width:14px"></i><span>Field Visits</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Field Sales Tools</h1>
+    <p class="page-subtitle">{{ total }} visit{{ total|pluralize }} on record</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'mobile:fieldvisit_create' %}" class="btn btn-primary"><i data-lucide="plus"></i> Add Visit</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <form method="get" style="display:flex;gap:10px;flex-wrap:wrap;width:100%;align-items:center">
+      <input type="search" name="q" value="{{ request.GET.q }}" placeholder="Search visits…" class="form-input" style="max-width:240px">
+      <span class="list-meta" style="margin-inline-end:auto"></span>
+      <select name="visit_type" class="form-select" style="max-width:180px" onchange="this.form.submit()">
+        <option value="">All types</option>
+        {% for value, label in type_choices %}
+          <option value="{{ value }}" {% if request.GET.visit_type == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <select name="status" class="form-select" style="max-width:180px" onchange="this.form.submit()">
+        <option value="">All statuses</option>
+        {% for value, label in status_choices %}
+          <option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <button class="btn btn-outline" type="submit"><i data-lucide="filter"></i> Filter</button>
+    </form>
+  </div>
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr><th>Number</th><th>Rep</th><th>Account</th><th>Type</th><th>Status</th><th>Scheduled</th><th style="text-align:end">Actions</th></tr></thead>
+      <tbody>
+        {% for visit in fieldvisits %}
+          <tr>
+            <td>
+              <a href="{% url 'mobile:fieldvisit_detail' visit.pk %}" class="fw-600">{{ visit.number }}</a>
+              {% if visit.location %}<div class="list-meta">{{ visit.location }}</div>{% endif %}
+            </td>
+            <td>{{ visit.rep_name }}</td>
+            <td class="list-meta">{{ visit.account_name }}</td>
+            <td>
+              {% if visit.visit_type == 'sales_call' %}<span class="badge badge-info">Sales call</span>
+              {% elif visit.visit_type == 'demo' %}<span class="badge badge-info">Demo</span>
+              {% elif visit.visit_type == 'check_in' %}<span class="badge badge-muted">Check-in</span>
+              {% elif visit.visit_type == 'support' %}<span class="badge badge-warning">Support</span>
+              {% elif visit.visit_type == 'prospecting' %}<span class="badge badge-success">Prospecting</span>
+              {% else %}<span class="badge badge-muted">{{ visit.get_visit_type_display }}</span>{% endif %}
+            </td>
+            <td>
+              {% if visit.status == 'completed' %}<span class="badge badge-success">Completed</span>
+              {% elif visit.status == 'checked_in' %}<span class="badge badge-info">Checked in</span>
+              {% elif visit.status == 'planned' %}<span class="badge badge-warning">Planned</span>
+              {% elif visit.status == 'canceled' %}<span class="badge badge-muted">Canceled</span>
+              {% elif visit.status == 'no_show' %}<span class="badge badge-danger">No show</span>
+              {% else %}<span class="badge badge-muted">{{ visit.get_status_display }}</span>{% endif %}
+            </td>
+            <td class="list-meta">{% if visit.scheduled_on %}{{ visit.scheduled_on|date:"d M Y" }}{% else %}—{% endif %}</td>
+            <td>
+              <div class="table-actions">
+                <a href="{% url 'mobile:fieldvisit_detail' visit.pk %}" class="btn-icon" title="View"><i data-lucide="eye"></i></a>
+                <a href="{% url 'mobile:fieldvisit_edit' visit.pk %}" class="btn-icon" title="Edit"><i data-lucide="pencil"></i></a>
+                <form method="post" action="{% url 'mobile:fieldvisit_delete' visit.pk %}" onsubmit="return confirm('Delete this visit?')">
+                  {% csrf_token %}
+                  <button type="submit" class="btn-icon danger" title="Delete"><i data-lucide="trash-2"></i></button>
+                </form>
+              </div>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="7"><div class="empty-state"><div class="empty-icon"><i data-lucide="map-pin"></i></div><h3>No field visits</h3><p>Schedule your first visit to start tracking field activity.</p><a href="{% url 'mobile:fieldvisit_create' %}" class="btn btn-primary" style="margin-top:14px"><i data-lucide="plus"></i> Add Visit</a></div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div style="padding:0 16px 12px">{% include "partials/pagination.html" %}</div>
+</div>
+{% endblock %}
