@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+{% block title %}{{ obj.number }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'contracts:contract_list' %}">Contracts</a><i data-lucide="chevron-right" style="width:14px"></i>
+  <a href="{% url 'contracts:contract_list' %}">Subscriptions</a><i data-lucide="chevron-right" style="width:14px"></i><span>{{ obj.number }}</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ obj.number }}</h1>
+    <p class="page-subtitle">{{ obj.title }} · {{ obj.account_name }}</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'contracts:contract_list' %}" class="btn btn-outline"><i data-lucide="arrow-left"></i> Back</a>
+    <a href="{% url 'contracts:contract_edit' obj.pk %}" class="btn btn-primary"><i data-lucide="pencil"></i> Edit</a>
+  </div>
+</div>
+
+<div class="detail-grid">
+  <div>
+    <div class="card"><div class="card-body">
+      <h3 style="font-size:15px;margin-bottom:12px">Details</h3>
+      <div class="form-grid">
+        <div class="form-group"><div class="form-label">Number</div>
+          <div class="fw-600">{{ obj.number }}</div></div>
+        <div class="form-group"><div class="form-label">Title</div>
+          <div>{{ obj.title }}</div></div>
+        <div class="form-group"><div class="form-label">Account</div>
+          <div>{{ obj.account_name }}</div></div>
+        <div class="form-group"><div class="form-label">Type</div>
+          <div>{{ obj.get_contract_type_display }}</div></div>
+        <div class="form-group"><div class="form-label">Status</div>
+          {% if obj.status == 'active' %}<span class="badge badge-success">Active</span>
+          {% elif obj.status == 'signed' %}<span class="badge badge-success">Signed</span>
+          {% elif obj.status == 'sent' %}<span class="badge badge-info">Sent</span>
+          {% elif obj.status == 'in_review' %}<span class="badge badge-warning">In review</span>
+          {% elif obj.status == 'draft' %}<span class="badge badge-muted">Draft</span>
+          {% elif obj.status == 'expired' %}<span class="badge badge-warning">Expired</span>
+          {% elif obj.status == 'terminated' %}<span class="badge badge-danger">Terminated</span>
+          {% else %}<span class="badge badge-muted">{{ obj.get_status_display }}</span>{% endif %}
+        </div>
+        <div class="form-group"><div class="form-label">Value</div>
+          <div class="fw-600">${{ obj.value|floatformat:2 }}</div></div>
+        <div class="form-group"><div class="form-label">Start date</div>
+          <div>{% if obj.start_date %}{{ obj.start_date|date:"d M Y" }}{% else %}—{% endif %}</div></div>
+        <div class="form-group"><div class="form-label">End date</div>
+          <div>{% if obj.end_date %}{{ obj.end_date|date:"d M Y" }}{% else %}—{% endif %}</div></div>
+        <div class="form-group"><div class="form-label">Owner</div>
+          <div>{{ obj.owner|default:"—" }}</div></div>
+      </div>
+      {% if obj.notes %}<div class="form-group"><div class="form-label">Notes</div>
+        <div>{{ obj.notes|linebreaksbr }}</div></div>{% endif %}
+    </div></div>
+
+    <div class="card" style="margin-top:18px"><div class="card-header"><h3 class="card-title">Clauses</h3></div>
+      <div class="table-wrap">
+        <table class="table">
+          <thead><tr><th>Title</th><th>Type</th><th>Status</th><th>Risk</th></tr></thead>
+          <tbody>
+            {% for c in clauses %}
+              <tr>
+                <td><a href="{% url 'contracts:contractclause_detail' c.pk %}" class="fw-600">{{ c.title }}</a></td>
+                <td class="list-meta">{{ c.get_clause_type_display }}</td>
+                <td>
+                  {% if c.status == 'approved' %}<span class="badge badge-success">Approved</span>
+                  {% elif c.status == 'standard' %}<span class="badge badge-info">Standard</span>
+                  {% elif c.status == 'redlined' %}<span class="badge badge-warning">Redlined</span>
+                  {% elif c.status == 'rejected' %}<span class="badge badge-danger">Rejected</span>
+                  {% else %}<span class="badge badge-muted">{{ c.get_status_display }}</span>{% endif %}
+                </td>
+                <td class="list-meta">{{ c.get_risk_level_display }}</td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="4"><div class="empty-state"><div class="empty-icon"><i data-lucide="file-pen-line"></i></div><h3>No clauses</h3><p>Clauses authored for this contract will appear here.</p></div></td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:18px"><div class="card-header"><h3 class="card-title">Obligations</h3></div>
+      <div class="table-wrap">
+        <table class="table">
+          <thead><tr><th>Title</th><th>Type</th><th>Status</th><th>Due</th></tr></thead>
+          <tbody>
+            {% for o in obligations %}
+              <tr>
+                <td><a href="{% url 'contracts:contractobligation_detail' o.pk %}" class="fw-600">{{ o.title }}</a></td>
+                <td class="list-meta">{{ o.get_obligation_type_display }}</td>
+                <td>
+                  {% if o.status == 'met' %}<span class="badge badge-success">Met</span>
+                  {% elif o.status == 'in_progress' %}<span class="badge badge-info">In progress</span>
+                  {% elif o.status == 'pending' %}<span class="badge badge-warning">Pending</span>
+                  {% elif o.status == 'missed' %}<span class="badge badge-danger">Missed</span>
+                  {% elif o.status == 'waived' %}<span class="badge badge-muted">Waived</span>
+                  {% else %}<span class="badge badge-muted">{{ o.get_status_display }}</span>{% endif %}
+                </td>
+                <td class="list-meta">{% if o.due_date %}{{ o.due_date|date:"d M Y" }}{% else %}—{% endif %}</td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="4"><div class="empty-state"><div class="empty-icon"><i data-lucide="clipboard-check"></i></div><h3>No obligations</h3><p>Obligations tracked for this contract will appear here.</p></div></td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="card"><div class="card-body">
+    <h3 style="font-size:15px;margin-bottom:12px">Actions</h3>
+    <a href="{% url 'contracts:contract_edit' obj.pk %}" class="btn btn-outline btn-block" style="margin-bottom:10px"><i data-lucide="pencil"></i> Edit contract</a>
+    <form method="post" action="{% url 'contracts:contract_delete' obj.pk %}" onsubmit="return confirm('Delete this contract?')">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger btn-block"><i data-lucide="trash-2"></i> Delete contract</button>
+    </form>
+    <hr class="divider">
+    <div class="list-meta">Created {{ obj.created_at|date:"d M Y" }}</div>
+  </div></div>
+</div>
+{% endblock %}
