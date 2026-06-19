@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}{{ obj.rep_name }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'analytics:winlossanalysis_list' %}">Sales Analytics</a><i data-lucide="chevron-right" style="width:14px"></i>
+  <a href="{% url 'analytics:repscorecard_list' %}">Rep Scorecards</a><i data-lucide="chevron-right" style="width:14px"></i><span>{{ obj.rep_name }}</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ obj.rep_name }}</h1>
+    <p class="page-subtitle">{{ obj.period_label }} · {{ obj.attainment|floatformat:2 }}% attainment</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'analytics:repscorecard_list' %}" class="btn btn-outline"><i data-lucide="arrow-left"></i> Back</a>
+    <a href="{% url 'analytics:repscorecard_edit' obj.pk %}" class="btn btn-primary"><i data-lucide="pencil"></i> Edit</a>
+  </div>
+</div>
+
+<div class="detail-grid">
+  <div>
+    <div class="card"><div class="card-body">
+      <h3 style="font-size:15px;margin-bottom:12px">Details</h3>
+      <div class="form-grid">
+        <div class="form-group"><div class="form-label">Rep</div>
+          <div class="fw-600">{{ obj.rep_name }}</div></div>
+        <div class="form-group"><div class="form-label">Period</div>
+          <div>{{ obj.period_label }}</div></div>
+        <div class="form-group"><div class="form-label">Grade</div>
+          {% if obj.grade == 'a' %}<span class="badge badge-success">A — Outstanding</span>
+          {% elif obj.grade == 'b' %}<span class="badge badge-info">B — Strong</span>
+          {% elif obj.grade == 'c' %}<span class="badge badge-warning">C — Meets</span>
+          {% elif obj.grade == 'd' %}<span class="badge badge-danger">D — Below</span>
+          {% else %}<span class="badge badge-muted">{{ obj.get_grade_display }}</span>{% endif %}
+        </div>
+        <div class="form-group"><div class="form-label">Ranking</div>
+          <div>{% if obj.ranking %}#{{ obj.ranking }}{% else %}—{% endif %}</div></div>
+        <div class="form-group"><div class="form-label">Quota</div>
+          <div>${{ obj.quota|floatformat:2 }}</div></div>
+        <div class="form-group"><div class="form-label">Attainment</div>
+          <div class="fw-600">{{ obj.attainment|floatformat:2 }}%</div></div>
+        <div class="form-group"><div class="form-label">Deals won</div>
+          <div>{{ obj.deals_won }}</div></div>
+        <div class="form-group"><div class="form-label">Deals lost</div>
+          <div>{{ obj.deals_lost }}</div></div>
+        <div class="form-group"><div class="form-label">Activities</div>
+          <div>{{ obj.activities }}</div></div>
+      </div>
+      {% if obj.notes %}<div class="form-group"><div class="form-label">Notes</div>
+        <div>{{ obj.notes|linebreaksbr }}</div></div>{% endif %}
+    </div></div>
+  </div>
+
+  <div class="card"><div class="card-body">
+    <h3 style="font-size:15px;margin-bottom:12px">Actions</h3>
+    <a href="{% url 'analytics:repscorecard_edit' obj.pk %}" class="btn btn-outline btn-block" style="margin-bottom:10px"><i data-lucide="pencil"></i> Edit scorecard</a>
+    <form method="post" action="{% url 'analytics:repscorecard_delete' obj.pk %}" onsubmit="return confirm('Delete this scorecard?')">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger btn-block"><i data-lucide="trash-2"></i> Delete scorecard</button>
+    </form>
+    <hr class="divider">
+    <div class="list-meta">Created {{ obj.created_at|date:"d M Y" }}</div>
+  </div></div>
+</div>
+{% endblock %}
