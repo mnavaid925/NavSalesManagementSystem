@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}{{ obj.device_name }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'mobile:mobiledevice_list' %}">Mobile Sales</a><i data-lucide="chevron-right" style="width:14px"></i>
+  <a href="{% url 'mobile:mobiledevice_list' %}">Devices</a><i data-lucide="chevron-right" style="width:14px"></i><span>{{ obj.device_name }}</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ obj.device_name }}</h1>
+    <p class="page-subtitle">{{ obj.user_name }} · {{ obj.get_platform_display }}</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'mobile:mobiledevice_list' %}" class="btn btn-outline"><i data-lucide="arrow-left"></i> Back</a>
+    <a href="{% url 'mobile:mobiledevice_edit' obj.pk %}" class="btn btn-primary"><i data-lucide="pencil"></i> Edit</a>
+  </div>
+</div>
+
+<div class="detail-grid">
+  <div>
+    <div class="card"><div class="card-body">
+      <h3 style="font-size:15px;margin-bottom:12px">Details</h3>
+      <div class="form-grid">
+        <div class="form-group"><div class="form-label">Device name</div>
+          <div class="fw-600">{{ obj.device_name }}</div></div>
+        <div class="form-group"><div class="form-label">User</div>
+          <div>{{ obj.user_name }}</div></div>
+        <div class="form-group"><div class="form-label">Platform</div>
+          <div>{{ obj.get_platform_display }}</div></div>
+        <div class="form-group"><div class="form-label">Status</div>
+          {% if obj.status == 'active' %}<span class="badge badge-success">Active</span>
+          {% elif obj.status == 'inactive' %}<span class="badge badge-muted">Inactive</span>
+          {% elif obj.status == 'lost' %}<span class="badge badge-warning">Lost</span>
+          {% elif obj.status == 'wiped' %}<span class="badge badge-danger">Wiped</span>
+          {% else %}<span class="badge badge-muted">{{ obj.get_status_display }}</span>{% endif %}
+        </div>
+        <div class="form-group"><div class="form-label">App version</div>
+          <div>{{ obj.app_version|default:"—" }}</div></div>
+        <div class="form-group"><div class="form-label">Push notifications</div>
+          <div>{% if obj.push_enabled %}Enabled{% else %}Disabled{% endif %}</div></div>
+        <div class="form-group"><div class="form-label">Last sync</div>
+          <div>{% if obj.last_sync %}{{ obj.last_sync|date:"d M Y H:i" }}{% else %}—{% endif %}</div></div>
+      </div>
+      {% if obj.notes %}<div class="form-group"><div class="form-label">Notes</div>
+        <div>{{ obj.notes|linebreaksbr }}</div></div>{% endif %}
+    </div></div>
+  </div>
+
+  <div class="card"><div class="card-body">
+    <h3 style="font-size:15px;margin-bottom:12px">Actions</h3>
+    <a href="{% url 'mobile:mobiledevice_edit' obj.pk %}" class="btn btn-outline btn-block" style="margin-bottom:10px"><i data-lucide="pencil"></i> Edit device</a>
+    <form method="post" action="{% url 'mobile:mobiledevice_delete' obj.pk %}" onsubmit="return confirm('Delete this device?')">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger btn-block"><i data-lucide="trash-2"></i> Delete device</button>
+    </form>
+    <hr class="divider">
+    <div class="list-meta">Created {{ obj.created_at|date:"d M Y" }}</div>
+  </div></div>
+</div>
+{% endblock %}
