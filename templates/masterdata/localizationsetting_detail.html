@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}{{ obj.language_name }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'masterdata:productcatalog_list' %}">Master Data</a><i data-lucide="chevron-right" style="width:14px"></i>
+  <a href="{% url 'masterdata:localizationsetting_list' %}">Localization</a><i data-lucide="chevron-right" style="width:14px"></i><span>{{ obj.language_name }}</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ obj.language_name }}</h1>
+    <p class="page-subtitle">{{ obj.language_code }}{% if obj.locale %} · {{ obj.locale }}{% endif %}</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'masterdata:localizationsetting_list' %}" class="btn btn-outline"><i data-lucide="arrow-left"></i> Back</a>
+    <a href="{% url 'masterdata:localizationsetting_edit' obj.pk %}" class="btn btn-primary"><i data-lucide="pencil"></i> Edit</a>
+  </div>
+</div>
+
+<div class="detail-grid">
+  <div>
+    <div class="card"><div class="card-body">
+      <h3 style="font-size:15px;margin-bottom:12px">Details</h3>
+      <div class="form-grid">
+        <div class="form-group"><div class="form-label">Language name</div>
+          <div class="fw-600">{{ obj.language_name }}</div></div>
+        <div class="form-group"><div class="form-label">Language code</div>
+          <div>{{ obj.language_code|default:"—" }}</div></div>
+        <div class="form-group"><div class="form-label">Locale</div>
+          <div>{{ obj.locale|default:"—" }}</div></div>
+        <div class="form-group"><div class="form-label">Status</div>
+          {% if obj.status == 'active' %}<span class="badge badge-success">Active</span>
+          {% elif obj.status == 'inactive' %}<span class="badge badge-muted">Inactive</span>
+          {% elif obj.status == 'draft' %}<span class="badge badge-muted">Draft</span>
+          {% else %}<span class="badge badge-muted">{{ obj.get_status_display }}</span>{% endif %}
+        </div>
+        <div class="form-group"><div class="form-label">Default</div>
+          <div>{% if obj.is_default %}<span class="badge badge-info">Default</span>{% else %}<span class="badge badge-muted">No</span>{% endif %}</div></div>
+        <div class="form-group"><div class="form-label">Date format</div>
+          <div>{{ obj.date_format|default:"—" }}</div></div>
+        <div class="form-group"><div class="form-label">Number format</div>
+          <div>{{ obj.number_format|default:"—" }}</div></div>
+        <div class="form-group"><div class="form-label">Currency</div>
+          <div>{{ obj.currency }}</div></div>
+        <div class="form-group"><div class="form-label">Completion</div>
+          <div class="fw-600">{{ obj.completion_pct|floatformat:2 }}%</div></div>
+      </div>
+      {% if obj.notes %}<div class="form-group"><div class="form-label">Notes</div>
+        <div>{{ obj.notes|linebreaksbr }}</div></div>{% endif %}
+    </div></div>
+  </div>
+
+  <div class="card"><div class="card-body">
+    <h3 style="font-size:15px;margin-bottom:12px">Actions</h3>
+    <a href="{% url 'masterdata:localizationsetting_edit' obj.pk %}" class="btn btn-outline btn-block" style="margin-bottom:10px"><i data-lucide="pencil"></i> Edit language</a>
+    <form method="post" action="{% url 'masterdata:localizationsetting_delete' obj.pk %}" onsubmit="return confirm('Delete this localization setting?')">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger btn-block"><i data-lucide="trash-2"></i> Delete language</button>
+    </form>
+    <hr class="divider">
+    <div class="list-meta">Created {{ obj.created_at|date:"d M Y" }}</div>
+  </div></div>
+</div>
+{% endblock %}
