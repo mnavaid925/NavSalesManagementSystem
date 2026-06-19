@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}{{ obj.contact_name }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'success:healthscore_list' %}">Customer Success</a><i data-lucide="chevron-right" style="width:14px"></i>
+  <a href="{% url 'success:advocacy_list' %}">Advocacy</a><i data-lucide="chevron-right" style="width:14px"></i><span>{{ obj.contact_name }}</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ obj.contact_name }}</h1>
+    <p class="page-subtitle">{{ obj.account_name }} · {{ obj.get_advocacy_type_display }}</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'success:advocacy_list' %}" class="btn btn-outline"><i data-lucide="arrow-left"></i> Back</a>
+    <a href="{% url 'success:advocacy_edit' obj.pk %}" class="btn btn-primary"><i data-lucide="pencil"></i> Edit</a>
+  </div>
+</div>
+
+<div class="detail-grid">
+  <div>
+    <div class="card"><div class="card-body">
+      <h3 style="font-size:15px;margin-bottom:12px">Details</h3>
+      <div class="form-grid">
+        <div class="form-group"><div class="form-label">Contact</div>
+          <div class="fw-600">{{ obj.contact_name }}</div></div>
+        <div class="form-group"><div class="form-label">Account</div>
+          <div>{{ obj.account_name }}</div></div>
+        <div class="form-group"><div class="form-label">Type</div>
+          {% if obj.advocacy_type == 'reference' %}<span class="badge badge-info">Reference</span>
+          {% elif obj.advocacy_type == 'case_study' %}<span class="badge badge-info">Case study</span>
+          {% elif obj.advocacy_type == 'testimonial' %}<span class="badge badge-success">Testimonial</span>
+          {% elif obj.advocacy_type == 'review' %}<span class="badge badge-success">Review</span>
+          {% elif obj.advocacy_type == 'speaker' %}<span class="badge badge-warning">Speaker</span>
+          {% else %}<span class="badge badge-muted">{{ obj.get_advocacy_type_display }}</span>{% endif %}
+        </div>
+        <div class="form-group"><div class="form-label">Status</div>
+          {% if obj.status == 'active' %}<span class="badge badge-success">Active</span>
+          {% elif obj.status == 'nominated' %}<span class="badge badge-warning">Nominated</span>
+          {% elif obj.status == 'declined' %}<span class="badge badge-danger">Declined</span>
+          {% elif obj.status == 'retired' %}<span class="badge badge-muted">Retired</span>
+          {% else %}<span class="badge badge-muted">{{ obj.get_status_display }}</span>{% endif %}
+        </div>
+        <div class="form-group"><div class="form-label">NPS score</div>
+          <div>{% if obj.nps_score is not None %}{{ obj.nps_score }}{% else %}—{% endif %}</div></div>
+        <div class="form-group"><div class="form-label">Last engaged</div>
+          <div>{% if obj.last_engaged %}{{ obj.last_engaged|date:"d M Y" }}{% else %}—{% endif %}</div></div>
+      </div>
+      {% if obj.notes %}<div class="form-group"><div class="form-label">Notes</div>
+        <div>{{ obj.notes|linebreaksbr }}</div></div>{% endif %}
+    </div></div>
+  </div>
+
+  <div class="card"><div class="card-body">
+    <h3 style="font-size:15px;margin-bottom:12px">Actions</h3>
+    <a href="{% url 'success:advocacy_edit' obj.pk %}" class="btn btn-outline btn-block" style="margin-bottom:10px"><i data-lucide="pencil"></i> Edit advocate</a>
+    <form method="post" action="{% url 'success:advocacy_delete' obj.pk %}" onsubmit="return confirm('Delete this advocate?')">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger btn-block"><i data-lucide="trash-2"></i> Delete advocate</button>
+    </form>
+    <hr class="divider">
+    <div class="list-meta">Created {{ obj.created_at|date:"d M Y" }}</div>
+  </div></div>
+</div>
+{% endblock %}
