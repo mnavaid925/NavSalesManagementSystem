@@ -217,6 +217,20 @@ Django's attribute auto-escaping blocks closing the attribute, but a value like 
 injection, and a future `<style>`/`|safe` use would become stored XSS. **Rule:** constrain such fields with a
 `RegexValidator(r"^#(?:[0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$")` on the model so only `#RGB`/`#RRGGBB` can be saved.
 
+## L28 — When modules are pattern-clones, a confirmed per-module defect must trigger a sweep of ALL siblings
+Building Modules 11-20 (10 near-identical clones of the compensation reference), the per-module adversarial review
+confirmed exactly one defect: `automation` `EnrichmentRuleForm` left the run-history counters `records_processed` +
+`success_rate` editable (system-derived, seeded as fake history, sitting next to the correctly-excluded `last_run`).
+But the **per-module** reviewer for `integrations` returned zero findings and MISSED the identical-class defect there:
+`SyncJobForm` left `records_synced` editable (same shape — a run-history counter on a job-config form, next to the
+excluded `last_run`). Per-module reviewers are blind to cross-module repetition by construction. **Rule:** when a
+review confirms a defect in one clone, grep the whole family for the same shape before fixing
+(`grep -n "records_synced\|records_processed\|success_rate\|failure_count" apps/*/forms.py`) and fix every instance in
+one pass. Distinguish a true run-history counter on a CONFIG/JOB model (exclude from the form) from a metric that IS
+the record's data on a reporting model (e.g. analytics ConversionFunnel.entered_count — keep on the form). Financial
+amounts the reference itself exposes (PayoutForm.net_amount, EarningForm.commission_amount, marketing roi) are an
+app-wide pattern, not a per-module fix — leave them or change app-wide.
+
 ## L27 — Gate Module-0 (tenant administration) writes behind tenant-admin, not just @login_required
 Billing, encryption-key rotation, branding and health writes were initially `@login_required`, so any Sales Rep in
 the tenant could mutate them. **Rule:** privileged/workspace-config writes use `@tenant_admin_required` (shared in
