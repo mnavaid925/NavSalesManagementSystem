@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block title %}Data Enrichment &amp; Cleansing{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'automation:processflow_list' %}">Workflow &amp; Automation</a><i data-lucide="chevron-right" style="width:14px"></i><span>Enrichment Rules</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Data Enrichment &amp; Cleansing</h1>
+    <p class="page-subtitle">{{ total }} enrichment rule{{ total|pluralize }} on record</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'automation:enrichmentrule_create' %}" class="btn btn-primary"><i data-lucide="plus"></i> Add Enrichment Rule</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <form method="get" style="display:flex;gap:10px;flex-wrap:wrap;width:100%;align-items:center">
+      <input type="search" name="q" value="{{ request.GET.q }}" placeholder="Search enrichment rules…" class="form-input" style="max-width:240px">
+      <span class="list-meta" style="margin-inline-end:auto"></span>
+      <select name="data_source" class="form-select" style="max-width:160px" onchange="this.form.submit()">
+        <option value="">All sources</option>
+        {% for value, label in source_choices %}
+          <option value="{{ value }}" {% if request.GET.data_source == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <select name="operation" class="form-select" style="max-width:160px" onchange="this.form.submit()">
+        <option value="">All operations</option>
+        {% for value, label in operation_choices %}
+          <option value="{{ value }}" {% if request.GET.operation == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <select name="status" class="form-select" style="max-width:160px" onchange="this.form.submit()">
+        <option value="">All statuses</option>
+        {% for value, label in status_choices %}
+          <option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <button class="btn btn-outline" type="submit"><i data-lucide="filter"></i> Filter</button>
+    </form>
+  </div>
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr><th>Name</th><th>Source</th><th>Operation</th><th>Status</th><th style="text-align:end">Records</th><th style="text-align:end">Success</th><th style="text-align:end">Actions</th></tr></thead>
+      <tbody>
+        {% for rule in enrichmentrules %}
+          <tr>
+            <td>
+              <a href="{% url 'automation:enrichmentrule_detail' rule.pk %}" class="fw-600">{{ rule.name }}</a>
+              {% if rule.target_field %}<div class="list-meta">{{ rule.target_field }}</div>{% endif %}
+            </td>
+            <td class="list-meta">{{ rule.get_data_source_display }}</td>
+            <td class="list-meta">{{ rule.get_operation_display }}</td>
+            <td>
+              {% if rule.status == 'active' %}<span class="badge badge-success">Active</span>
+              {% elif rule.status == 'inactive' %}<span class="badge badge-muted">Inactive</span>
+              {% elif rule.status == 'draft' %}<span class="badge badge-warning">Draft</span>
+              {% else %}<span class="badge badge-muted">{{ rule.get_status_display }}</span>{% endif %}
+            </td>
+            <td style="text-align:end">{{ rule.records_processed }}</td>
+            <td style="text-align:end" class="fw-600">{{ rule.success_rate|floatformat:2 }}%</td>
+            <td>
+              <div class="table-actions">
+                <a href="{% url 'automation:enrichmentrule_detail' rule.pk %}" class="btn-icon" title="View"><i data-lucide="eye"></i></a>
+                <a href="{% url 'automation:enrichmentrule_edit' rule.pk %}" class="btn-icon" title="Edit"><i data-lucide="pencil"></i></a>
+                <form method="post" action="{% url 'automation:enrichmentrule_delete' rule.pk %}" onsubmit="return confirm('Delete this enrichment rule?')">
+                  {% csrf_token %}
+                  <button type="submit" class="btn-icon danger" title="Delete"><i data-lucide="trash-2"></i></button>
+                </form>
+              </div>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="7"><div class="empty-state"><div class="empty-icon"><i data-lucide="sparkles"></i></div><h3>No enrichment rules</h3><p>Create your first rule to enrich and cleanse records.</p><a href="{% url 'automation:enrichmentrule_create' %}" class="btn btn-primary" style="margin-top:14px"><i data-lucide="plus"></i> Add Enrichment Rule</a></div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div style="padding:0 16px 12px">{% include "partials/pagination.html" %}</div>
+</div>
+{% endblock %}
