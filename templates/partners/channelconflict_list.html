@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block title %}Channel Conflict Management{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'partners:partner_list' %}">Partner & Channel</a><i data-lucide="chevron-right" style="width:14px"></i><span>Conflicts</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Channel Conflict Management</h1>
+    <p class="page-subtitle">{{ total }} conflict{{ total|pluralize }} on record</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'partners:channelconflict_create' %}" class="btn btn-primary"><i data-lucide="plus"></i> Add Conflict</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <form method="get" style="display:flex;gap:10px;flex-wrap:wrap;width:100%;align-items:center">
+      <input type="search" name="q" value="{{ request.GET.q }}" placeholder="Search conflicts…" class="form-input" style="max-width:240px">
+      <span class="list-meta" style="margin-inline-end:auto"></span>
+      <select name="conflict_type" class="form-select" style="max-width:180px" onchange="this.form.submit()">
+        <option value="">All types</option>
+        {% for value, label in type_choices %}
+          <option value="{{ value }}" {% if request.GET.conflict_type == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <select name="severity" class="form-select" style="max-width:160px" onchange="this.form.submit()">
+        <option value="">All severities</option>
+        {% for value, label in severity_choices %}
+          <option value="{{ value }}" {% if request.GET.severity == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <select name="status" class="form-select" style="max-width:170px" onchange="this.form.submit()">
+        <option value="">All statuses</option>
+        {% for value, label in status_choices %}
+          <option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <button class="btn btn-outline" type="submit"><i data-lucide="filter"></i> Filter</button>
+    </form>
+  </div>
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr><th>Number</th><th>Type</th><th>Severity</th><th>Status</th><th>Partner</th><th>Reported</th><th style="text-align:end">Actions</th></tr></thead>
+      <tbody>
+        {% for conflict in channelconflicts %}
+          <tr>
+            <td>
+              <a href="{% url 'partners:channelconflict_detail' conflict.pk %}" class="fw-600">{{ conflict.number }}</a>
+              {% if conflict.account_name %}<div class="list-meta">{{ conflict.account_name }}</div>{% endif %}
+            </td>
+            <td class="list-meta">{{ conflict.get_conflict_type_display }}</td>
+            <td>
+              {% if conflict.severity == 'critical' %}<span class="badge badge-danger">Critical</span>
+              {% elif conflict.severity == 'high' %}<span class="badge badge-warning">High</span>
+              {% elif conflict.severity == 'medium' %}<span class="badge badge-info">Medium</span>
+              {% elif conflict.severity == 'low' %}<span class="badge badge-muted">Low</span>
+              {% else %}<span class="badge badge-muted">{{ conflict.get_severity_display }}</span>{% endif %}
+            </td>
+            <td>
+              {% if conflict.status == 'resolved' %}<span class="badge badge-success">Resolved</span>
+              {% elif conflict.status == 'closed' %}<span class="badge badge-muted">Closed</span>
+              {% elif conflict.status == 'investigating' %}<span class="badge badge-info">Investigating</span>
+              {% elif conflict.status == 'open' %}<span class="badge badge-warning">Open</span>
+              {% elif conflict.status == 'escalated' %}<span class="badge badge-danger">Escalated</span>
+              {% else %}<span class="badge badge-muted">{{ conflict.get_status_display }}</span>{% endif %}
+            </td>
+            <td class="list-meta">{% if conflict.partner %}{{ conflict.partner.name }}{% else %}—{% endif %}</td>
+            <td class="list-meta">{% if conflict.reported_on %}{{ conflict.reported_on|date:"d M Y" }}{% else %}—{% endif %}</td>
+            <td>
+              <div class="table-actions">
+                <a href="{% url 'partners:channelconflict_detail' conflict.pk %}" class="btn-icon" title="View"><i data-lucide="eye"></i></a>
+                <a href="{% url 'partners:channelconflict_edit' conflict.pk %}" class="btn-icon" title="Edit"><i data-lucide="pencil"></i></a>
+                <form method="post" action="{% url 'partners:channelconflict_delete' conflict.pk %}" onsubmit="return confirm('Delete this conflict?')">
+                  {% csrf_token %}
+                  <button type="submit" class="btn-icon danger" title="Delete"><i data-lucide="trash-2"></i></button>
+                </form>
+              </div>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="7"><div class="empty-state"><div class="empty-icon"><i data-lucide="shield-alert"></i></div><h3>No conflicts</h3><p>Log your first channel conflict for review.</p><a href="{% url 'partners:channelconflict_create' %}" class="btn btn-primary" style="margin-top:14px"><i data-lucide="plus"></i> Add Conflict</a></div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div style="padding:0 16px 12px">{% include "partials/pagination.html" %}</div>
+</div>
+{% endblock %}
