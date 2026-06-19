@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}{{ obj.name }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'integrations:connector_list' %}">Integration &amp; API Hub</a><i data-lucide="chevron-right" style="width:14px"></i>
+  <a href="{% url 'integrations:connector_list' %}">Connectors</a><i data-lucide="chevron-right" style="width:14px"></i><span>{{ obj.name }}</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ obj.name }}</h1>
+    <p class="page-subtitle">{{ obj.get_category_display }} · {{ obj.provider|default:"—" }}</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'integrations:connector_list' %}" class="btn btn-outline"><i data-lucide="arrow-left"></i> Back</a>
+    <a href="{% url 'integrations:connector_edit' obj.pk %}" class="btn btn-primary"><i data-lucide="pencil"></i> Edit</a>
+  </div>
+</div>
+
+<div class="detail-grid">
+  <div>
+    <div class="card"><div class="card-body">
+      <h3 style="font-size:15px;margin-bottom:12px">Details</h3>
+      <div class="form-grid">
+        <div class="form-group"><div class="form-label">Name</div>
+          <div class="fw-600">{{ obj.name }}</div></div>
+        <div class="form-group"><div class="form-label">Category</div>
+          <div>{{ obj.get_category_display }}</div></div>
+        <div class="form-group"><div class="form-label">Provider</div>
+          <div>{{ obj.provider|default:"—" }}</div></div>
+        <div class="form-group"><div class="form-label">Status</div>
+          {% if obj.status == 'connected' %}<span class="badge badge-success">Connected</span>
+          {% elif obj.status == 'disconnected' %}<span class="badge badge-muted">Disconnected</span>
+          {% elif obj.status == 'error' %}<span class="badge badge-danger">Error</span>
+          {% elif obj.status == 'configuring' %}<span class="badge badge-warning">Configuring</span>
+          {% else %}<span class="badge badge-muted">{{ obj.get_status_display }}</span>{% endif %}
+        </div>
+        <div class="form-group"><div class="form-label">Auth type</div>
+          <div>{{ obj.get_auth_type_display }}</div></div>
+        <div class="form-group"><div class="form-label">Last sync</div>
+          <div>{% if obj.last_sync %}{{ obj.last_sync|date:"d M Y H:i" }}{% else %}—{% endif %}</div></div>
+      </div>
+      {% if obj.notes %}<div class="form-group"><div class="form-label">Notes</div>
+        <div>{{ obj.notes|linebreaksbr }}</div></div>{% endif %}
+    </div></div>
+
+    <div class="card" style="margin-top:18px"><div class="card-header"><h3 class="card-title">Sync jobs</h3></div>
+      <div class="table-wrap">
+        <table class="table">
+          <thead><tr><th>Number</th><th>Name</th><th>Status</th><th style="text-align:end">Records</th></tr></thead>
+          <tbody>
+            {% for j in sync_jobs %}
+              <tr>
+                <td><a href="{% url 'integrations:syncjob_detail' j.pk %}" class="fw-600">{{ j.number }}</a></td>
+                <td class="list-meta">{{ j.name }}</td>
+                <td>
+                  {% if j.status == 'success' %}<span class="badge badge-success">Success</span>
+                  {% elif j.status == 'running' %}<span class="badge badge-info">Running</span>
+                  {% elif j.status == 'scheduled' %}<span class="badge badge-muted">Scheduled</span>
+                  {% elif j.status == 'paused' %}<span class="badge badge-warning">Paused</span>
+                  {% elif j.status == 'failed' %}<span class="badge badge-danger">Failed</span>
+                  {% else %}<span class="badge badge-muted">{{ j.get_status_display }}</span>{% endif %}
+                </td>
+                <td style="text-align:end">{{ j.records_synced }}</td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="4"><div class="empty-state"><div class="empty-icon"><i data-lucide="refresh-cw"></i></div><h3>No sync jobs</h3><p>Jobs running against this connector will appear here.</p></div></td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="card"><div class="card-body">
+    <h3 style="font-size:15px;margin-bottom:12px">Actions</h3>
+    <a href="{% url 'integrations:connector_edit' obj.pk %}" class="btn btn-outline btn-block" style="margin-bottom:10px"><i data-lucide="pencil"></i> Edit connector</a>
+    <form method="post" action="{% url 'integrations:connector_delete' obj.pk %}" onsubmit="return confirm('Delete this connector?')">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger btn-block"><i data-lucide="trash-2"></i> Delete connector</button>
+    </form>
+    <hr class="divider">
+    <div class="list-meta">Created {{ obj.created_at|date:"d M Y" }}</div>
+  </div></div>
+</div>
+{% endblock %}
