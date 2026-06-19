@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}{{ obj.name }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'masterdata:productcatalog_list' %}">Master Data</a><i data-lucide="chevron-right" style="width:14px"></i>
+  <a href="{% url 'masterdata:pricebook_list' %}">Price Books</a><i data-lucide="chevron-right" style="width:14px"></i><span>{{ obj.name }}</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ obj.name }}</h1>
+    <p class="page-subtitle">{{ obj.currency }}{% if obj.region %} · {{ obj.region }}{% endif %}</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'masterdata:pricebook_list' %}" class="btn btn-outline"><i data-lucide="arrow-left"></i> Back</a>
+    <a href="{% url 'masterdata:pricebook_edit' obj.pk %}" class="btn btn-primary"><i data-lucide="pencil"></i> Edit</a>
+  </div>
+</div>
+
+<div class="detail-grid">
+  <div>
+    <div class="card"><div class="card-body">
+      <h3 style="font-size:15px;margin-bottom:12px">Details</h3>
+      <div class="form-grid">
+        <div class="form-group"><div class="form-label">Name</div>
+          <div class="fw-600">{{ obj.name }}</div></div>
+        <div class="form-group"><div class="form-label">Currency</div>
+          <div>{{ obj.currency }}</div></div>
+        <div class="form-group"><div class="form-label">Status</div>
+          {% if obj.status == 'active' %}<span class="badge badge-success">Active</span>
+          {% elif obj.status == 'inactive' %}<span class="badge badge-muted">Inactive</span>
+          {% elif obj.status == 'draft' %}<span class="badge badge-muted">Draft</span>
+          {% else %}<span class="badge badge-muted">{{ obj.get_status_display }}</span>{% endif %}
+        </div>
+        <div class="form-group"><div class="form-label">Region</div>
+          <div>{{ obj.region|default:"—" }}</div></div>
+        <div class="form-group"><div class="form-label">Default</div>
+          <div>{% if obj.is_default %}<span class="badge badge-info">Default</span>{% else %}<span class="badge badge-muted">No</span>{% endif %}</div></div>
+        <div class="form-group"><div class="form-label">Valid from</div>
+          <div>{% if obj.valid_from %}{{ obj.valid_from|date:"d M Y" }}{% else %}—{% endif %}</div></div>
+        <div class="form-group"><div class="form-label">Valid to</div>
+          <div>{% if obj.valid_to %}{{ obj.valid_to|date:"d M Y" }}{% else %}—{% endif %}</div></div>
+      </div>
+      {% if obj.description %}<div class="form-group"><div class="form-label">Description</div>
+        <div>{{ obj.description|linebreaksbr }}</div></div>{% endif %}
+    </div></div>
+  </div>
+
+  <div class="card"><div class="card-body">
+    <h3 style="font-size:15px;margin-bottom:12px">Actions</h3>
+    <a href="{% url 'masterdata:pricebook_edit' obj.pk %}" class="btn btn-outline btn-block" style="margin-bottom:10px"><i data-lucide="pencil"></i> Edit price book</a>
+    <form method="post" action="{% url 'masterdata:pricebook_delete' obj.pk %}" onsubmit="return confirm('Delete this price book?')">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger btn-block"><i data-lucide="trash-2"></i> Delete price book</button>
+    </form>
+    <hr class="divider">
+    <div class="list-meta">Created {{ obj.created_at|date:"d M Y" }}</div>
+  </div></div>
+</div>
+{% endblock %}
