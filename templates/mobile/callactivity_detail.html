@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}{{ obj }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'mobile:mobiledevice_list' %}">Mobile Sales</a><i data-lucide="chevron-right" style="width:14px"></i>
+  <a href="{% url 'mobile:callactivity_list' %}">Call Activity</a><i data-lucide="chevron-right" style="width:14px"></i><span>{{ obj.contact_name }}</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ obj.contact_name }}</h1>
+    <p class="page-subtitle">{{ obj.rep_name }} · {{ obj.get_direction_display }}</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'mobile:callactivity_list' %}" class="btn btn-outline"><i data-lucide="arrow-left"></i> Back</a>
+    <a href="{% url 'mobile:callactivity_edit' obj.pk %}" class="btn btn-primary"><i data-lucide="pencil"></i> Edit</a>
+  </div>
+</div>
+
+<div class="detail-grid">
+  <div>
+    <div class="card"><div class="card-body">
+      <h3 style="font-size:15px;margin-bottom:12px">Details</h3>
+      <div class="form-grid">
+        <div class="form-group"><div class="form-label">Contact</div>
+          <div class="fw-600">{{ obj.contact_name }}</div></div>
+        <div class="form-group"><div class="form-label">Rep</div>
+          <div>{{ obj.rep_name }}</div></div>
+        <div class="form-group"><div class="form-label">Direction</div>
+          {% if obj.direction == 'inbound' %}<span class="badge badge-info">Inbound</span>
+          {% elif obj.direction == 'outbound' %}<span class="badge badge-success">Outbound</span>
+          {% elif obj.direction == 'missed' %}<span class="badge badge-danger">Missed</span>
+          {% else %}<span class="badge badge-muted">{{ obj.get_direction_display }}</span>{% endif %}
+        </div>
+        <div class="form-group"><div class="form-label">Call type</div>
+          <div>{{ obj.get_call_type_display }}</div></div>
+        <div class="form-group"><div class="form-label">Outcome</div>
+          {% if obj.outcome == 'connected' %}<span class="badge badge-success">Connected</span>
+          {% elif obj.outcome == 'voicemail' %}<span class="badge badge-info">Voicemail</span>
+          {% elif obj.outcome == 'no_answer' %}<span class="badge badge-warning">No answer</span>
+          {% elif obj.outcome == 'busy' %}<span class="badge badge-muted">Busy</span>
+          {% elif obj.outcome == 'scheduled_callback' %}<span class="badge badge-info">Scheduled callback</span>
+          {% else %}<span class="badge badge-muted">{{ obj.get_outcome_display }}</span>{% endif %}
+        </div>
+        <div class="form-group"><div class="form-label">Duration</div>
+          <div>{{ obj.duration_seconds }} sec</div></div>
+        <div class="form-group"><div class="form-label">Call date</div>
+          <div>{% if obj.call_date %}{{ obj.call_date|date:"d M Y" }}{% else %}—{% endif %}</div></div>
+      </div>
+      {% if obj.notes %}<div class="form-group"><div class="form-label">Notes</div>
+        <div>{{ obj.notes|linebreaksbr }}</div></div>{% endif %}
+    </div></div>
+  </div>
+
+  <div class="card"><div class="card-body">
+    <h3 style="font-size:15px;margin-bottom:12px">Actions</h3>
+    <a href="{% url 'mobile:callactivity_edit' obj.pk %}" class="btn btn-outline btn-block" style="margin-bottom:10px"><i data-lucide="pencil"></i> Edit call</a>
+    <form method="post" action="{% url 'mobile:callactivity_delete' obj.pk %}" onsubmit="return confirm('Delete this call?')">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger btn-block"><i data-lucide="trash-2"></i> Delete call</button>
+    </form>
+    <hr class="divider">
+    <div class="list-meta">Created {{ obj.created_at|date:"d M Y" }}</div>
+  </div></div>
+</div>
+{% endblock %}
