@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block title %}Contract Authoring & Redlining{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'contracts:contract_list' %}">Contracts</a><i data-lucide="chevron-right" style="width:14px"></i><span>Clauses</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Contract Authoring & Redlining</h1>
+    <p class="page-subtitle">{{ total }} clause{{ total|pluralize }} on record</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'contracts:contractclause_create' %}" class="btn btn-primary"><i data-lucide="plus"></i> Add Clause</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <form method="get" style="display:flex;gap:10px;flex-wrap:wrap;width:100%;align-items:center">
+      <input type="search" name="q" value="{{ request.GET.q }}" placeholder="Search clauses…" class="form-input" style="max-width:220px">
+      <span class="list-meta" style="margin-inline-end:auto"></span>
+      <select name="contract" class="form-select" style="max-width:200px" onchange="this.form.submit()">
+        <option value="">All contracts</option>
+        {% for c in contracts %}
+          <option value="{{ c.pk }}" {% if request.GET.contract == c.pk|stringformat:"d" %}selected{% endif %}>{{ c.number }} — {{ c.title }}</option>
+        {% endfor %}
+      </select>
+      <select name="clause_type" class="form-select" style="max-width:180px" onchange="this.form.submit()">
+        <option value="">All types</option>
+        {% for value, label in type_choices %}
+          <option value="{{ value }}" {% if request.GET.clause_type == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <select name="status" class="form-select" style="max-width:160px" onchange="this.form.submit()">
+        <option value="">All statuses</option>
+        {% for value, label in status_choices %}
+          <option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <button class="btn btn-outline" type="submit"><i data-lucide="filter"></i> Filter</button>
+    </form>
+  </div>
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr><th>Title</th><th>Contract</th><th>Type</th><th>Status</th><th>Risk</th><th style="text-align:end">Actions</th></tr></thead>
+      <tbody>
+        {% for clause in contractclauses %}
+          <tr>
+            <td><a href="{% url 'contracts:contractclause_detail' clause.pk %}" class="fw-600">{{ clause.title }}</a></td>
+            <td class="list-meta">{% if clause.contract %}{{ clause.contract.number }}{% else %}—{% endif %}</td>
+            <td class="list-meta">{{ clause.get_clause_type_display }}</td>
+            <td>
+              {% if clause.status == 'approved' %}<span class="badge badge-success">Approved</span>
+              {% elif clause.status == 'standard' %}<span class="badge badge-info">Standard</span>
+              {% elif clause.status == 'redlined' %}<span class="badge badge-warning">Redlined</span>
+              {% elif clause.status == 'rejected' %}<span class="badge badge-danger">Rejected</span>
+              {% else %}<span class="badge badge-muted">{{ clause.get_status_display }}</span>{% endif %}
+            </td>
+            <td>
+              {% if clause.risk_level == 'low' %}<span class="badge badge-success">Low</span>
+              {% elif clause.risk_level == 'medium' %}<span class="badge badge-warning">Medium</span>
+              {% elif clause.risk_level == 'high' %}<span class="badge badge-danger">High</span>
+              {% else %}<span class="badge badge-muted">{{ clause.get_risk_level_display }}</span>{% endif %}
+            </td>
+            <td>
+              <div class="table-actions">
+                <a href="{% url 'contracts:contractclause_detail' clause.pk %}" class="btn-icon" title="View"><i data-lucide="eye"></i></a>
+                <a href="{% url 'contracts:contractclause_edit' clause.pk %}" class="btn-icon" title="Edit"><i data-lucide="pencil"></i></a>
+                <form method="post" action="{% url 'contracts:contractclause_delete' clause.pk %}" onsubmit="return confirm('Delete this clause?')">
+                  {% csrf_token %}
+                  <button type="submit" class="btn-icon danger" title="Delete"><i data-lucide="trash-2"></i></button>
+                </form>
+              </div>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="6"><div class="empty-state"><div class="empty-icon"><i data-lucide="file-pen-line"></i></div><h3>No clauses</h3><p>Author your first clause to start redlining contracts.</p><a href="{% url 'contracts:contractclause_create' %}" class="btn btn-primary" style="margin-top:14px"><i data-lucide="plus"></i> Add Clause</a></div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div style="padding:0 16px 12px">{% include "partials/pagination.html" %}</div>
+</div>
+{% endblock %}
