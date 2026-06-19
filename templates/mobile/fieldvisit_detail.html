@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}{{ obj.number }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'mobile:mobiledevice_list' %}">Mobile Sales</a><i data-lucide="chevron-right" style="width:14px"></i>
+  <a href="{% url 'mobile:fieldvisit_list' %}">Field Visits</a><i data-lucide="chevron-right" style="width:14px"></i><span>{{ obj.number }}</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ obj.number }}</h1>
+    <p class="page-subtitle">{{ obj.rep_name }} · {{ obj.account_name }}</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'mobile:fieldvisit_list' %}" class="btn btn-outline"><i data-lucide="arrow-left"></i> Back</a>
+    <a href="{% url 'mobile:fieldvisit_edit' obj.pk %}" class="btn btn-primary"><i data-lucide="pencil"></i> Edit</a>
+  </div>
+</div>
+
+<div class="detail-grid">
+  <div>
+    <div class="card"><div class="card-body">
+      <h3 style="font-size:15px;margin-bottom:12px">Details</h3>
+      <div class="form-grid">
+        <div class="form-group"><div class="form-label">Number</div>
+          <div class="fw-600">{{ obj.number }}</div></div>
+        <div class="form-group"><div class="form-label">Rep</div>
+          <div>{{ obj.rep_name }}</div></div>
+        <div class="form-group"><div class="form-label">Account</div>
+          <div>{{ obj.account_name }}</div></div>
+        <div class="form-group"><div class="form-label">Visit type</div>
+          <div>{{ obj.get_visit_type_display }}</div></div>
+        <div class="form-group"><div class="form-label">Status</div>
+          {% if obj.status == 'completed' %}<span class="badge badge-success">Completed</span>
+          {% elif obj.status == 'checked_in' %}<span class="badge badge-info">Checked in</span>
+          {% elif obj.status == 'planned' %}<span class="badge badge-warning">Planned</span>
+          {% elif obj.status == 'canceled' %}<span class="badge badge-muted">Canceled</span>
+          {% elif obj.status == 'no_show' %}<span class="badge badge-danger">No show</span>
+          {% else %}<span class="badge badge-muted">{{ obj.get_status_display }}</span>{% endif %}
+        </div>
+        <div class="form-group"><div class="form-label">Scheduled on</div>
+          <div>{% if obj.scheduled_on %}{{ obj.scheduled_on|date:"d M Y" }}{% else %}—{% endif %}</div></div>
+        <div class="form-group"><div class="form-label">Location</div>
+          <div>{{ obj.location|default:"—" }}</div></div>
+        <div class="form-group"><div class="form-label">Duration</div>
+          <div>{{ obj.duration_minutes }} min</div></div>
+      </div>
+      {% if obj.notes %}<div class="form-group"><div class="form-label">Notes</div>
+        <div>{{ obj.notes|linebreaksbr }}</div></div>{% endif %}
+    </div></div>
+  </div>
+
+  <div class="card"><div class="card-body">
+    <h3 style="font-size:15px;margin-bottom:12px">Actions</h3>
+    <a href="{% url 'mobile:fieldvisit_edit' obj.pk %}" class="btn btn-outline btn-block" style="margin-bottom:10px"><i data-lucide="pencil"></i> Edit visit</a>
+    <form method="post" action="{% url 'mobile:fieldvisit_delete' obj.pk %}" onsubmit="return confirm('Delete this visit?')">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger btn-block"><i data-lucide="trash-2"></i> Delete visit</button>
+    </form>
+    <hr class="divider">
+    <div class="list-meta">Created {{ obj.created_at|date:"d M Y" }}</div>
+  </div></div>
+</div>
+{% endblock %}
