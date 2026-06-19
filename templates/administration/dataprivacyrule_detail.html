@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}{{ obj.name }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'administration:securitypolicy_list' %}">System Administration</a><i data-lucide="chevron-right" style="width:14px"></i>
+  <a href="{% url 'administration:dataprivacyrule_list' %}">Privacy Rules</a><i data-lucide="chevron-right" style="width:14px"></i><span>{{ obj.name }}</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ obj.name }}</h1>
+    <p class="page-subtitle">{{ obj.get_regulation_display }} · {{ obj.get_action_display }}</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'administration:dataprivacyrule_list' %}" class="btn btn-outline"><i data-lucide="arrow-left"></i> Back</a>
+    <a href="{% url 'administration:dataprivacyrule_edit' obj.pk %}" class="btn btn-primary"><i data-lucide="pencil"></i> Edit</a>
+  </div>
+</div>
+
+<div class="detail-grid">
+  <div>
+    <div class="card"><div class="card-body">
+      <h3 style="font-size:15px;margin-bottom:12px">Details</h3>
+      <div class="form-grid">
+        <div class="form-group"><div class="form-label">Name</div>
+          <div class="fw-600">{{ obj.name }}</div></div>
+        <div class="form-group"><div class="form-label">Regulation</div>
+          <div>{{ obj.get_regulation_display }}</div></div>
+        <div class="form-group"><div class="form-label">Data category</div>
+          <div>{{ obj.get_data_category_display }}</div></div>
+        <div class="form-group"><div class="form-label">Action</div>
+          {% if obj.action == 'delete' %}<span class="badge badge-danger">Delete</span>
+          {% elif obj.action == 'anonymize' %}<span class="badge badge-warning">Anonymize</span>
+          {% elif obj.action == 'encrypt' %}<span class="badge badge-info">Encrypt</span>
+          {% elif obj.action == 'restrict' %}<span class="badge badge-warning">Restrict</span>
+          {% elif obj.action == 'retain' %}<span class="badge badge-success">Retain</span>
+          {% else %}<span class="badge badge-muted">{{ obj.get_action_display }}</span>{% endif %}
+        </div>
+        <div class="form-group"><div class="form-label">Status</div>
+          {% if obj.status == 'active' %}<span class="badge badge-success">Active</span>
+          {% elif obj.status == 'inactive' %}<span class="badge badge-muted">Inactive</span>
+          {% elif obj.status == 'draft' %}<span class="badge badge-muted">Draft</span>
+          {% else %}<span class="badge badge-muted">{{ obj.get_status_display }}</span>{% endif %}
+        </div>
+        <div class="form-group"><div class="form-label">Retention</div>
+          <div>{{ obj.retention_days }} days</div></div>
+      </div>
+      {% if obj.notes %}<div class="form-group"><div class="form-label">Notes</div>
+        <div>{{ obj.notes|linebreaksbr }}</div></div>{% endif %}
+    </div></div>
+  </div>
+
+  <div class="card"><div class="card-body">
+    <h3 style="font-size:15px;margin-bottom:12px">Actions</h3>
+    <a href="{% url 'administration:dataprivacyrule_edit' obj.pk %}" class="btn btn-outline btn-block" style="margin-bottom:10px"><i data-lucide="pencil"></i> Edit rule</a>
+    <form method="post" action="{% url 'administration:dataprivacyrule_delete' obj.pk %}" onsubmit="return confirm('Delete this privacy rule?')">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger btn-block"><i data-lucide="trash-2"></i> Delete rule</button>
+    </form>
+    <hr class="divider">
+    <div class="list-meta">Created {{ obj.created_at|date:"d M Y" }}</div>
+  </div></div>
+</div>
+{% endblock %}
