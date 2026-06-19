@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}{{ obj.title }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'partners:partner_list' %}">Partner & Channel</a><i data-lucide="chevron-right" style="width:14px"></i>
+  <a href="{% url 'partners:partnercollateral_list' %}">Collateral</a><i data-lucide="chevron-right" style="width:14px"></i><span>{{ obj.title }}</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ obj.title }}</h1>
+    <p class="page-subtitle">{{ obj.get_asset_type_display }} · {{ obj.get_access_level_display }} access</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'partners:partnercollateral_list' %}" class="btn btn-outline"><i data-lucide="arrow-left"></i> Back</a>
+    <a href="{% url 'partners:partnercollateral_edit' obj.pk %}" class="btn btn-primary"><i data-lucide="pencil"></i> Edit</a>
+  </div>
+</div>
+
+<div class="detail-grid">
+  <div>
+    <div class="card"><div class="card-body">
+      <h3 style="font-size:15px;margin-bottom:12px">Details</h3>
+      <div class="form-grid">
+        <div class="form-group"><div class="form-label">Title</div>
+          <div class="fw-600">{{ obj.title }}</div></div>
+        <div class="form-group"><div class="form-label">Type</div>
+          {% if obj.asset_type == 'datasheet' %}<span class="badge badge-info">Datasheet</span>
+          {% elif obj.asset_type == 'playbook' %}<span class="badge badge-info">Playbook</span>
+          {% elif obj.asset_type == 'pricing' %}<span class="badge badge-warning">Pricing</span>
+          {% elif obj.asset_type == 'training' %}<span class="badge badge-success">Training</span>
+          {% elif obj.asset_type == 'logo' %}<span class="badge badge-muted">Logo</span>
+          {% elif obj.asset_type == 'contract' %}<span class="badge badge-danger">Contract</span>
+          {% else %}<span class="badge badge-muted">{{ obj.get_asset_type_display }}</span>{% endif %}
+        </div>
+        <div class="form-group"><div class="form-label">Access level</div>
+          <div>{{ obj.get_access_level_display }}</div></div>
+        <div class="form-group"><div class="form-label">Partner</div>
+          <div>{% if obj.partner %}<a href="{% url 'partners:partner_detail' obj.partner.pk %}">{{ obj.partner.name }}</a>{% else %}—{% endif %}</div></div>
+        <div class="form-group"><div class="form-label">Version</div>
+          <div>{{ obj.version|default:"—" }}</div></div>
+        <div class="form-group"><div class="form-label">Published on</div>
+          <div>{% if obj.published_on %}{{ obj.published_on|date:"d M Y" }}{% else %}—{% endif %}</div></div>
+      </div>
+      {% if obj.notes %}<div class="form-group"><div class="form-label">Notes</div>
+        <div>{{ obj.notes|linebreaksbr }}</div></div>{% endif %}
+    </div></div>
+  </div>
+
+  <div class="card"><div class="card-body">
+    <h3 style="font-size:15px;margin-bottom:12px">Actions</h3>
+    <a href="{% url 'partners:partnercollateral_edit' obj.pk %}" class="btn btn-outline btn-block" style="margin-bottom:10px"><i data-lucide="pencil"></i> Edit collateral</a>
+    <form method="post" action="{% url 'partners:partnercollateral_delete' obj.pk %}" onsubmit="return confirm('Delete this collateral?')">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger btn-block"><i data-lucide="trash-2"></i> Delete collateral</button>
+    </form>
+    <hr class="divider">
+    <div class="list-meta">Created {{ obj.created_at|date:"d M Y" }}</div>
+  </div></div>
+</div>
+{% endblock %}
