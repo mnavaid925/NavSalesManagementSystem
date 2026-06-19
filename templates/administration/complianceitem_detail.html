@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}{{ obj.title }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'administration:securitypolicy_list' %}">System Administration</a><i data-lucide="chevron-right" style="width:14px"></i>
+  <a href="{% url 'administration:complianceitem_list' %}">Compliance</a><i data-lucide="chevron-right" style="width:14px"></i><span>{{ obj.title }}</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ obj.title }}</h1>
+    <p class="page-subtitle">{{ obj.get_framework_display }} · {{ obj.get_status_display }}</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'administration:complianceitem_list' %}" class="btn btn-outline"><i data-lucide="arrow-left"></i> Back</a>
+    <a href="{% url 'administration:complianceitem_edit' obj.pk %}" class="btn btn-primary"><i data-lucide="pencil"></i> Edit</a>
+  </div>
+</div>
+
+<div class="detail-grid">
+  <div>
+    <div class="card"><div class="card-body">
+      <h3 style="font-size:15px;margin-bottom:12px">Details</h3>
+      <div class="form-grid">
+        <div class="form-group"><div class="form-label">Title</div>
+          <div class="fw-600">{{ obj.title }}</div></div>
+        <div class="form-group"><div class="form-label">Framework</div>
+          <div>{{ obj.get_framework_display }}</div></div>
+        <div class="form-group"><div class="form-label">Owner</div>
+          <div>{{ obj.owner|default:"—" }}</div></div>
+        <div class="form-group"><div class="form-label">Severity</div>
+          {% if obj.severity == 'critical' %}<span class="badge badge-danger">Critical</span>
+          {% elif obj.severity == 'high' %}<span class="badge badge-warning">High</span>
+          {% elif obj.severity == 'medium' %}<span class="badge badge-info">Medium</span>
+          {% elif obj.severity == 'low' %}<span class="badge badge-muted">Low</span>
+          {% else %}<span class="badge badge-muted">{{ obj.get_severity_display }}</span>{% endif %}
+        </div>
+        <div class="form-group"><div class="form-label">Status</div>
+          {% if obj.status == 'compliant' %}<span class="badge badge-success">Compliant</span>
+          {% elif obj.status == 'non_compliant' %}<span class="badge badge-danger">Non-compliant</span>
+          {% elif obj.status == 'in_progress' %}<span class="badge badge-warning">In progress</span>
+          {% elif obj.status == 'not_applicable' %}<span class="badge badge-muted">Not applicable</span>
+          {% else %}<span class="badge badge-muted">{{ obj.get_status_display }}</span>{% endif %}
+        </div>
+        <div class="form-group"><div class="form-label">Due date</div>
+          <div>{% if obj.due_date %}{{ obj.due_date|date:"d M Y" }}{% else %}—{% endif %}</div></div>
+        <div class="form-group"><div class="form-label">Last audited</div>
+          <div>{% if obj.last_audited %}{{ obj.last_audited|date:"d M Y" }}{% else %}—{% endif %}</div></div>
+      </div>
+      {% if obj.notes %}<div class="form-group"><div class="form-label">Notes</div>
+        <div>{{ obj.notes|linebreaksbr }}</div></div>{% endif %}
+    </div></div>
+  </div>
+
+  <div class="card"><div class="card-body">
+    <h3 style="font-size:15px;margin-bottom:12px">Actions</h3>
+    <a href="{% url 'administration:complianceitem_edit' obj.pk %}" class="btn btn-outline btn-block" style="margin-bottom:10px"><i data-lucide="pencil"></i> Edit item</a>
+    <form method="post" action="{% url 'administration:complianceitem_delete' obj.pk %}" onsubmit="return confirm('Delete this compliance item?')">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger btn-block"><i data-lucide="trash-2"></i> Delete item</button>
+    </form>
+    <hr class="divider">
+    <div class="list-meta">Created {{ obj.created_at|date:"d M Y" }}</div>
+  </div></div>
+</div>
+{% endblock %}
