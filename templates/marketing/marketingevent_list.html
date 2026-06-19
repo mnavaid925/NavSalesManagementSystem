@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block title %}Event &amp; Webinar Management{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'marketing:campaigninfluence_list' %}">Marketing Alignment</a><i data-lucide="chevron-right" style="width:14px"></i><span>Events</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Event &amp; Webinar Management</h1>
+    <p class="page-subtitle">{{ total }} event{{ total|pluralize }} on record</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'marketing:marketingevent_create' %}" class="btn btn-primary"><i data-lucide="plus"></i> Add Event</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <form method="get" style="display:flex;gap:10px;flex-wrap:wrap;width:100%;align-items:center">
+      <input type="search" name="q" value="{{ request.GET.q }}" placeholder="Search events…" class="form-input" style="max-width:220px">
+      <span class="list-meta" style="margin-inline-end:auto"></span>
+      <select name="event_type" class="form-select" style="max-width:170px" onchange="this.form.submit()">
+        <option value="">All types</option>
+        {% for value, label in event_type_choices %}
+          <option value="{{ value }}" {% if request.GET.event_type == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <select name="status" class="form-select" style="max-width:180px" onchange="this.form.submit()">
+        <option value="">All statuses</option>
+        {% for value, label in status_choices %}
+          <option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <button class="btn btn-outline" type="submit"><i data-lucide="filter"></i> Filter</button>
+    </form>
+  </div>
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr><th>Number</th><th>Name</th><th>Type</th><th>Status</th><th>Event date</th><th style="text-align:end">Leads</th><th style="text-align:end">Actions</th></tr></thead>
+      <tbody>
+        {% for event in marketingevents %}
+          <tr>
+            <td>
+              <a href="{% url 'marketing:marketingevent_detail' event.pk %}" class="fw-600">{{ event.number }}</a>
+              {% if event.location %}<div class="list-meta">{{ event.location }}</div>{% endif %}
+            </td>
+            <td>{{ event.name }}</td>
+            <td class="list-meta">{{ event.get_event_type_display }}</td>
+            <td>
+              {% if event.status == 'live' %}<span class="badge badge-success">Live</span>
+              {% elif event.status == 'registration_open' %}<span class="badge badge-info">Registration open</span>
+              {% elif event.status == 'planned' %}<span class="badge badge-warning">Planned</span>
+              {% elif event.status == 'completed' %}<span class="badge badge-muted">Completed</span>
+              {% elif event.status == 'canceled' %}<span class="badge badge-danger">Canceled</span>
+              {% else %}<span class="badge badge-muted">{{ event.get_status_display }}</span>{% endif %}
+            </td>
+            <td class="list-meta">{% if event.event_date %}{{ event.event_date|date:"d M Y" }}{% else %}—{% endif %}</td>
+            <td style="text-align:end" class="fw-600">{{ event.leads_captured }}</td>
+            <td>
+              <div class="table-actions">
+                <a href="{% url 'marketing:marketingevent_detail' event.pk %}" class="btn-icon" title="View"><i data-lucide="eye"></i></a>
+                <a href="{% url 'marketing:marketingevent_edit' event.pk %}" class="btn-icon" title="Edit"><i data-lucide="pencil"></i></a>
+                <form method="post" action="{% url 'marketing:marketingevent_delete' event.pk %}" onsubmit="return confirm('Delete this event?')">
+                  {% csrf_token %}
+                  <button type="submit" class="btn-icon danger" title="Delete"><i data-lucide="trash-2"></i></button>
+                </form>
+              </div>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="7"><div class="empty-state"><div class="empty-icon"><i data-lucide="calendar"></i></div><h3>No events</h3><p>Create your first event or webinar to start tracking registrations.</p><a href="{% url 'marketing:marketingevent_create' %}" class="btn btn-primary" style="margin-top:14px"><i data-lucide="plus"></i> Add Event</a></div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div style="padding:0 16px 12px">{% include "partials/pagination.html" %}</div>
+</div>
+{% endblock %}
