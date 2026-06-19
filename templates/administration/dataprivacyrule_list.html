@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block title %}Data Privacy Rules{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'administration:securitypolicy_list' %}">System Administration</a><i data-lucide="chevron-right" style="width:14px"></i><span>Privacy Rules</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Data Privacy Rules</h1>
+    <p class="page-subtitle">{{ total }} rule{{ total|pluralize }} on record</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'administration:dataprivacyrule_create' %}" class="btn btn-primary"><i data-lucide="plus"></i> Add Rule</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <form method="get" style="display:flex;gap:10px;flex-wrap:wrap;width:100%;align-items:center">
+      <input type="search" name="q" value="{{ request.GET.q }}" placeholder="Search rules…" class="form-input" style="max-width:220px">
+      <span class="list-meta" style="margin-inline-end:auto"></span>
+      <select name="regulation" class="form-select" style="max-width:150px" onchange="this.form.submit()">
+        <option value="">All regulations</option>
+        {% for value, label in regulation_choices %}
+          <option value="{{ value }}" {% if request.GET.regulation == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <select name="data_category" class="form-select" style="max-width:150px" onchange="this.form.submit()">
+        <option value="">All categories</option>
+        {% for value, label in category_choices %}
+          <option value="{{ value }}" {% if request.GET.data_category == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <select name="action" class="form-select" style="max-width:140px" onchange="this.form.submit()">
+        <option value="">All actions</option>
+        {% for value, label in action_choices %}
+          <option value="{{ value }}" {% if request.GET.action == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <select name="status" class="form-select" style="max-width:140px" onchange="this.form.submit()">
+        <option value="">All statuses</option>
+        {% for value, label in status_choices %}
+          <option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <button class="btn btn-outline" type="submit"><i data-lucide="filter"></i> Filter</button>
+    </form>
+  </div>
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr><th>Rule</th><th>Regulation</th><th>Category</th><th>Action</th><th>Status</th><th style="text-align:end">Retention</th><th style="text-align:end">Actions</th></tr></thead>
+      <tbody>
+        {% for rule in dataprivacyrules %}
+          <tr>
+            <td><a href="{% url 'administration:dataprivacyrule_detail' rule.pk %}" class="fw-600">{{ rule.name }}</a></td>
+            <td class="list-meta">{{ rule.get_regulation_display }}</td>
+            <td class="list-meta">{{ rule.get_data_category_display }}</td>
+            <td>
+              {% if rule.action == 'delete' %}<span class="badge badge-danger">Delete</span>
+              {% elif rule.action == 'anonymize' %}<span class="badge badge-warning">Anonymize</span>
+              {% elif rule.action == 'encrypt' %}<span class="badge badge-info">Encrypt</span>
+              {% elif rule.action == 'restrict' %}<span class="badge badge-warning">Restrict</span>
+              {% elif rule.action == 'retain' %}<span class="badge badge-success">Retain</span>
+              {% else %}<span class="badge badge-muted">{{ rule.get_action_display }}</span>{% endif %}
+            </td>
+            <td>
+              {% if rule.status == 'active' %}<span class="badge badge-success">Active</span>
+              {% elif rule.status == 'inactive' %}<span class="badge badge-muted">Inactive</span>
+              {% elif rule.status == 'draft' %}<span class="badge badge-muted">Draft</span>
+              {% else %}<span class="badge badge-muted">{{ rule.get_status_display }}</span>{% endif %}
+            </td>
+            <td style="text-align:end" class="list-meta">{{ rule.retention_days }} days</td>
+            <td>
+              <div class="table-actions">
+                <a href="{% url 'administration:dataprivacyrule_detail' rule.pk %}" class="btn-icon" title="View"><i data-lucide="eye"></i></a>
+                <a href="{% url 'administration:dataprivacyrule_edit' rule.pk %}" class="btn-icon" title="Edit"><i data-lucide="pencil"></i></a>
+                <form method="post" action="{% url 'administration:dataprivacyrule_delete' rule.pk %}" onsubmit="return confirm('Delete this privacy rule?')">
+                  {% csrf_token %}
+                  <button type="submit" class="btn-icon danger" title="Delete"><i data-lucide="trash-2"></i></button>
+                </form>
+              </div>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="7"><div class="empty-state"><div class="empty-icon"><i data-lucide="shield-check"></i></div><h3>No privacy rules</h3><p>Add your first rule to govern how data is retained or removed.</p><a href="{% url 'administration:dataprivacyrule_create' %}" class="btn btn-primary" style="margin-top:14px"><i data-lucide="plus"></i> Add Rule</a></div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div style="padding:0 16px 12px">{% include "partials/pagination.html" %}</div>
+</div>
+{% endblock %}
