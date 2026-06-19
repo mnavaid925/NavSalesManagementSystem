@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}{{ obj.account_name }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'contracts:contract_list' %}">Contracts</a><i data-lucide="chevron-right" style="width:14px"></i>
+  <a href="{% url 'contracts:renewalschedule_list' %}">Renewals</a><i data-lucide="chevron-right" style="width:14px"></i><span>{{ obj.account_name }}</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ obj.account_name }}</h1>
+    <p class="page-subtitle">Renews {% if obj.renewal_date %}{{ obj.renewal_date|date:"d M Y" }}{% else %}—{% endif %}</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'contracts:renewalschedule_list' %}" class="btn btn-outline"><i data-lucide="arrow-left"></i> Back</a>
+    <a href="{% url 'contracts:renewalschedule_edit' obj.pk %}" class="btn btn-primary"><i data-lucide="pencil"></i> Edit</a>
+  </div>
+</div>
+
+<div class="detail-grid">
+  <div>
+    <div class="card"><div class="card-body">
+      <h3 style="font-size:15px;margin-bottom:12px">Details</h3>
+      <div class="form-grid">
+        <div class="form-group"><div class="form-label">Account</div>
+          <div class="fw-600">{{ obj.account_name }}</div></div>
+        <div class="form-group"><div class="form-label">Contract</div>
+          <div>{% if obj.contract %}<a href="{% url 'contracts:contract_detail' obj.contract.pk %}">{{ obj.contract.number }} — {{ obj.contract.title }}</a>{% else %}—{% endif %}</div></div>
+        <div class="form-group"><div class="form-label">Status</div>
+          {% if obj.status == 'renewed' %}<span class="badge badge-success">Renewed</span>
+          {% elif obj.status == 'in_progress' %}<span class="badge badge-info">In progress</span>
+          {% elif obj.status == 'upcoming' %}<span class="badge badge-warning">Upcoming</span>
+          {% elif obj.status == 'at_risk' %}<span class="badge badge-danger">At risk</span>
+          {% elif obj.status == 'churned' %}<span class="badge badge-muted">Churned</span>
+          {% else %}<span class="badge badge-muted">{{ obj.get_status_display }}</span>{% endif %}
+        </div>
+        <div class="form-group"><div class="form-label">Renewal date</div>
+          <div>{% if obj.renewal_date %}{{ obj.renewal_date|date:"d M Y" }}{% else %}—{% endif %}</div></div>
+        <div class="form-group"><div class="form-label">Current value</div>
+          <div>${{ obj.current_value|floatformat:2 }}</div></div>
+        <div class="form-group"><div class="form-label">Proposed value</div>
+          <div class="fw-600">${{ obj.proposed_value|floatformat:2 }}</div></div>
+        <div class="form-group"><div class="form-label">Auto-renew</div>
+          <div>{% if obj.auto_renew %}<span class="badge badge-success">Yes</span>{% else %}<span class="badge badge-muted">No</span>{% endif %}</div></div>
+        <div class="form-group"><div class="form-label">Notice days</div>
+          <div>{{ obj.notice_days }}</div></div>
+      </div>
+      {% if obj.notes %}<div class="form-group"><div class="form-label">Notes</div>
+        <div>{{ obj.notes|linebreaksbr }}</div></div>{% endif %}
+    </div></div>
+  </div>
+
+  <div class="card"><div class="card-body">
+    <h3 style="font-size:15px;margin-bottom:12px">Actions</h3>
+    <a href="{% url 'contracts:renewalschedule_edit' obj.pk %}" class="btn btn-outline btn-block" style="margin-bottom:10px"><i data-lucide="pencil"></i> Edit renewal</a>
+    <form method="post" action="{% url 'contracts:renewalschedule_delete' obj.pk %}" onsubmit="return confirm('Delete this renewal?')">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger btn-block"><i data-lucide="trash-2"></i> Delete renewal</button>
+    </form>
+    <hr class="divider">
+    <div class="list-meta">Created {{ obj.created_at|date:"d M Y" }}</div>
+  </div></div>
+</div>
+{% endblock %}
