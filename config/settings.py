@@ -59,6 +59,16 @@ INSTALLED_APPS = [
     "apps.activities",
     "apps.enablement",
     "apps.compensation",
+    "apps.success",
+    "apps.analytics",
+    "apps.marketing",
+    "apps.partners",
+    "apps.contracts",
+    "apps.mobile",
+    "apps.automation",
+    "apps.integrations",
+    "apps.masterdata",
+    "apps.administration",
 ]
 
 MIDDLEWARE = [
