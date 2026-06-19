@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}{{ obj.number }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'partners:partner_list' %}">Partner & Channel</a><i data-lucide="chevron-right" style="width:14px"></i>
+  <a href="{% url 'partners:dealregistration_list' %}">Deal Registrations</a><i data-lucide="chevron-right" style="width:14px"></i><span>{{ obj.number }}</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ obj.number }}</h1>
+    <p class="page-subtitle">{{ obj.deal_name }} · ${{ obj.amount|floatformat:2 }}</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'partners:dealregistration_list' %}" class="btn btn-outline"><i data-lucide="arrow-left"></i> Back</a>
+    <a href="{% url 'partners:dealregistration_edit' obj.pk %}" class="btn btn-primary"><i data-lucide="pencil"></i> Edit</a>
+  </div>
+</div>
+
+<div class="detail-grid">
+  <div>
+    <div class="card"><div class="card-body">
+      <h3 style="font-size:15px;margin-bottom:12px">Details</h3>
+      <div class="form-grid">
+        <div class="form-group"><div class="form-label">Number</div>
+          <div class="fw-600">{{ obj.number }}</div></div>
+        <div class="form-group"><div class="form-label">Deal name</div>
+          <div>{{ obj.deal_name }}</div></div>
+        <div class="form-group"><div class="form-label">Customer</div>
+          <div>{{ obj.customer_name }}</div></div>
+        <div class="form-group"><div class="form-label">Partner</div>
+          <div>{% if obj.partner %}<a href="{% url 'partners:partner_detail' obj.partner.pk %}">{{ obj.partner.name }}</a>{% else %}—{% endif %}</div></div>
+        <div class="form-group"><div class="form-label">Status</div>
+          {% if obj.status == 'won' %}<span class="badge badge-success">Won</span>
+          {% elif obj.status == 'approved' %}<span class="badge badge-info">Approved</span>
+          {% elif obj.status == 'submitted' %}<span class="badge badge-warning">Submitted</span>
+          {% elif obj.status == 'rejected' %}<span class="badge badge-danger">Rejected</span>
+          {% elif obj.status == 'expired' %}<span class="badge badge-muted">Expired</span>
+          {% else %}<span class="badge badge-muted">{{ obj.get_status_display }}</span>{% endif %}
+        </div>
+        <div class="form-group"><div class="form-label">Amount</div>
+          <div class="fw-600">${{ obj.amount|floatformat:2 }}</div></div>
+        <div class="form-group"><div class="form-label">Registered on</div>
+          <div>{% if obj.registered_on %}{{ obj.registered_on|date:"d M Y" }}{% else %}—{% endif %}</div></div>
+        <div class="form-group"><div class="form-label">Expires on</div>
+          <div>{% if obj.expires_on %}{{ obj.expires_on|date:"d M Y" }}{% else %}—{% endif %}</div></div>
+      </div>
+      {% if obj.notes %}<div class="form-group"><div class="form-label">Notes</div>
+        <div>{{ obj.notes|linebreaksbr }}</div></div>{% endif %}
+    </div></div>
+  </div>
+
+  <div class="card"><div class="card-body">
+    <h3 style="font-size:15px;margin-bottom:12px">Actions</h3>
+    <a href="{% url 'partners:dealregistration_edit' obj.pk %}" class="btn btn-outline btn-block" style="margin-bottom:10px"><i data-lucide="pencil"></i> Edit deal</a>
+    <form method="post" action="{% url 'partners:dealregistration_delete' obj.pk %}" onsubmit="return confirm('Delete this deal registration?')">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger btn-block"><i data-lucide="trash-2"></i> Delete deal</button>
+    </form>
+    <hr class="divider">
+    <div class="list-meta">Created {{ obj.created_at|date:"d M Y" }}</div>
+  </div></div>
+</div>
+{% endblock %}
