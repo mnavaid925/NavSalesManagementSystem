@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block title %}Mobile Dashboards & Alerts{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'mobile:mobiledevice_list' %}">Mobile Sales</a><i data-lucide="chevron-right" style="width:14px"></i><span>Alerts</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Mobile Dashboards &amp; Alerts</h1>
+    <p class="page-subtitle">{{ total }} alert{{ total|pluralize }} on record</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'mobile:mobilealert_create' %}" class="btn btn-primary"><i data-lucide="plus"></i> Add Alert</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <form method="get" style="display:flex;gap:10px;flex-wrap:wrap;width:100%;align-items:center">
+      <input type="search" name="q" value="{{ request.GET.q }}" placeholder="Search alerts…" class="form-input" style="max-width:220px">
+      <span class="list-meta" style="margin-inline-end:auto"></span>
+      <select name="alert_type" class="form-select" style="max-width:170px" onchange="this.form.submit()">
+        <option value="">All types</option>
+        {% for value, label in type_choices %}
+          <option value="{{ value }}" {% if request.GET.alert_type == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <select name="priority" class="form-select" style="max-width:150px" onchange="this.form.submit()">
+        <option value="">All priorities</option>
+        {% for value, label in priority_choices %}
+          <option value="{{ value }}" {% if request.GET.priority == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <select name="status" class="form-select" style="max-width:150px" onchange="this.form.submit()">
+        <option value="">All statuses</option>
+        {% for value, label in status_choices %}
+          <option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <button class="btn btn-outline" type="submit"><i data-lucide="filter"></i> Filter</button>
+    </form>
+  </div>
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr><th>Title</th><th>Type</th><th>Priority</th><th>Status</th><th>Recipient</th><th>Sent</th><th style="text-align:end">Actions</th></tr></thead>
+      <tbody>
+        {% for alert in mobilealerts %}
+          <tr>
+            <td>
+              <a href="{% url 'mobile:mobilealert_detail' alert.pk %}" class="fw-600">{{ alert.title }}</a>
+            </td>
+            <td class="list-meta">{{ alert.get_alert_type_display }}</td>
+            <td>
+              {% if alert.priority == 'urgent' %}<span class="badge badge-danger">Urgent</span>
+              {% elif alert.priority == 'high' %}<span class="badge badge-warning">High</span>
+              {% elif alert.priority == 'medium' %}<span class="badge badge-info">Medium</span>
+              {% elif alert.priority == 'low' %}<span class="badge badge-muted">Low</span>
+              {% else %}<span class="badge badge-muted">{{ alert.get_priority_display }}</span>{% endif %}
+            </td>
+            <td>
+              {% if alert.status == 'unread' %}<span class="badge badge-warning">Unread</span>
+              {% elif alert.status == 'read' %}<span class="badge badge-info">Read</span>
+              {% elif alert.status == 'dismissed' %}<span class="badge badge-muted">Dismissed</span>
+              {% elif alert.status == 'actioned' %}<span class="badge badge-success">Actioned</span>
+              {% else %}<span class="badge badge-muted">{{ alert.get_status_display }}</span>{% endif %}
+            </td>
+            <td class="list-meta">{{ alert.recipient|default:"—" }}</td>
+            <td class="list-meta">{{ alert.created_at|date:"d M Y" }}</td>
+            <td>
+              <div class="table-actions">
+                <a href="{% url 'mobile:mobilealert_detail' alert.pk %}" class="btn-icon" title="View"><i data-lucide="eye"></i></a>
+                <a href="{% url 'mobile:mobilealert_edit' alert.pk %}" class="btn-icon" title="Edit"><i data-lucide="pencil"></i></a>
+                <form method="post" action="{% url 'mobile:mobilealert_delete' alert.pk %}" onsubmit="return confirm('Delete this alert?')">
+                  {% csrf_token %}
+                  <button type="submit" class="btn-icon danger" title="Delete"><i data-lucide="trash-2"></i></button>
+                </form>
+              </div>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="7"><div class="empty-state"><div class="empty-icon"><i data-lucide="bell"></i></div><h3>No alerts</h3><p>Create your first alert to surface it on the mobile dashboard.</p><a href="{% url 'mobile:mobilealert_create' %}" class="btn btn-primary" style="margin-top:14px"><i data-lucide="plus"></i> Add Alert</a></div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div style="padding:0 16px 12px">{% include "partials/pagination.html" %}</div>
+</div>
+{% endblock %}
