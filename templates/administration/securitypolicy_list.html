@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}Data Security &amp; Privacy{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'administration:securitypolicy_list' %}">System Administration</a><i data-lucide="chevron-right" style="width:14px"></i><span>Security Policies</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Data Security &amp; Privacy</h1>
+    <p class="page-subtitle">{{ total }} policy{{ total|pluralize:"y,ies" }} on record</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'administration:dataprivacyrule_list' %}" class="btn btn-outline"><i data-lucide="shield-check"></i> Privacy Rules</a>
+    <a href="{% url 'administration:complianceitem_list' %}" class="btn btn-outline"><i data-lucide="clipboard-check"></i> Compliance</a>
+    <a href="{% url 'administration:securitypolicy_create' %}" class="btn btn-primary"><i data-lucide="plus"></i> Add Policy</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <form method="get" style="display:flex;gap:10px;flex-wrap:wrap;width:100%;align-items:center">
+      <input type="search" name="q" value="{{ request.GET.q }}" placeholder="Search policies…" class="form-input" style="max-width:240px">
+      <span class="list-meta" style="margin-inline-end:auto"></span>
+      <select name="policy_type" class="form-select" style="max-width:180px" onchange="this.form.submit()">
+        <option value="">All types</option>
+        {% for value, label in type_choices %}
+          <option value="{{ value }}" {% if request.GET.policy_type == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <select name="severity" class="form-select" style="max-width:160px" onchange="this.form.submit()">
+        <option value="">All severities</option>
+        {% for value, label in severity_choices %}
+          <option value="{{ value }}" {% if request.GET.severity == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <select name="status" class="form-select" style="max-width:160px" onchange="this.form.submit()">
+        <option value="">All statuses</option>
+        {% for value, label in status_choices %}
+          <option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <button class="btn btn-outline" type="submit"><i data-lucide="filter"></i> Filter</button>
+    </form>
+  </div>
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr><th>Policy</th><th>Type</th><th>Severity</th><th>Status</th><th>Last reviewed</th><th style="text-align:end">Actions</th></tr></thead>
+      <tbody>
+        {% for policy in securitypolicys %}
+          <tr>
+            <td>
+              <a href="{% url 'administration:securitypolicy_detail' policy.pk %}" class="fw-600">{{ policy.name }}</a>
+              <div class="list-meta">{{ policy.get_scope_display }}</div>
+            </td>
+            <td class="list-meta">{{ policy.get_policy_type_display }}</td>
+            <td>
+              {% if policy.severity == 'critical' %}<span class="badge badge-danger">Critical</span>
+              {% elif policy.severity == 'high' %}<span class="badge badge-warning">High</span>
+              {% elif policy.severity == 'medium' %}<span class="badge badge-info">Medium</span>
+              {% elif policy.severity == 'low' %}<span class="badge badge-muted">Low</span>
+              {% else %}<span class="badge badge-muted">{{ policy.get_severity_display }}</span>{% endif %}
+            </td>
+            <td>
+              {% if policy.status == 'enforced' %}<span class="badge badge-success">Enforced</span>
+              {% elif policy.status == 'draft' %}<span class="badge badge-muted">Draft</span>
+              {% elif policy.status == 'disabled' %}<span class="badge badge-danger">Disabled</span>
+              {% else %}<span class="badge badge-muted">{{ policy.get_status_display }}</span>{% endif %}
+            </td>
+            <td class="list-meta">{% if policy.last_reviewed %}{{ policy.last_reviewed|date:"d M Y" }}{% else %}—{% endif %}</td>
+            <td>
+              <div class="table-actions">
+                <a href="{% url 'administration:securitypolicy_detail' policy.pk %}" class="btn-icon" title="View"><i data-lucide="eye"></i></a>
+                <a href="{% url 'administration:securitypolicy_edit' policy.pk %}" class="btn-icon" title="Edit"><i data-lucide="pencil"></i></a>
+                <form method="post" action="{% url 'administration:securitypolicy_delete' policy.pk %}" onsubmit="return confirm('Delete this security policy?')">
+                  {% csrf_token %}
+                  <button type="submit" class="btn-icon danger" title="Delete"><i data-lucide="trash-2"></i></button>
+                </form>
+              </div>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="6"><div class="empty-state"><div class="empty-icon"><i data-lucide="shield"></i></div><h3>No security policies</h3><p>Define your first policy to start enforcing security controls.</p><a href="{% url 'administration:securitypolicy_create' %}" class="btn btn-primary" style="margin-top:14px"><i data-lucide="plus"></i> Add Policy</a></div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div style="padding:0 16px 12px">{% include "partials/pagination.html" %}</div>
+</div>
+{% endblock %}
