@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}{{ obj.number }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'integrations:connector_list' %}">Integration &amp; API Hub</a><i data-lucide="chevron-right" style="width:14px"></i>
+  <a href="{% url 'integrations:syncjob_list' %}">Sync Jobs</a><i data-lucide="chevron-right" style="width:14px"></i><span>{{ obj.number }}</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ obj.number }}</h1>
+    <p class="page-subtitle">{{ obj.name }} · {{ obj.get_direction_display }}</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'integrations:syncjob_list' %}" class="btn btn-outline"><i data-lucide="arrow-left"></i> Back</a>
+    <a href="{% url 'integrations:syncjob_edit' obj.pk %}" class="btn btn-primary"><i data-lucide="pencil"></i> Edit</a>
+  </div>
+</div>
+
+<div class="detail-grid">
+  <div>
+    <div class="card"><div class="card-body">
+      <h3 style="font-size:15px;margin-bottom:12px">Details</h3>
+      <div class="form-grid">
+        <div class="form-group"><div class="form-label">Number</div>
+          <div class="fw-600">{{ obj.number }}</div></div>
+        <div class="form-group"><div class="form-label">Name</div>
+          <div>{{ obj.name }}</div></div>
+        <div class="form-group"><div class="form-label">Connector</div>
+          <div>{% if obj.connector %}<a href="{% url 'integrations:connector_detail' obj.connector.pk %}">{{ obj.connector.name }}</a>{% else %}—{% endif %}</div></div>
+        <div class="form-group"><div class="form-label">Direction</div>
+          <div>{{ obj.get_direction_display }}</div></div>
+        <div class="form-group"><div class="form-label">Status</div>
+          {% if obj.status == 'success' %}<span class="badge badge-success">Success</span>
+          {% elif obj.status == 'running' %}<span class="badge badge-info">Running</span>
+          {% elif obj.status == 'scheduled' %}<span class="badge badge-muted">Scheduled</span>
+          {% elif obj.status == 'paused' %}<span class="badge badge-warning">Paused</span>
+          {% elif obj.status == 'failed' %}<span class="badge badge-danger">Failed</span>
+          {% else %}<span class="badge badge-muted">{{ obj.get_status_display }}</span>{% endif %}
+        </div>
+        <div class="form-group"><div class="form-label">Schedule</div>
+          <div>{{ obj.get_schedule_display }}</div></div>
+        <div class="form-group"><div class="form-label">Records synced</div>
+          <div class="fw-600">{{ obj.records_synced }}</div></div>
+        <div class="form-group"><div class="form-label">Last run</div>
+          <div>{% if obj.last_run %}{{ obj.last_run|date:"d M Y H:i" }}{% else %}—{% endif %}</div></div>
+      </div>
+      {% if obj.notes %}<div class="form-group"><div class="form-label">Notes</div>
+        <div>{{ obj.notes|linebreaksbr }}</div></div>{% endif %}
+    </div></div>
+
+    <div class="card" style="margin-top:18px"><div class="card-header"><h3 class="card-title">Logs</h3></div>
+      <div class="table-wrap">
+        <table class="table">
+          <thead><tr><th>Level</th><th>Message</th><th>Occurred at</th><th style="text-align:end">Records</th></tr></thead>
+          <tbody>
+            {% for l in logs %}
+              <tr>
+                <td>
+                  {% if l.level == 'success' %}<span class="badge badge-success">Success</span>
+                  {% elif l.level == 'info' %}<span class="badge badge-info">Info</span>
+                  {% elif l.level == 'warning' %}<span class="badge badge-warning">Warning</span>
+                  {% elif l.level == 'error' %}<span class="badge badge-danger">Error</span>
+                  {% else %}<span class="badge badge-muted">{{ l.get_level_display }}</span>{% endif %}
+                </td>
+                <td class="list-meta"><a href="{% url 'integrations:synclog_detail' l.pk %}">{{ l.message|truncatechars:60|default:"—" }}</a></td>
+                <td class="list-meta">{% if l.occurred_at %}{{ l.occurred_at|date:"d M Y H:i" }}{% else %}—{% endif %}</td>
+                <td style="text-align:end">{{ l.records_affected }}</td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="4"><div class="empty-state"><div class="empty-icon"><i data-lucide="scroll-text"></i></div><h3>No logs</h3><p>Log lines from this job's runs will appear here.</p></div></td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="card"><div class="card-body">
+    <h3 style="font-size:15px;margin-bottom:12px">Actions</h3>
+    <a href="{% url 'integrations:syncjob_edit' obj.pk %}" class="btn btn-outline btn-block" style="margin-bottom:10px"><i data-lucide="pencil"></i> Edit sync job</a>
+    <form method="post" action="{% url 'integrations:syncjob_delete' obj.pk %}" onsubmit="return confirm('Delete this sync job?')">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger btn-block"><i data-lucide="trash-2"></i> Delete sync job</button>
+    </form>
+    <hr class="divider">
+    <div class="list-meta">Created {{ obj.created_at|date:"d M Y" }}</div>
+  </div></div>
+</div>
+{% endblock %}
