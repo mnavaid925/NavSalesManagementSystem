@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}{{ obj.campaign_name }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'marketing:campaigninfluence_list' %}">Marketing Alignment</a><i data-lucide="chevron-right" style="width:14px"></i>
+  <a href="{% url 'marketing:campaignperformance_list' %}">Campaign Performance</a><i data-lucide="chevron-right" style="width:14px"></i><span>{{ obj.campaign_name }}</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ obj.campaign_name }}</h1>
+    <p class="page-subtitle">{{ obj.get_channel_display }} · ${{ obj.spend|floatformat:2 }} spend</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'marketing:campaignperformance_list' %}" class="btn btn-outline"><i data-lucide="arrow-left"></i> Back</a>
+    <a href="{% url 'marketing:campaignperformance_edit' obj.pk %}" class="btn btn-primary"><i data-lucide="pencil"></i> Edit</a>
+  </div>
+</div>
+
+<div class="detail-grid">
+  <div>
+    <div class="card"><div class="card-body">
+      <h3 style="font-size:15px;margin-bottom:12px">Details</h3>
+      <div class="form-grid">
+        <div class="form-group"><div class="form-label">Campaign</div>
+          <div class="fw-600">{{ obj.campaign_name }}</div></div>
+        <div class="form-group"><div class="form-label">Channel</div>
+          <div>{{ obj.get_channel_display }}</div></div>
+        <div class="form-group"><div class="form-label">Status</div>
+          {% if obj.status == 'active' %}<span class="badge badge-success">Active</span>
+          {% elif obj.status == 'planned' %}<span class="badge badge-info">Planned</span>
+          {% elif obj.status == 'paused' %}<span class="badge badge-warning">Paused</span>
+          {% elif obj.status == 'completed' %}<span class="badge badge-muted">Completed</span>
+          {% else %}<span class="badge badge-muted">{{ obj.get_status_display }}</span>{% endif %}
+        </div>
+        <div class="form-group"><div class="form-label">Spend</div>
+          <div class="fw-600">${{ obj.spend|floatformat:2 }}</div></div>
+        <div class="form-group"><div class="form-label">Leads generated</div>
+          <div>{{ obj.leads_generated }}</div></div>
+        <div class="form-group"><div class="form-label">Revenue influenced</div>
+          <div>${{ obj.revenue_influenced|floatformat:2 }}</div></div>
+        <div class="form-group"><div class="form-label">ROI</div>
+          <div>{{ obj.roi|floatformat:2 }}%</div></div>
+        <div class="form-group"><div class="form-label">Start date</div>
+          <div>{% if obj.start_date %}{{ obj.start_date|date:"d M Y" }}{% else %}—{% endif %}</div></div>
+      </div>
+      {% if obj.notes %}<div class="form-group"><div class="form-label">Notes</div>
+        <div>{{ obj.notes|linebreaksbr }}</div></div>{% endif %}
+    </div></div>
+  </div>
+
+  <div class="card"><div class="card-body">
+    <h3 style="font-size:15px;margin-bottom:12px">Actions</h3>
+    <a href="{% url 'marketing:campaignperformance_edit' obj.pk %}" class="btn btn-outline btn-block" style="margin-bottom:10px"><i data-lucide="pencil"></i> Edit campaign</a>
+    <form method="post" action="{% url 'marketing:campaignperformance_delete' obj.pk %}" onsubmit="return confirm('Delete this campaign?')">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger btn-block"><i data-lucide="trash-2"></i> Delete campaign</button>
+    </form>
+    <hr class="divider">
+    <div class="list-meta">Created {{ obj.created_at|date:"d M Y" }}</div>
+  </div></div>
+</div>
+{% endblock %}
