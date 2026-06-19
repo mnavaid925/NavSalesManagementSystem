@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}Advocacy & Reference Management{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'success:healthscore_list' %}">Customer Success</a><i data-lucide="chevron-right" style="width:14px"></i><span>Advocacy</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Advocacy & Reference Management</h1>
+    <p class="page-subtitle">{{ total }} advocate{{ total|pluralize }} on record</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'success:advocacy_create' %}" class="btn btn-primary"><i data-lucide="plus"></i> Add Advocate</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <form method="get" style="display:flex;gap:10px;flex-wrap:wrap;width:100%;align-items:center">
+      <input type="search" name="q" value="{{ request.GET.q }}" placeholder="Search advocates…" class="form-input" style="max-width:240px">
+      <span class="list-meta" style="margin-inline-end:auto"></span>
+      <select name="advocacy_type" class="form-select" style="max-width:180px" onchange="this.form.submit()">
+        <option value="">All types</option>
+        {% for value, label in type_choices %}
+          <option value="{{ value }}" {% if request.GET.advocacy_type == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <select name="status" class="form-select" style="max-width:180px" onchange="this.form.submit()">
+        <option value="">All statuses</option>
+        {% for value, label in status_choices %}
+          <option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <button class="btn btn-outline" type="submit"><i data-lucide="filter"></i> Filter</button>
+    </form>
+  </div>
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr><th>Contact</th><th>Account</th><th>Type</th><th>Status</th><th style="text-align:end">NPS</th><th>Last engaged</th><th style="text-align:end">Actions</th></tr></thead>
+      <tbody>
+        {% for advocate in advocacies %}
+          <tr>
+            <td>
+              <a href="{% url 'success:advocacy_detail' advocate.pk %}" class="fw-600">{{ advocate.contact_name }}</a>
+            </td>
+            <td>{{ advocate.account_name }}</td>
+            <td>
+              {% if advocate.advocacy_type == 'reference' %}<span class="badge badge-info">Reference</span>
+              {% elif advocate.advocacy_type == 'case_study' %}<span class="badge badge-info">Case study</span>
+              {% elif advocate.advocacy_type == 'testimonial' %}<span class="badge badge-success">Testimonial</span>
+              {% elif advocate.advocacy_type == 'review' %}<span class="badge badge-success">Review</span>
+              {% elif advocate.advocacy_type == 'speaker' %}<span class="badge badge-warning">Speaker</span>
+              {% else %}<span class="badge badge-muted">{{ advocate.get_advocacy_type_display }}</span>{% endif %}
+            </td>
+            <td>
+              {% if advocate.status == 'active' %}<span class="badge badge-success">Active</span>
+              {% elif advocate.status == 'nominated' %}<span class="badge badge-warning">Nominated</span>
+              {% elif advocate.status == 'declined' %}<span class="badge badge-danger">Declined</span>
+              {% elif advocate.status == 'retired' %}<span class="badge badge-muted">Retired</span>
+              {% else %}<span class="badge badge-muted">{{ advocate.get_status_display }}</span>{% endif %}
+            </td>
+            <td style="text-align:end" class="fw-600">{% if advocate.nps_score is not None %}{{ advocate.nps_score }}{% else %}—{% endif %}</td>
+            <td class="list-meta">{% if advocate.last_engaged %}{{ advocate.last_engaged|date:"d M Y" }}{% else %}—{% endif %}</td>
+            <td>
+              <div class="table-actions">
+                <a href="{% url 'success:advocacy_detail' advocate.pk %}" class="btn-icon" title="View"><i data-lucide="eye"></i></a>
+                <a href="{% url 'success:advocacy_edit' advocate.pk %}" class="btn-icon" title="Edit"><i data-lucide="pencil"></i></a>
+                <form method="post" action="{% url 'success:advocacy_delete' advocate.pk %}" onsubmit="return confirm('Delete this advocate?')">
+                  {% csrf_token %}
+                  <button type="submit" class="btn-icon danger" title="Delete"><i data-lucide="trash-2"></i></button>
+                </form>
+              </div>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="7"><div class="empty-state"><div class="empty-icon"><i data-lucide="megaphone"></i></div><h3>No advocates</h3><p>Nominate your first customer advocate to get started.</p><a href="{% url 'success:advocacy_create' %}" class="btn btn-primary" style="margin-top:14px"><i data-lucide="plus"></i> Add Advocate</a></div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div style="padding:0 16px 12px">{% include "partials/pagination.html" %}</div>
+</div>
+{% endblock %}
