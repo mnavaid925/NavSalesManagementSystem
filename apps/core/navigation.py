@@ -163,6 +163,63 @@ LIVE_LINKS = {
     (10, "Clawbacks & Adjustments"): "compensation:clawback_list",
     (10, "Multi-Currency & Global Plans"): "compensation:globalplanvariation_list",
     (10, "Payout Processing & Integration"): "compensation:payout_list",
+    # Module 11 — Customer Success & Account Management
+    (11, "Health Scoring & Risk Alerts"): "success:healthscore_list",
+    (11, "Renewal & Expansion Pipeline"): "success:renewal_list",
+    (11, "Onboarding & Implementation"): "success:onboardingplan_list",
+    (11, "Advocacy & Reference Management"): "success:advocacy_list",
+    (11, "Quarterly Business Reviews (QBRs)"): "success:qbr_list",
+    # Module 12 — Sales Analytics & Intelligence
+    (12, "Win/Loss Analysis"): "analytics:winlossanalysis_list",
+    (12, "Sales Velocity & Cycle Time"): "analytics:salesvelocity_list",
+    (12, "Conversion Funnel Analytics"): "analytics:conversionfunnel_list",
+    (12, "Rep Performance Scorecards"): "analytics:repscorecard_list",
+    (12, "Benchmarking & Peer Comparison"): "analytics:benchmark_list",
+    # Module 13 — Marketing Alignment & Attribution
+    (13, "Campaign Influence & Attribution"): "marketing:campaigninfluence_list",
+    (13, "MQL-to-SQL Tracking"): "marketing:mqlhandoff_list",
+    (13, "Campaign Performance Integration"): "marketing:campaignperformance_list",
+    (13, "Content Performance & Engagement"): "marketing:contentengagement_list",
+    (13, "Event & Webinar Management"): "marketing:marketingevent_list",
+    # Module 14 — Partner & Channel Management
+    (14, "Partner Recruitment & Onboarding"): "partners:partner_list",
+    (14, "Deal Registration & Protection"): "partners:dealregistration_list",
+    (14, "Partner Portal & Collaboration"): "partners:partnercollateral_list",
+    (14, "Partner Performance Tracking"): "partners:partnerperformance_list",
+    (14, "Channel Conflict Management"): "partners:channelconflict_list",
+    # Module 15 — Contract & Subscription Management
+    (15, "Contract Authoring & Redlining"): "contracts:contractclause_list",
+    (15, "Subscription Lifecycle"): "contracts:contract_list",
+    (15, "Renewal Automation"): "contracts:renewalschedule_list",
+    (15, "Usage-Based Billing"): "contracts:usagerecord_list",
+    (15, "Contract Compliance & Obligations"): "contracts:contractobligation_list",
+    # Module 16 — Mobile Sales
+    (16, "Mobile CRM Access"): "mobile:mobiledevice_list",
+    (16, "Field Sales Tools"): "mobile:fieldvisit_list",
+    (16, "Mobile Quoting & Approvals"): "mobile:mobilequote_list",
+    (16, "Voice & Call Integration"): "mobile:callactivity_list",
+    (16, "Mobile Dashboards & Alerts"): "mobile:mobilealert_list",
+    # Module 17 — Workflow & Process Automation
+    (17, "Visual Process Designer"): "automation:processflow_list",
+    (17, "Auto-Assignment Rules"): "automation:assignmentrule_list",
+    (17, "Approval Workflows"): "automation:approvalworkflow_list",
+    (17, "Notification & Alert Engine"): "automation:alertrule_list",
+    (17, "Data Enrichment & Cleansing"): "automation:enrichmentrule_list",
+    # Module 18 — Integration & API Hub
+    (18, "ERP Integration"): "integrations:connector_list",
+    (18, "Marketing Automation"): "integrations:syncjob_list",
+    (18, "Communication Platforms"): "integrations:synclog_list",
+    (18, "Business Intelligence"): "integrations:webhook_list",
+    (18, "E-Signature & Document"): "integrations:apikey_list",
+    # Module 19 — Master Data & Configuration ("User Roles & Profiles" already wired above)
+    (19, "Product Catalog & Pricing"): "masterdata:productcatalog_list",
+    (19, "Custom Fields & Objects"): "masterdata:customfield_list",
+    (19, "Sales Methodology Configuration"): "masterdata:methodologyconfig_list",
+    (19, "Localization & Multi-Language"): "masterdata:localizationsetting_list",
+    # Module 20 — System Administration & Security ("User Management & SSO" + "Audit Trail & Compliance" already wired above)
+    (20, "Data Security & Privacy"): "administration:securitypolicy_list",
+    (20, "Backup & Disaster Recovery"): "administration:backupjob_list",
+    (20, "System Health & Performance"): "administration:systemhealthmetric_list",
 }
 
 _SIDEBAR_CACHE = None
