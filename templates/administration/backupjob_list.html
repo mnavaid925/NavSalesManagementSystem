@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block title %}Backup &amp; Disaster Recovery{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'administration:securitypolicy_list' %}">System Administration</a><i data-lucide="chevron-right" style="width:14px"></i><span>Backups</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Backup &amp; Disaster Recovery</h1>
+    <p class="page-subtitle">{{ total }} backup job{{ total|pluralize }} on record</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'administration:backupjob_create' %}" class="btn btn-primary"><i data-lucide="plus"></i> Add Backup Job</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <form method="get" style="display:flex;gap:10px;flex-wrap:wrap;width:100%;align-items:center">
+      <input type="search" name="q" value="{{ request.GET.q }}" placeholder="Search backups…" class="form-input" style="max-width:240px">
+      <span class="list-meta" style="margin-inline-end:auto"></span>
+      <select name="backup_type" class="form-select" style="max-width:180px" onchange="this.form.submit()">
+        <option value="">All types</option>
+        {% for value, label in type_choices %}
+          <option value="{{ value }}" {% if request.GET.backup_type == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <select name="status" class="form-select" style="max-width:180px" onchange="this.form.submit()">
+        <option value="">All statuses</option>
+        {% for value, label in status_choices %}
+          <option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <button class="btn btn-outline" type="submit"><i data-lucide="filter"></i> Filter</button>
+    </form>
+  </div>
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr><th>Number</th><th>Name</th><th>Type</th><th>Status</th><th>Scheduled on</th><th style="text-align:end">Size (MB)</th><th style="text-align:end">Actions</th></tr></thead>
+      <tbody>
+        {% for backup in backupjobs %}
+          <tr>
+            <td>
+              <a href="{% url 'administration:backupjob_detail' backup.pk %}" class="fw-600">{{ backup.number }}</a>
+              {% if backup.storage_location %}<div class="list-meta">{{ backup.storage_location }}</div>{% endif %}
+            </td>
+            <td>{{ backup.name }}</td>
+            <td class="list-meta">{{ backup.get_backup_type_display }}</td>
+            <td>
+              {% if backup.status == 'success' %}<span class="badge badge-success">Success</span>
+              {% elif backup.status == 'scheduled' %}<span class="badge badge-info">Scheduled</span>
+              {% elif backup.status == 'running' %}<span class="badge badge-warning">Running</span>
+              {% elif backup.status == 'failed' %}<span class="badge badge-danger">Failed</span>
+              {% elif backup.status == 'canceled' %}<span class="badge badge-muted">Canceled</span>
+              {% else %}<span class="badge badge-muted">{{ backup.get_status_display }}</span>{% endif %}
+            </td>
+            <td class="list-meta">{% if backup.scheduled_on %}{{ backup.scheduled_on|date:"d M Y" }}{% else %}—{% endif %}</td>
+            <td style="text-align:end" class="fw-600">{{ backup.size_mb|floatformat:2 }}</td>
+            <td>
+              <div class="table-actions">
+                <a href="{% url 'administration:backupjob_detail' backup.pk %}" class="btn-icon" title="View"><i data-lucide="eye"></i></a>
+                <a href="{% url 'administration:backupjob_edit' backup.pk %}" class="btn-icon" title="Edit"><i data-lucide="pencil"></i></a>
+                <form method="post" action="{% url 'administration:backupjob_delete' backup.pk %}" onsubmit="return confirm('Delete this backup job?')">
+                  {% csrf_token %}
+                  <button type="submit" class="btn-icon danger" title="Delete"><i data-lucide="trash-2"></i></button>
+                </form>
+              </div>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="7"><div class="empty-state"><div class="empty-icon"><i data-lucide="database-backup"></i></div><h3>No backup jobs</h3><p>Schedule your first backup to protect workspace data.</p><a href="{% url 'administration:backupjob_create' %}" class="btn btn-primary" style="margin-top:14px"><i data-lucide="plus"></i> Add Backup Job</a></div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div style="padding:0 16px 12px">{% include "partials/pagination.html" %}</div>
+</div>
+{% endblock %}
