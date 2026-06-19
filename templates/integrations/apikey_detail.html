@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}{{ obj.name }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'integrations:connector_list' %}">Integration &amp; API Hub</a><i data-lucide="chevron-right" style="width:14px"></i>
+  <a href="{% url 'integrations:apikey_list' %}">API Keys</a><i data-lucide="chevron-right" style="width:14px"></i><span>{{ obj.name }}</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ obj.name }}</h1>
+    <p class="page-subtitle">{{ obj.get_environment_display }} · {{ obj.masked|default:"—" }}</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'integrations:apikey_list' %}" class="btn btn-outline"><i data-lucide="arrow-left"></i> Back</a>
+    <a href="{% url 'integrations:apikey_edit' obj.pk %}" class="btn btn-primary"><i data-lucide="pencil"></i> Edit</a>
+  </div>
+</div>
+
+<div class="detail-grid">
+  <div>
+    <div class="card"><div class="card-body">
+      <h3 style="font-size:15px;margin-bottom:12px">Details</h3>
+      <div class="form-grid">
+        <div class="form-group"><div class="form-label">Name</div>
+          <div class="fw-600">{{ obj.name }}</div></div>
+        {% comment %} Key is masked — never reveal the full generated key in the UI. {% endcomment %}
+        <div class="form-group"><div class="form-label">Key</div>
+          <div>{{ obj.masked|default:"—" }}</div></div>
+        <div class="form-group"><div class="form-label">Key prefix</div>
+          <div>{{ obj.key_prefix|default:"—" }}</div></div>
+        <div class="form-group"><div class="form-label">Environment</div>
+          <div>{{ obj.get_environment_display }}</div></div>
+        <div class="form-group"><div class="form-label">Status</div>
+          {% if obj.status == 'active' %}<span class="badge badge-success">Active</span>
+          {% elif obj.status == 'revoked' %}<span class="badge badge-danger">Revoked</span>
+          {% elif obj.status == 'expired' %}<span class="badge badge-muted">Expired</span>
+          {% else %}<span class="badge badge-muted">{{ obj.get_status_display }}</span>{% endif %}
+        </div>
+        <div class="form-group"><div class="form-label">Scopes</div>
+          <div>{{ obj.scopes|default:"—" }}</div></div>
+        <div class="form-group"><div class="form-label">Expires on</div>
+          <div>{% if obj.expires_on %}{{ obj.expires_on|date:"d M Y" }}{% else %}—{% endif %}</div></div>
+        <div class="form-group"><div class="form-label">Last used</div>
+          <div>{% if obj.last_used %}{{ obj.last_used|date:"d M Y H:i" }}{% else %}—{% endif %}</div></div>
+      </div>
+      {% if obj.notes %}<div class="form-group"><div class="form-label">Notes</div>
+        <div>{{ obj.notes|linebreaksbr }}</div></div>{% endif %}
+    </div></div>
+  </div>
+
+  <div class="card"><div class="card-body">
+    <h3 style="font-size:15px;margin-bottom:12px">Actions</h3>
+    <a href="{% url 'integrations:apikey_edit' obj.pk %}" class="btn btn-outline btn-block" style="margin-bottom:10px"><i data-lucide="pencil"></i> Edit API key</a>
+    <form method="post" action="{% url 'integrations:apikey_delete' obj.pk %}" onsubmit="return confirm('Delete this API key?')">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger btn-block"><i data-lucide="trash-2"></i> Delete API key</button>
+    </form>
+    <hr class="divider">
+    <div class="list-meta">Created {{ obj.created_at|date:"d M Y" }}</div>
+  </div></div>
+</div>
+{% endblock %}
