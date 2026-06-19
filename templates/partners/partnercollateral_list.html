@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block title %}Partner Portal & Collaboration{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'partners:partner_list' %}">Partner & Channel</a><i data-lucide="chevron-right" style="width:14px"></i><span>Collateral</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Partner Portal & Collaboration</h1>
+    <p class="page-subtitle">{{ total }} asset{{ total|pluralize }} on record</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'partners:partnercollateral_create' %}" class="btn btn-primary"><i data-lucide="plus"></i> Add Collateral</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <form method="get" style="display:flex;gap:10px;flex-wrap:wrap;width:100%;align-items:center">
+      <input type="search" name="q" value="{{ request.GET.q }}" placeholder="Search collateral…" class="form-input" style="max-width:240px">
+      <span class="list-meta" style="margin-inline-end:auto"></span>
+      <select name="partner" class="form-select" style="max-width:200px" onchange="this.form.submit()">
+        <option value="">All partners</option>
+        {% for p in partners %}
+          <option value="{{ p.pk }}" {% if request.GET.partner == p.pk|stringformat:"d" %}selected{% endif %}>{{ p.name }}</option>
+        {% endfor %}
+      </select>
+      <select name="asset_type" class="form-select" style="max-width:170px" onchange="this.form.submit()">
+        <option value="">All types</option>
+        {% for value, label in asset_type_choices %}
+          <option value="{{ value }}" {% if request.GET.asset_type == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <select name="access_level" class="form-select" style="max-width:160px" onchange="this.form.submit()">
+        <option value="">All access</option>
+        {% for value, label in access_level_choices %}
+          <option value="{{ value }}" {% if request.GET.access_level == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <button class="btn btn-outline" type="submit"><i data-lucide="filter"></i> Filter</button>
+    </form>
+  </div>
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr><th>Title</th><th>Type</th><th>Access</th><th>Partner</th><th>Published</th><th style="text-align:end">Actions</th></tr></thead>
+      <tbody>
+        {% for asset in partnercollaterals %}
+          <tr>
+            <td>
+              <a href="{% url 'partners:partnercollateral_detail' asset.pk %}" class="fw-600">{{ asset.title }}</a>
+              {% if asset.version %}<div class="list-meta">{{ asset.version }}</div>{% endif %}
+            </td>
+            <td>
+              {% if asset.asset_type == 'datasheet' %}<span class="badge badge-info">Datasheet</span>
+              {% elif asset.asset_type == 'playbook' %}<span class="badge badge-info">Playbook</span>
+              {% elif asset.asset_type == 'pricing' %}<span class="badge badge-warning">Pricing</span>
+              {% elif asset.asset_type == 'training' %}<span class="badge badge-success">Training</span>
+              {% elif asset.asset_type == 'logo' %}<span class="badge badge-muted">Logo</span>
+              {% elif asset.asset_type == 'contract' %}<span class="badge badge-danger">Contract</span>
+              {% else %}<span class="badge badge-muted">{{ asset.get_asset_type_display }}</span>{% endif %}
+            </td>
+            <td class="list-meta">{{ asset.get_access_level_display }}</td>
+            <td class="list-meta">{% if asset.partner %}{{ asset.partner.name }}{% else %}—{% endif %}</td>
+            <td class="list-meta">{% if asset.published_on %}{{ asset.published_on|date:"d M Y" }}{% else %}—{% endif %}</td>
+            <td>
+              <div class="table-actions">
+                <a href="{% url 'partners:partnercollateral_detail' asset.pk %}" class="btn-icon" title="View"><i data-lucide="eye"></i></a>
+                <a href="{% url 'partners:partnercollateral_edit' asset.pk %}" class="btn-icon" title="Edit"><i data-lucide="pencil"></i></a>
+                <form method="post" action="{% url 'partners:partnercollateral_delete' asset.pk %}" onsubmit="return confirm('Delete this collateral?')">
+                  {% csrf_token %}
+                  <button type="submit" class="btn-icon danger" title="Delete"><i data-lucide="trash-2"></i></button>
+                </form>
+              </div>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="6"><div class="empty-state"><div class="empty-icon"><i data-lucide="folder-open"></i></div><h3>No collateral</h3><p>Publish your first asset to the partner portal.</p><a href="{% url 'partners:partnercollateral_create' %}" class="btn btn-primary" style="margin-top:14px"><i data-lucide="plus"></i> Add Collateral</a></div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div style="padding:0 16px 12px">{% include "partials/pagination.html" %}</div>
+</div>
+{% endblock %}
