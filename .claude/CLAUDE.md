@@ -90,9 +90,8 @@ Whenever you create a **new module or sub-module**, follow this exact sequence. 
 
 ### GIT Commit Rule
 
-* Whenever you create a new file or update a file or delete a file.
-* Provide me git commit seperate for each file at the end. So, I will commit by my self.
-* git commit should be one line only.
+* Whenever you create a new file or update a file or delete a file. You should do a git commits.
+* git commit should be in details about new changes, update or add features in detail.
 * eg: 
 git add 'src/file.js'
 git commit -m 'some example changes'.
