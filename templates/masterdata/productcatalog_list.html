@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}Product Catalog & Pricing{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'masterdata:productcatalog_list' %}">Master Data</a><i data-lucide="chevron-right" style="width:14px"></i><span>Product Catalog</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Product Catalog & Pricing</h1>
+    <p class="page-subtitle">{{ total }} product{{ total|pluralize }} on record</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'masterdata:pricebook_list' %}" class="btn btn-outline"><i data-lucide="book-open"></i> Price Books</a>
+    <a href="{% url 'masterdata:productcatalog_create' %}" class="btn btn-primary"><i data-lucide="plus"></i> Add Product</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <form method="get" style="display:flex;gap:10px;flex-wrap:wrap;width:100%;align-items:center">
+      <input type="search" name="q" value="{{ request.GET.q }}" placeholder="Search products…" class="form-input" style="max-width:240px">
+      <span class="list-meta" style="margin-inline-end:auto"></span>
+      <select name="category" class="form-select" style="max-width:180px" onchange="this.form.submit()">
+        <option value="">All categories</option>
+        {% for value, label in category_choices %}
+          <option value="{{ value }}" {% if request.GET.category == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <select name="status" class="form-select" style="max-width:180px" onchange="this.form.submit()">
+        <option value="">All statuses</option>
+        {% for value, label in status_choices %}
+          <option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <button class="btn btn-outline" type="submit"><i data-lucide="filter"></i> Filter</button>
+    </form>
+  </div>
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr><th>Product</th><th>Category</th><th>Status</th><th style="text-align:end">Unit price</th><th style="text-align:end">Cost</th><th style="text-align:end">Actions</th></tr></thead>
+      <tbody>
+        {% for product in productcatalogs %}
+          <tr>
+            <td>
+              <a href="{% url 'masterdata:productcatalog_detail' product.pk %}" class="fw-600">{{ product.name }}</a>
+              {% if product.sku %}<div class="list-meta">{{ product.sku }}</div>{% endif %}
+            </td>
+            <td>
+              {% if product.category == 'software' %}<span class="badge badge-info">Software</span>
+              {% elif product.category == 'hardware' %}<span class="badge badge-info">Hardware</span>
+              {% elif product.category == 'service' %}<span class="badge badge-info">Service</span>
+              {% elif product.category == 'subscription' %}<span class="badge badge-success">Subscription</span>
+              {% elif product.category == 'addon' %}<span class="badge badge-muted">Add-on</span>
+              {% elif product.category == 'bundle' %}<span class="badge badge-warning">Bundle</span>
+              {% else %}<span class="badge badge-muted">{{ product.get_category_display }}</span>{% endif %}
+            </td>
+            <td>
+              {% if product.status == 'active' %}<span class="badge badge-success">Active</span>
+              {% elif product.status == 'inactive' %}<span class="badge badge-muted">Inactive</span>
+              {% elif product.status == 'discontinued' %}<span class="badge badge-danger">Discontinued</span>
+              {% elif product.status == 'draft' %}<span class="badge badge-muted">Draft</span>
+              {% else %}<span class="badge badge-muted">{{ product.get_status_display }}</span>{% endif %}
+            </td>
+            <td style="text-align:end" class="fw-600">{{ product.currency }} {{ product.unit_price|floatformat:2 }}</td>
+            <td style="text-align:end" class="list-meta">{{ product.currency }} {{ product.cost|floatformat:2 }}</td>
+            <td>
+              <div class="table-actions">
+                <a href="{% url 'masterdata:productcatalog_detail' product.pk %}" class="btn-icon" title="View"><i data-lucide="eye"></i></a>
+                <a href="{% url 'masterdata:productcatalog_edit' product.pk %}" class="btn-icon" title="Edit"><i data-lucide="pencil"></i></a>
+                <form method="post" action="{% url 'masterdata:productcatalog_delete' product.pk %}" onsubmit="return confirm('Delete this product?')">
+                  {% csrf_token %}
+                  <button type="submit" class="btn-icon danger" title="Delete"><i data-lucide="trash-2"></i></button>
+                </form>
+              </div>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="6"><div class="empty-state"><div class="empty-icon"><i data-lucide="package"></i></div><h3>No products</h3><p>Add your first product to start building the catalog.</p><a href="{% url 'masterdata:productcatalog_create' %}" class="btn btn-primary" style="margin-top:14px"><i data-lucide="plus"></i> Add Product</a></div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div style="padding:0 16px 12px">{% include "partials/pagination.html" %}</div>
+</div>
+{% endblock %}
