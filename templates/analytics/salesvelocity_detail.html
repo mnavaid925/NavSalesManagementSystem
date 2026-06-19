@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}{{ obj.period_label }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{% url 'analytics:winlossanalysis_list' %}">Sales Analytics</a><i data-lucide="chevron-right" style="width:14px"></i>
+  <a href="{% url 'analytics:salesvelocity_list' %}">Sales Velocity</a><i data-lucide="chevron-right" style="width:14px"></i><span>{{ obj.period_label }}</span>
+</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ obj.period_label }}</h1>
+    <p class="page-subtitle">{{ obj.get_segment_display }} · velocity {{ obj.velocity_score|floatformat:2 }}</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'analytics:salesvelocity_list' %}" class="btn btn-outline"><i data-lucide="arrow-left"></i> Back</a>
+    <a href="{% url 'analytics:salesvelocity_edit' obj.pk %}" class="btn btn-primary"><i data-lucide="pencil"></i> Edit</a>
+  </div>
+</div>
+
+<div class="detail-grid">
+  <div>
+    <div class="card"><div class="card-body">
+      <h3 style="font-size:15px;margin-bottom:12px">Details</h3>
+      <div class="form-grid">
+        <div class="form-group"><div class="form-label">Period</div>
+          <div class="fw-600">{{ obj.period_label }}</div></div>
+        <div class="form-group"><div class="form-label">Segment</div>
+          {% if obj.segment == 'enterprise' %}<span class="badge badge-info">Enterprise</span>
+          {% elif obj.segment == 'midmarket' %}<span class="badge badge-info">Mid-market</span>
+          {% elif obj.segment == 'smb' %}<span class="badge badge-muted">SMB</span>
+          {% elif obj.segment == 'all' %}<span class="badge badge-success">All segments</span>
+          {% else %}<span class="badge badge-muted">{{ obj.get_segment_display }}</span>{% endif %}
+        </div>
+        <div class="form-group"><div class="form-label">Average deal size</div>
+          <div>${{ obj.avg_deal_size|floatformat:2 }}</div></div>
+        <div class="form-group"><div class="form-label">Win rate</div>
+          <div>{{ obj.win_rate|floatformat:2 }}%</div></div>
+        <div class="form-group"><div class="form-label">Sales cycle (days)</div>
+          <div>{{ obj.sales_cycle_days }}</div></div>
+        <div class="form-group"><div class="form-label">Pipeline value</div>
+          <div>${{ obj.pipeline_value|floatformat:2 }}</div></div>
+        <div class="form-group"><div class="form-label">Velocity score</div>
+          <div class="fw-600">{{ obj.velocity_score|floatformat:2 }}</div></div>
+        <div class="form-group"><div class="form-label">Recorded on</div>
+          <div>{% if obj.recorded_on %}{{ obj.recorded_on|date:"d M Y" }}{% else %}—{% endif %}</div></div>
+      </div>
+    </div></div>
+  </div>
+
+  <div class="card"><div class="card-body">
+    <h3 style="font-size:15px;margin-bottom:12px">Actions</h3>
+    <a href="{% url 'analytics:salesvelocity_edit' obj.pk %}" class="btn btn-outline btn-block" style="margin-bottom:10px"><i data-lucide="pencil"></i> Edit record</a>
+    <form method="post" action="{% url 'analytics:salesvelocity_delete' obj.pk %}" onsubmit="return confirm('Delete this velocity record?')">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger btn-block"><i data-lucide="trash-2"></i> Delete record</button>
+    </form>
+    <hr class="divider">
+    <div class="list-meta">Created {{ obj.created_at|date:"d M Y" }}</div>
+  </div></div>
+</div>
+{% endblock %}
